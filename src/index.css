@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────────────────────────────────────
+   BASE LAYER — Global Token Defaults
+   Dark:  Deep midnight carbon (slate-950 / #020617)
+   Light: Crisp alabaster white (slate-50 / #f8fafc)
+   ─────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply
+      bg-slate-50 text-slate-900
+      dark:bg-slate-950 dark:text-slate-400
+      font-sans antialiased
+      selection:bg-emerald-500/30 selection:text-emerald-900
+      dark:selection:bg-emerald-500/20 dark:selection:text-emerald-200
+      transition-colors duration-300;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply
+      font-display tracking-tight
+      text-slate-900 dark:text-white
+      transition-colors duration-300;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+}
+
+/* ───────────────────────────────────────────────────────
+   COMPONENT LAYER — Shared UI Utilities
+   ─────────────────────────────────────────────────────── */
+@layer components {
+
+  /* Glass card — dark only (legacy support) */
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/5
+           hover:border-white/10 transition-all duration-300;
+  }
+
+  /* Dual-theme glass card */
+  .glass-card-adaptive {
+    @apply
+      bg-white dark:bg-white/[0.04]
+      border border-slate-200 dark:border-white/[0.06]
+      backdrop-blur-md shadow-sm dark:shadow-none
+      hover:border-slate-300 dark:hover:border-white/10
+      transition-all duration-300;
+  }
+
+  /* Premium radial bg (light-safe) */
+  .premium-radial-bg {
+    background: radial-gradient(
+      circle at center,
+      rgba(0, 168, 107, 0.04) 0%,
+      transparent 70%
+    );
+  }
+
+  /* Gradient text — white to slate */
+  .text-gradient-premium {
+    @apply bg-clip-text text-transparent
+           bg-gradient-to-b from-white to-slate-400;
+  }
+
+  /* Gradient text — dark aware */
+  .text-gradient-hero {
+    @apply bg-clip-text text-transparent
+           bg-gradient-to-b
+           from-slate-900 to-slate-600
+           dark:from-white dark:to-slate-400;
+  }
+
+  /* Subtle divider */
+  .divider-micro {
+    @apply h-[1px] w-full
+           bg-slate-200 dark:bg-white/5
+           border-none transition-colors duration-300;
+  }
+
+  /* Emerald CTA button */
+  .btn-premium-emerald {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3 rounded-xl font-bold text-sm
+           transition-all duration-200
+           hover:scale-105 active:scale-95
+           border border-emerald-500/30
+           bg-emerald-500/10 text-emerald-400
+           hover:bg-emerald-500/20 hover:border-emerald-500/50;
+  }
+
+  /* Malazone Green solid CTA */
+  .btn-malazone-green {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3 rounded-xl font-black text-sm
+           transition-all duration-200
+           hover:scale-105 active:scale-95
+           bg-malazone-green hover:bg-malazone-green/90
+           text-black border border-malazone-green/40;
+  }
+
+  /* Slate ghost button */
+  .btn-premium-slate {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3 rounded-xl font-bold text-sm
+           transition-all duration-200
+           hover:scale-105 active:scale-95
+           border
+           border-slate-200 dark:border-white/5
+           bg-white dark:bg-white/5
+           text-slate-700 dark:text-slate-300
+           hover:bg-slate-50 dark:hover:bg-white/10
+           hover:border-slate-300 dark:hover:border-white/10;
+  }
+
+  /* Ticker bar — light and dark */
+  .ticker-bar {
+    @apply
+      bg-slate-100 border-b border-slate-200 text-slate-700
+      dark:bg-slate-900 dark:border-b dark:border-white/5 dark:text-gray-300;
+  }
+
+  /* Header surface — light and dark */
+  .header-surface {
+    @apply
+      bg-white/80 border-b border-slate-200/80 shadow-sm
+      dark:bg-slate-950/80 dark:border-b dark:border-white/5 dark:shadow-none
+      backdrop-blur-3xl transition-all duration-300;
+  }
+}
+
+/* ───────────────────────────────────────────────────────
+   SCROLLBAR — Premium minimal scrollbar
+   ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-slate-100 dark:bg-slate-950;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400
+         dark:bg-slate-800 dark:hover:bg-slate-700
+         transition-colors;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ───────────────────────────────────────────────────────
+   MARQUEE — Ticker animation
+   ─────────────────────────────────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+/* ───────────────────────────────────────────────────────
+   SHIMMER — Premium elements
+   ─────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ───────────────────────────────────────────────────────
+   FADE-IN-UP — Hero content entrance
+   ─────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  0%   { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* ───────────────────────────────────────────────────────
+   THEME TOGGLE — Spin-in animation for icon swap
+   ─────────────────────────────────────────────────────── */
+@keyframes spinIn {
+  0%   { opacity: 0; transform: rotate(-180deg) scale(0.5); }
+  100% { opacity: 1; transform: rotate(0deg) scale(1); }
+}
