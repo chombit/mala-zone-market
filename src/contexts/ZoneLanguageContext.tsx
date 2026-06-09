@@ -35,10 +35,10 @@ const dictionary = {
 
         /* ── Industry Zones ── */
         "zone.all": "All Zones",
-        "zone.car": "Car Zone",
-        "zone.house": "House & Property Zone",
-        "zone.ceremony": "Ceremony & Wear Zone",
-        "zone.machinery": "Heavy Machinery Zone",
+        "zone.car": "Car Sale & Rent",
+        "zone.house": "House & Land",
+        "zone.ceremony": "Wedding & DJ Gear",
+        "zone.machinery": "Heavy Machineries",
 
         /* ── Geographic Zones ── */
         "geo.all": "All Areas",
@@ -49,11 +49,11 @@ const dictionary = {
         "geo.chuko": "Chuko Zone",
 
         /* ── Header Nav Categories ── */
-        "nav.cat1": "Property & Land Zone",
-        "nav.cat2": "Motors & EV Zone",
-        "nav.cat3": "Travel & Stay Zone",
-        "nav.cat4": "Ceremony & Events Zone",
-        "nav.cat5": "Heavy Machinery Zone",
+        "nav.cat1": "House & Land",
+        "nav.cat2": "Car Sale & Rent",
+        "nav.cat3": "Hotels & Guest Houses",
+        "nav.cat4": "Wedding & DJ Gear",
+        "nav.cat5": "Heavy Machineries",
         "nav.agentBtn": "Mala-Agent Zone ",
 
         /* ── Hero ── */
@@ -194,10 +194,10 @@ const dictionary = {
 
         /* ── Industry Zones ── */
         "zone.all": "ሁሉም ዞኖች",
-        "zone.car": "የመኪና ዞን",
-        "zone.house": "የቤትና ይዞታ ዞን",
-        "zone.ceremony": "የክብረ-በዓላት ዞን",
-        "zone.machinery": "የከባድ ማሽነሪዎች ዞን",
+        "zone.car": "🚗 መኪና መግዣና ኪራይ",
+        "zone.house": "🏠 ቤትና መሬት",
+        "zone.ceremony": "🎵 የሰርግና የደግስ ዕቃዎች",
+        "zone.machinery": "🚜 ከባድ ማሽነሪዎች",
 
         /* ── Geographic Zones ── */
         "geo.all": "ሁሉም መገኛዎች",
@@ -208,11 +208,11 @@ const dictionary = {
         "geo.chuko": "የጩቆ ዞን",
 
         /* ── Header Nav Categories ── */
-        "nav.cat1": "የቤትና ይዞታ ዞን",
-        "nav.cat2": "የመኪና ዞን",
-        "nav.cat3": "የጉዞና ማረፊያ ዞን",
-        "nav.cat4": "የክብረ-በዓላት ዞን",
-        "nav.cat5": "የከባድ ማሽነሪዎች ዞን",
+        "nav.cat1": "🏠 ቤትና መሬት",
+        "nav.cat2": "🚗 መኪና መግዣና ኪራይ",
+        "nav.cat3": "🏨 ሆቴልና ጌስት ሃውስ",
+        "nav.cat4": "🎵 የሰርግና የደግስ ዕቃዎች",
+        "nav.cat5": "🚜 ከባድ ማሽነሪዎች",
         "nav.agentBtn": "የወኪል ወጣቶች ዞን",
 
         /* ── Hero ── */

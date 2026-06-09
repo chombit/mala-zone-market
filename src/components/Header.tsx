@@ -10,6 +10,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Globe, Menu, Sun, Moon, X, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import LogoImg from "@/images/Logo.png";
 
 const navDictionary = {
   en: {
@@ -73,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
       {/* ── Main Navigation Bar ───────────────────────────────────── */}
       <header
         className="
-           w-full px-4 sm:px-6 py-3.5
+           w-full px-4 sm:px-6 py-1.5
            flex items-center justify-between gap-4
            transition-all duration-300
            bg-white dark:bg-slate-950
@@ -89,21 +90,11 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
           role="button"
           aria-label="Malazone Home"
         >
-          {/* Mobile emblem */}
-          <div className="xl:hidden flex items-center justify-center w-10 h-10 bg-[#00A86B] text-white font-black text-xl rounded-xl shadow-md">
-            M
-          </div>
-
-          {/* Desktop full logo text */}
-          <div className="hidden xl:flex flex-col">
-            <div className="flex items-center gap-1">
-              <span className="text-3xl font-black tracking-tighter text-[#00A86B] uppercase leading-none">MALA</span>
-              <span className="text-3xl font-black tracking-tighter text-[#0F172A] dark:text-white uppercase leading-none transition-colors duration-300">ZONE</span>
-            </div>
-            <span className="text-[9px] font-bold tracking-widest text-slate-500 uppercase mt-1">
-              The Zone of <span className="text-[#00A86B]">Smart</span> Solutions
-            </span>
-          </div>
+          <img 
+            src={LogoImg} 
+            alt="Malazone Logo" 
+            className="h-12 sm:h-16 w-auto object-contain dark:brightness-110"
+          />
         </div>
 
         {/* ── CENTER: Nav Category Pills (desktop) ────── */}

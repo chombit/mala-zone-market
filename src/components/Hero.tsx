@@ -330,7 +330,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                       onClick={() => { setSelectedCategory("all"); setIsZoneOpen(false); }}
                       className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white transition-colors"
                     >
-                      {t("cat.all" as any)} — {t("zone.all" as any)}
+                      {t("cat.all" as any)}
                     </button>
                     {HERO_SLIDES.map((s, i) => (
                       <button
