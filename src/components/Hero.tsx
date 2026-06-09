@@ -222,10 +222,12 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             className={`absolute inset-0 transition-opacity duration-[1400ms] ease-in-out ${i === activeSlide ? "opacity-100" : "opacity-0"
               }`}
           >
-            <div
-              className="w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-[7000ms]"
+            <img
+              src={slide.image}
+              alt=""
+              crossOrigin="anonymous"
+              className="w-full h-full object-cover transition-transform duration-[7000ms]"
               style={{
-                backgroundImage: `url(${slide.image})`,
                 transform: i === activeSlide ? "scale(1)" : "scale(1.1)",
               }}
             />
