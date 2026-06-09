@@ -49,12 +49,12 @@ const dictionary = {
         "geo.chuko": "Chuko Zone",
 
         /* ── Header Nav Categories ── */
-        "nav.cat1": "Property",
-        "nav.cat2": "Motors & EV",
-        "nav.cat3": "Rooms & Halls",
-        "nav.cat4": "DJ & Clothes",
-        "nav.cat5": "Heavy Machinery",
-        "nav.agentBtn": "Mala-Agent Hub",
+        "nav.cat1": "Property & Land Zone",
+        "nav.cat2": "Motors & EV Zone",
+        "nav.cat3": "Travel & Stay Zone",
+        "nav.cat4": "Ceremony & Events Zone",
+        "nav.cat5": "Heavy Machinery Zone",
+        "nav.agentBtn": "Mala-Agent Zone ",
 
         /* ── Hero ── */
         "hero.tagline": "The Zone of Smart Solutions",
@@ -66,7 +66,7 @@ const dictionary = {
         "search.location": "Location",
         "search.intent": "Intent",
         "search.btn": "Find Solution",
-        "cat.all": "All",
+        "cat.all": "All Zones",
 
         /* ── Stats Strip ── */
         "stats.clients": "Happy Clients",
@@ -208,12 +208,12 @@ const dictionary = {
         "geo.chuko": "የጩቆ ዞን",
 
         /* ── Header Nav Categories ── */
-        "nav.cat1": "መሬትና ቤት",
-        "nav.cat2": "መኪናና ኤሌክትሪክ",
-        "nav.cat3": "አዳራሽና ጌስት ሃውስ",
-        "nav.cat4": "ልብስና ዲጄ ኪራይ",
-        "nav.cat5": "ከባድ ማሽነሪዎች",
-        "nav.agentBtn": "የወኪል ወጣቶች ማዕከል",
+        "nav.cat1": "የቤትና ይዞታ ዞን",
+        "nav.cat2": "የመኪና ዞን",
+        "nav.cat3": "የጉዞና ማረፊያ ዞን",
+        "nav.cat4": "የክብረ-በዓላት ዞን",
+        "nav.cat5": "የከባድ ማሽነሪዎች ዞን",
+        "nav.agentBtn": "የወኪል ወጣቶች ዞን",
 
         /* ── Hero ── */
         "hero.tagline": "የብልሃት እና የመፍትሔ ዞን",
@@ -225,7 +225,7 @@ const dictionary = {
         "search.location": "የሰፈር መገኛ",
         "search.intent": "የፍላጎት አይነት",
         "search.btn": "መላ አግኝ (ፈልግ)",
-        "cat.all": "ሁሉም",
+        "cat.all": "ሁሉም ዞኖች",
 
         /* ── Stats Strip ── */
         "stats.clients": "ደስተኛ ደንበኞች",

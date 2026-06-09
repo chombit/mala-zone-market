@@ -5,7 +5,7 @@
  * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Zap,
   Users,
@@ -21,6 +21,8 @@ import {
   Truck,
   Music,
   Hotel,
+  Navigation,
+  Compass,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 
@@ -87,13 +89,14 @@ interface Stats {
 
 interface HeroProps {
   onCategoryChange: (cat: string) => void;
+  onFilterChange: (key: string, value: string) => void;
 }
 
 /* ────────────────────────────────────────────
    Component
    ──────────────────────────────────────────── */
-const Hero: React.FC<HeroProps> = ({ onCategoryChange }) => {
-  const { t } = useLanguage();
+const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
+  const { t, language } = useLanguage();
   const [activeSlide, setActiveSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchLocation, setSearchLocation] = useState("loc.hawassa");
@@ -104,6 +107,26 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange }) => {
     vehicles: 1412,
     trade_success_rate: 100,
   });
+
+  /* Dropdown states */
+  const [isZoneOpen, setIsZoneOpen] = useState(false);
+  const [isLocOpen, setIsLocOpen] = useState(false);
+  const [isIntentOpen, setIsIntentOpen] = useState(false);
+
+  /* Refs for click-away */
+  const zoneRef = useRef<HTMLDivElement>(null);
+  const locRef = useRef<HTMLDivElement>(null);
+  const intentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (zoneRef.current && !zoneRef.current.contains(event.target as Node)) setIsZoneOpen(false);
+      if (locRef.current && !locRef.current.contains(event.target as Node)) setIsLocOpen(false);
+      if (intentRef.current && !intentRef.current.contains(event.target as Node)) setIsIntentOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   /* Auto-advance slideshow */
   const nextSlide = useCallback(() => {
@@ -130,17 +153,40 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange }) => {
   }, []);
 
   const handleSearch = () => {
+    // 1. Sync category/zone
     onCategoryChange(selectedCategory);
-    const grid = document.getElementById("listings-grid");
-    if (grid) grid.scrollIntoView({ behavior: "smooth" });
+
+    // 2. Sync Location (Map dictionary key to filter value)
+    const cityMap: Record<string, string> = {
+      "loc.hawassa": "tabor", // Defaulting to tabor for Hawassa
+      "loc.yirgalem": "yirgalem",
+      "loc.aleta": "aleta",
+      "loc.bensa": "bensa",
+      "loc.chuko": "chuko",
+    };
+    const cityValue = cityMap[searchLocation] || "";
+    onFilterChange("city", cityValue);
+
+    // 3. Sync Intent
+    const intentValue = searchIntent.replace("intent.", "");
+    onFilterChange("intent", intentValue);
+
+    // 4. Scroll to results
+    const grid = document.getElementById("listings-catalog");
+    if (grid) {
+      grid.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   const handlePillClick = (categoryId: string, slideIndex?: number) => {
     setSelectedCategory(categoryId);
     if (slideIndex !== undefined) setActiveSlide(slideIndex);
     onCategoryChange(categoryId);
-    const grid = document.getElementById("listings-grid");
-    if (grid) grid.scrollIntoView({ behavior: "smooth" });
+
+    const grid = document.getElementById("listings-catalog");
+    if (grid) {
+      grid.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   /* ── Active pill style ─────────────────────────────────────────── */
@@ -240,11 +286,11 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange }) => {
           </p>
 
           {/* ── Inline Search Bar ─────────────────────────────────── */}
-          <div className="w-full max-w-4xl animate-fade-in-up">
+          <div className="w-full max-w-4xl animate-fade-in-up relative z-50">
             <div
               className="
                 flex flex-col sm:flex-row items-stretch
-                rounded-2xl sm:rounded-full overflow-hidden
+                rounded-2xl sm:rounded-full
                 border transition-all duration-500
                 bg-white dark:bg-slate-900/90
                 border-slate-200 dark:border-white/[0.08]
@@ -252,74 +298,133 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange }) => {
                 hover:border-malazone-green/30 dark:hover:border-malazone-green/20
               "
             >
-              {/* Zone Select */}
-              <div className="relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06]">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className={`${selectClass} px-5 sm:px-6 py-4`}
+              {/* Zone Select (Custom) */}
+              <div
+                ref={zoneRef}
+                onMouseEnter={() => setIsZoneOpen(true)}
+                onMouseLeave={() => setIsZoneOpen(false)}
+                className={`relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06] first:rounded-t-2xl sm:first:rounded-l-full sm:first:rounded-tr-none ${isZoneOpen ? "z-[60]" : "z-10"}`}
+              >
+                <button
+                  onClick={() => setIsZoneOpen(!isZoneOpen)}
+                  className="w-full h-full px-6 py-4 flex items-center justify-between text-left group rounded-t-2xl sm:rounded-l-full sm:rounded-tr-none"
                 >
-                  <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="all">
-                    {t("cat.all" as any)} — {t("zone.all" as any)}
-                  </option>
-                  {HERO_SLIDES.map((s, i) => (
-                    <option
-                      key={i}
-                      className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                      value={s.id}
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
+                      {t("search.zone")}
+                    </span>
+                    <span className="text-sm font-black text-slate-900 dark:text-white truncate">
+                      {selectedCategory === "all"
+                        ? t("cat.all" as any)
+                        : t(HERO_SLIDES.find(s => s.id === selectedCategory)?.pillar as any)}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isZoneOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isZoneOpen && (
+                  <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-b-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-1 duration-200">
+                    <button
+                      onClick={() => { setSelectedCategory("all"); setIsZoneOpen(false); }}
+                      className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white transition-colors"
                     >
-                      {t(s.pillar as any)}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                      {t("cat.all" as any)} — {t("zone.all" as any)}
+                    </button>
+                    {HERO_SLIDES.map((s, i) => (
+                      <button
+                        key={i}
+                        onClick={() => { setSelectedCategory(s.id); setIsZoneOpen(false); }}
+                        className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white border-t border-slate-100 dark:border-white/5 transition-colors flex items-center gap-3"
+                      >
+                        <s.icon className="w-3.5 h-3.5 text-malazone-green" />
+                        {t(s.pillar as any)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Location Select */}
-              <div className="relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06]">
-                <MapPin className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-malazone-green" />
-                <select
-                  value={searchLocation}
-                  onChange={(e) => setSearchLocation(e.target.value)}
-                  className={`${selectClass} pl-10 sm:pl-11 pr-8 py-4`}
+              {/* Location Select (Custom) */}
+              <div
+                ref={locRef}
+                onMouseEnter={() => setIsLocOpen(true)}
+                onMouseLeave={() => setIsLocOpen(false)}
+                className={`relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06] ${isLocOpen ? "z-[60]" : "z-10"}`}
+              >
+                <button
+                  onClick={() => setIsLocOpen(!isLocOpen)}
+                  className="w-full h-full px-6 py-4 flex items-center justify-between text-left"
                 >
-                  {[
-                    "loc.hawassa",
-                    "loc.yirgalem",
-                    "loc.aleta",
-                    "loc.bensa",
-                    "loc.chuko",
-                  ].map((l, i) => (
-                    <option
-                      key={i}
-                      className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                      value={l}
-                    >
-                      {t(l as any)}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
+                      {t("search.location")}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-malazone-green" />
+                      <span className="text-sm font-black text-slate-900 dark:text-white truncate">
+                        {t(searchLocation as any)}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isLocOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isLocOpen && (
+                  <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-b-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-1 duration-200">
+                    {[
+                      "loc.hawassa",
+                      "loc.yirgalem",
+                      "loc.aleta",
+                      "loc.bensa",
+                      "loc.chuko",
+                    ].map((l, i) => (
+                      <button
+                        key={i}
+                        onClick={() => { setSearchLocation(l); setIsLocOpen(false); }}
+                        className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white border-t first:border-t-0 border-slate-100 dark:border-white/5 transition-colors"
+                      >
+                        {t(l as any)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Intent Select */}
-              <div className="relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06]">
-                <select
-                  value={searchIntent}
-                  onChange={(e) => setSearchIntent(e.target.value)}
-                  className={`${selectClass} px-5 sm:px-6 py-4`}
+              {/* Intent Select (Custom) */}
+              <div
+                ref={intentRef}
+                onMouseEnter={() => setIsIntentOpen(true)}
+                onMouseLeave={() => setIsIntentOpen(false)}
+                className={`relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06] ${isIntentOpen ? "z-[60]" : "z-10"}`}
+              >
+                <button
+                  onClick={() => setIsIntentOpen(!isIntentOpen)}
+                  className="w-full h-full px-6 py-4 flex items-center justify-between text-left"
                 >
-                  {["intent.buy", "intent.rent", "intent.hourly"].map((intent, i) => (
-                    <option
-                      key={i}
-                      className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                      value={intent}
-                    >
-                      {t(intent as any)}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
+                      {t("search.intent")}
+                    </span>
+                    <span className="text-sm font-black text-slate-900 dark:text-white truncate">
+                      {t(searchIntent as any)}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isIntentOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isIntentOpen && (
+                  <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-b-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-1 duration-200">
+                    {["intent.buy", "intent.rent", "intent.hourly"].map((intent, i) => (
+                      <button
+                        key={i}
+                        onClick={() => { setSearchIntent(intent); setIsIntentOpen(false); }}
+                        className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white border-t first:border-t-0 border-slate-100 dark:border-white/5 transition-colors"
+                      >
+                        {t(intent as any)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Search CTA Button */}
@@ -327,7 +432,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange }) => {
                 onClick={handleSearch}
                 className="
                   flex items-center justify-center gap-2.5
-                  px-8 py-4 sm:rounded-r-full
+                  px-8 py-4 rounded-b-2xl sm:rounded-b-none sm:rounded-r-full
                   bg-malazone-green hover:bg-malazone-green/90
                   text-black font-black
                   transition-all duration-300 group
@@ -348,6 +453,8 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange }) => {
               onClick={() => {
                 setSelectedCategory("all");
                 onCategoryChange("all");
+                const grid = document.getElementById("listings-catalog");
+                if (grid) grid.scrollIntoView({ behavior: "smooth" });
               }}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedCategory === "all" ? activePillClass : inactivePillClass
                 }`}

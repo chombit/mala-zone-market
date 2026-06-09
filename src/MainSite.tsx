@@ -69,7 +69,10 @@ const MainSite: React.FC = () => {
 
       <main>
         {/* Full-bleed hero carousel + search */}
-        <Hero onCategoryChange={handleCategoryChange} />
+        <Hero
+          onCategoryChange={handleCategoryChange}
+          onFilterChange={handleFilterChange}
+        />
 
         {/* ── Split-Screen Catalog Section ──────────────────────── */}
         <div

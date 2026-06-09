@@ -6,8 +6,8 @@
  * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
  */
 
-import React from "react";
-import { Globe, Menu, Sun, Moon } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Globe, Menu, Sun, Moon, X, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -18,7 +18,7 @@ const navDictionary = {
     stay: "Stay & Hall Zone",
     ceremony: "Ceremony Zone",
     heavy: "Heavy Machinery Zone",
-    hubBtn: "Mala-Agent Hub",
+    hubBtn: "Mala-Agent Zone",
     ticker: "✨ MALAZONE.COM • NO BROKER, NO COMMISSION • HAWASSA SIDAMA MARKETPLACE"
   },
   amharic: {
@@ -27,7 +27,7 @@ const navDictionary = {
     stay: "የአዳራሽ ዞን",
     ceremony: "የክብረ-በዓላት ዞን",
     heavy: "የከባድ ማሽነሪዎች ዞን",
-    hubBtn: "የወኪል ወጣቶች ማዕከል",
+    hubBtn: "የወኪል ወጣቶች ዞን",
     ticker: "✨ MALAZONE.COM • ያለ ደላላ ቀጥታ ቢዝነስ • HAWASSA SIDAMA MARKETPLACE"
   }
 };
@@ -39,6 +39,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
   const { language, toggleLanguage } = useLanguage();
   const { isDark, toggleTheme } = useTheme();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Pick the current language dictionary
   const t = navDictionary[language as "en" | "amharic"] || navDictionary.en;
@@ -54,13 +55,14 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
   const handleNavClick = (id: string) => {
     if (onCategoryChange) {
       onCategoryChange(id);
-      const grid = document.getElementById("listings-grid");
+      const grid = document.getElementById("listings-catalog");
       if (grid) grid.scrollIntoView({ behavior: "smooth" });
     }
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full z-50">
+    <div className="fixed top-0 left-0 w-full z-[150]">
       {/* ── Ticker / Announcement Bar ──────────────────────────────── */}
       <div className="w-full bg-[#00A86B] border-b border-emerald-600/30 py-2 px-6 overflow-hidden">
         <p className="text-[10px] sm:text-[11px] font-black tracking-[0.15em] text-white uppercase whitespace-nowrap animate-marquee text-center">
@@ -188,7 +190,8 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
 
           {/* Mobile Menu Icon */}
           <button
-            aria-label="Open mobile menu"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
             className="
               xl:hidden p-2.5 rounded-xl
               border border-transparent
@@ -198,10 +201,66 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
               transition-all duration-200
             "
           >
-            <Menu className="w-5 h-5" />
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </header>
+
+      {/* ── Mobile Navigation Overlay ─────────────────────────────── */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 top-[110px] z-[60] xl:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Menu Panel */}
+          <nav className="absolute top-0 left-0 right-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-white/10 shadow-2xl animate-in slide-in-from-top duration-300">
+            <div className="flex flex-col p-4 gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleNavClick(cat.id)}
+                  className="
+                    flex items-center justify-between
+                    w-full px-5 py-4 rounded-2xl
+                    text-sm font-bold tracking-wide uppercase
+                    text-slate-700 dark:text-slate-200
+                    bg-slate-50 dark:bg-white/5
+                    hover:bg-emerald-50 dark:hover:bg-emerald-500/10
+                    hover:text-[#00A86B] dark:hover:text-emerald-400
+                    transition-all duration-200
+                  "
+                >
+                  {t[cat.key as keyof typeof t]}
+                  <ChevronRight className="w-4 h-4 opacity-40" />
+                </button>
+              ))}
+
+              <div className="h-px bg-slate-100 dark:bg-white/5 my-2" />
+
+              {/* Mobile Agent Hub CTA */}
+              <button
+                onClick={() => {
+                  const el = document.getElementById("agents");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  setIsMobileMenuOpen(false);
+                }}
+                className="
+                  flex items-center justify-center gap-3
+                  w-full py-4 rounded-2xl
+                  bg-gradient-to-r from-[#00A86B] to-emerald-600
+                  text-black font-black text-sm uppercase tracking-widest
+                  shadow-lg shadow-emerald-500/20
+                "
+              >
+                {t.hubBtn}
+              </button>
+            </div>
+          </nav>
+        </div>
+      )}
     </div>
   );
 };

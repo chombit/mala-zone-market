@@ -4,11 +4,12 @@
  * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
  */
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   SlidersHorizontal,
   RotateCcw,
   ChevronDown,
+  Check,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 
@@ -36,34 +37,73 @@ interface ZoneFilterSidebarProps {
 }
 
 /* ────────────────────────────────────────────
-   Reusable Select Dropdown
+   Premium Custom Select Dropdown
    ──────────────────────────────────────────── */
 const FilterSelect: React.FC<{
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
-}> = ({ label, value, onChange, options }) => (
-  <div className="mb-5">
-    <label className="block text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
-      {label}
-    </label>
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl px-4 py-3 pr-10 text-sm text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-green-500/40 focus:border-green-500 transition-all duration-200 cursor-pointer"
+}> = ({ label, value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+
+  return (
+    <div
+      ref={containerRef}
+      className="mb-5 relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1">
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl px-4 py-3.5 text-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none hover:border-green-500/40 dark:hover:border-green-500/30 transition-all duration-200"
       >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        <span className="truncate">{selectedOption.label}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-[calc(100%-8px)] left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl z-[70] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="max-h-60 overflow-y-auto py-1.5 custom-scrollbar">
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${value === opt.value
+                  ? "text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-500/5"
+                  : "text-slate-700 dark:text-slate-300"
+                  }`}
+              >
+                {opt.label}
+                {value === opt.value && <Check className="w-3.5 h-3.5" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 /* ────────────────────────────────────────────
    Sidebar Component
