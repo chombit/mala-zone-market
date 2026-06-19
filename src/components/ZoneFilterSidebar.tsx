@@ -1,7 +1,7 @@
 /**
  * ZoneFilterSidebar.tsx
  * Malazone.com — Premium Split-Screen Filter Sidebar
- * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
+ * © 2026 Malazone Technologies PLC
  */
 
 import React, { useState, useRef, useEffect } from "react";
@@ -10,6 +10,7 @@ import {
   RotateCcw,
   ChevronDown,
   Check,
+  Search,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 
@@ -19,6 +20,7 @@ import { useLanguage } from "@/contexts/ZoneLanguageContext";
 export type ActiveZone = "all" | "car" | "house" | "ceremony" | "machinery";
 
 interface FilterState {
+  search: string;
   region: string;
   city: string;
   intent: string;
@@ -114,7 +116,7 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
   onFilterChange,
   onReset,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   /* ── Region Options ── */
   const regionOptions = [
@@ -201,6 +203,23 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
 
       {/* ── Divider ── */}
       <div className="h-px bg-slate-200/80 dark:bg-white/5 mb-5" />
+
+      {/* ── Text Search ── */}
+      <div className="mb-6">
+        <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1">
+          {language === "amharic" ? "በቁልፍ ቃል ፈልግ" : "Search by Keyword"}
+        </label>
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-green-500 transition-colors" />
+          <input
+            type="text"
+            value={filters.search}
+            onChange={(e) => onFilterChange("search", e.target.value)}
+            placeholder={language === "amharic" ? "ለምሳሌ፦ ቪትዝ፣ ቪላ..." : "e.g. Vitz, Villa..."}
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:border-green-500/40 dark:focus:border-green-500/30 transition-all duration-200"
+          />
+        </div>
+      </div>
 
       {/* ── Core Filters (Always Visible) ── */}
       <FilterSelect

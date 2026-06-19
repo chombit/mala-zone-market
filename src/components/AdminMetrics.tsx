@@ -1,6 +1,6 @@
 /**
  * AdminMetrics.tsx
- * Malazone.com — Elite Analytical Data Summaries
+ * Malazone.com — Premium Light-Themed Analytics
  * © 2026 Malazone Technologies PLC
  */
 
@@ -40,7 +40,7 @@ const AdminMetrics: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-green-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#00A86B] animate-spin" />
       </div>
     );
   }
@@ -51,8 +51,9 @@ const AdminMetrics: React.FC = () => {
       value: `${(data?.revenue || 0).toLocaleString()} ETB`,
       trend: "+12%",
       icon: <TrendingUp className="w-5 h-5" />,
-      color: "text-green-500",
-      bg: "bg-green-500/10"
+      color: "text-[#00A86B]",
+      bg: "bg-[#00A86B]/10",
+      barColor: "bg-[#00A86B]"
     },
     {
       label: t("admin.metrics.pending"),
@@ -60,7 +61,8 @@ const AdminMetrics: React.FC = () => {
       trend: "+5",
       icon: <ClipboardCheck className="w-5 h-5" />,
       color: "text-amber-500",
-      bg: "bg-amber-500/10"
+      bg: "bg-amber-500/10",
+      barColor: "bg-amber-500"
     },
     {
       label: t("admin.metrics.agents"),
@@ -68,7 +70,8 @@ const AdminMetrics: React.FC = () => {
       trend: "+24",
       icon: <Users className="w-5 h-5" />,
       color: "text-blue-500",
-      bg: "bg-blue-500/10"
+      bg: "bg-blue-500/10",
+      barColor: "bg-blue-500"
     },
     {
       label: t("admin.metrics.trades"),
@@ -76,7 +79,8 @@ const AdminMetrics: React.FC = () => {
       trend: "+18%",
       icon: <ArrowUpRight className="w-5 h-5" />,
       color: "text-emerald-500",
-      bg: "bg-emerald-500/10"
+      bg: "bg-emerald-500/10",
+      barColor: "bg-emerald-500"
     }
   ];
 
@@ -85,34 +89,31 @@ const AdminMetrics: React.FC = () => {
       {metrics.map((m, i) => (
         <div 
           key={i} 
-          className="p-8 rounded-[2.5rem] bg-slate-900 border border-white/5 hover:border-green-500/20 transition-all duration-500 group relative overflow-hidden"
+          className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-[#00A86B]/30 hover:shadow-md transition-all duration-300 group relative overflow-hidden"
         >
-          {/* Ambient Glow */}
-          <div className={`absolute top-0 right-0 w-32 h-32 ${m.bg} blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity`} />
-          
           <div className="relative z-10 flex flex-col space-y-6">
             <div className="flex items-center justify-between">
-              <div className={`w-12 h-12 rounded-2xl ${m.bg} flex items-center justify-center ${m.color}`}>
+              <div className={`w-14 h-14 rounded-xl ${m.bg} flex items-center justify-center ${m.color}`}>
                 {m.icon}
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] font-black text-green-500">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00A86B]/10 border border-[#00A86B]/20 text-[10px] font-black text-[#00A86B]">
                 {m.trend}
               </div>
             </div>
 
-            <div className="space-y-1">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <div className="space-y-2">
+              <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
                 {m.label}
               </p>
-              <h3 className="text-3xl font-black text-white tracking-tighter italic">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
                 {m.value}
               </h3>
             </div>
             
-            {/* Simple Sparkline Simulation */}
-            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            {/* Indicator Bar */}
+            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
               <div 
-                className={`h-full ${m.color.replace('text', 'bg')} transition-all duration-1000`} 
+                className={`h-full ${m.barColor} transition-all duration-1000`} 
                 style={{ width: `${60 + Math.random() * 30}%` }} 
               />
             </div>

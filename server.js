@@ -4,6 +4,8 @@
  * Image upload pipeline: multer (memoryStorage) → sharp → WebP
  * © 2026 Malazone Technologies PLC
  */
+// Restarted to free port 4002
+// Second restart to kill PID 33812
 
 "use strict";
 
@@ -12,6 +14,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const path = require("path");
+const net = require("net");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
@@ -20,11 +23,13 @@ const listingsRouter = require("./routes/listings");
 const agentsRouter = require("./routes/agents");
 const statsRouter = require("./routes/stats");
 const adminRouter = require("./routes/admin");
+const siteRouter = require("./routes/site");
+const g2bRouter = require("./routes/g2b");
 
 // ── App init
 const app = express();
 const compression = require("compression");
-const PORT = process.env.PORT || 4000;
+
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 // ─────────────────────────────────────────────
@@ -44,6 +49,9 @@ app.use(
 // CORS — allow React dev server + production domain
 const allowedOrigins = [
   "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:3003",
   "http://localhost:5173",
   "https://malazone.com",
   "https://www.malazone.com",
@@ -104,6 +112,8 @@ app.use("/api/listings", listingsRouter);
 app.use("/api/agents", agentsRouter);
 app.use("/api/stats", statsRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/site", siteRouter);
+app.use("/api/g2b", g2bRouter);
 
 // ── Root route (Welcome message)
 app.get("/", (req, res) => {
@@ -202,6 +212,7 @@ app.use("/api/*", (req, res) => {
 // ─────────────────────────────────────────────
 // BOOT
 // ─────────────────────────────────────────────
+const PORT = 4003;
 app.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════════════╗

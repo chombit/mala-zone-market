@@ -4,13 +4,15 @@ import MainSite from './MainSite'
 import AdminPanel from './AdminPanel'
 import AdminLogin from './AdminLogin'
 
-// Simple Auth Guard
+import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
+
+// Auth Guard using the auth context
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAdmin = localStorage.getItem("malazone_admin_token") === "ceo_active_session";
-  return isAdmin ? <>{children}</> : <Navigate to="/admin/login" />;
+  const { isAuthenticated } = useAdminAuth();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/admin/login" />;
 };
 
-function App() {
+function AppContent() {
   return (
     <Router>
       <Routes>
@@ -20,7 +22,7 @@ function App() {
         {/* Admin Login Portal */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* CEO Dashboard - Protected */}
+        {/* Admin Dashboard - Protected */}
         <Route 
           path="/admin/*" 
           element={
@@ -35,6 +37,14 @@ function App() {
       </Routes>
     </Router>
   )
+}
+
+function App() {
+  return (
+    <AdminAuthProvider>
+      <AppContent />
+    </AdminAuthProvider>
+  );
 }
 
 export default App

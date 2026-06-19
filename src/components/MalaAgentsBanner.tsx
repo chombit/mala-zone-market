@@ -31,12 +31,11 @@ const MalaAgentsBanner: React.FC = () => {
             <div className="lg:col-span-7 space-y-12">
               <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-emerald-50 dark:bg-green-600/10 border border-emerald-200 dark:border-green-600/20 text-emerald-600 dark:text-green-500 text-[11px] font-black uppercase tracking-[0.3em] animate-fade-in">
                 <Users className="w-4 h-4" />
-                Mala-Agents Hub
+                Mala-Agents Zone
               </div>
 
               <div className="space-y-8">
                 <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white leading-[1.05] tracking-tighter uppercase italic transition-colors duration-300">
-                  {isAm ? "በሐዋሳ ከተማ — " : "Hawassa Youth — "}
                   <span className="text-emerald-600 dark:text-green-500 not-italic">
                     {isAm ? "የሥራ ዕድል መላ!" : "Join the Data Engine"}
                   </span>

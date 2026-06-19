@@ -1,6 +1,6 @@
 /**
  * PropertyVerificationHub.tsx
- * Malazone.com — High-Security Municipal Cross-Check Workspace
+ * Malazone.com — Premium Light-Themed Verification Hub
  * © 2026 Malazone Technologies PLC
  */
 
@@ -79,111 +79,87 @@ const PropertyVerificationHub: React.FC = () => {
         ));
       }
     } catch (err) {
-      alert(t("admin.status.error"));
+      console.error("Verification failed:", err);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] p-20 flex justify-center">
-        <Loader2 className="w-8 h-8 text-green-500 animate-spin" />
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
-      <div className="p-10 border-b border-white/5 flex items-center justify-between bg-slate-950/30">
+    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      {/* Hub Header */}
+      <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
         <div className="space-y-1">
-          <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 text-green-500" />
-            {t("admin.sidebar.property")}
+          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <ShieldCheck className="w-6 h-6 text-[#00A86B]" />
+            Property Verification Hub
           </h2>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Municipal Title Deed Authentication Hub</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input 
-              type="text" 
-              placeholder="Search Carta..." 
-              className="bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-6 text-xs text-white focus:outline-none focus:border-green-500/50 transition-all"
-            />
-          </div>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Municipal Land Registry Cross-Check Workspace</p>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-white/5 bg-slate-950/10">
-              {[
-                "admin.hub.property.id", 
-                "admin.hub.property.owner", 
-                "admin.hub.property.location", 
-                "admin.hub.property.carta", 
-                "Actions"
-              ].map((h, i) => (
-                <th key={i} className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                  {t(h as any)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {listings.map((item) => (
-              <tr key={item.id} className="group hover:bg-white/[0.02] transition-colors">
-                <td className="px-10 py-8">
-                  <span className="text-xs font-black text-white tracking-widest">{item.id}</span>
-                </td>
-                <td className="px-10 py-8">
-                  <span className="text-sm font-medium text-slate-300">{item.owner}</span>
-                </td>
-                <td className="px-10 py-8">
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold">{item.location}</span>
+      {/* Verification List */}
+      <div className="p-6">
+        {loading ? (
+          <div className="p-10 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-[#00A86B] animate-spin" />
+          </div>
+        ) : listings.length === 0 ? (
+          <div className="p-10 text-center">
+            <ShieldCheck className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-600 font-bold">No properties pending verification</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {listings.filter(l => l.status === 'pending').map(listing => (
+              <div key={listing.id} className="p-6 border border-slate-200 rounded-xl hover:border-[#00A86B]/30 transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-[#00A86B]" />
+                      <p className="text-sm font-bold text-slate-900">{listing.owner}</p>
+                    </div>
+                    <p className="text-xs text-slate-500">{listing.location}</p>
+                    <p className="text-xs font-mono text-slate-700 bg-slate-50 w-fit px-3 py-1 rounded-md">
+                      Carta: {listing.carta_number}
+                    </p>
                   </div>
-                </td>
-                <td className="px-10 py-8">
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] font-mono text-slate-400">
-                    {item.carta_number}
-                  </div>
-                </td>
-                <td className="px-10 py-8">
-                  <div className="flex items-center gap-4">
-                    <button 
-                      onClick={() => simulateMunicipalCheck(item.id)}
-                      disabled={verifyingId === item.id}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-green-500/30 transition-all text-[10px] font-black uppercase tracking-widest text-slate-400"
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => simulateMunicipalCheck(listing.id)}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-bold border border-slate-200 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all text-slate-600"
                     >
-                      {verifyingId === item.id ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
+                      {verifyingId === listing.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <ExternalLink className="w-3 h-3" />
+                        <Search className="w-4 h-4" />
                       )}
-                      {t("admin.hub.property.verifyBtn")}
+                      Check Registry
                     </button>
-
-                    <button 
-                      onClick={() => handleAction(item.id, 'approve')}
-                      className="p-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white transition-all shadow-lg"
+                    <button
+                      onClick={() => handleAction(listing.id, 'reject')}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-bold border border-red-200 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all"
                     >
-                      <CheckCircle2 className="w-5 h-5" />
+                      <XCircle className="w-4 h-4" />
+                      Reject
                     </button>
-
-                    <button 
-                      onClick={() => handleAction(item.id, 'reject')}
-                      className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-lg"
+                    <button
+                      onClick={() => handleAction(listing.id, 'approve')}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-bold bg-[#00A86B] text-white rounded-lg hover:bg-[#00A86B]/90 transition-all shadow-lg shadow-[#00A86B]/25"
                     >
-                      <XCircle className="w-5 h-5" />
+                      <CheckCircle2 className="w-4 h-4" />
+                      Approve
                     </button>
                   </div>
-                </td>
-              </tr>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+            {listings.filter(l => l.status === 'pending').length === 0 && (
+              <div className="p-10 text-center">
+                <ShieldCheck className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-600 font-bold">All properties verified!</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

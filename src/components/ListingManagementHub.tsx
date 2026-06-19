@@ -1,6 +1,6 @@
 /**
  * ListingManagementHub.tsx
- * Malazone.com — Global Inventory & Asset Lifecycle Control
+ * Malazone.com — Premium Light-Themed Listing Management
  * © 2026 Malazone Technologies PLC
  */
 
@@ -11,7 +11,6 @@ import {
   Plus, 
   Edit3, 
   Trash2, 
-  Globe, 
   EyeOff, 
   ShieldCheck, 
   Star,
@@ -70,26 +69,26 @@ const ListingManagementHub: React.FC = () => {
   );
 
   return (
-    <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
+    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
       {/* Hub Header */}
-      <div className="p-10 border-b border-white/5 flex items-center justify-between bg-slate-950/30">
+      <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
         <div className="space-y-1">
-          <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter flex items-center gap-3">
-            <Package className="w-6 h-6 text-green-500" />
+          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <Package className="w-6 h-6 text-[#00A86B]" />
             {t("admin.hub.listings.title")}
           </h2>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Asset Lifecycle & Inventory Control</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Global Asset Lifecycle & Inventory Control</p>
         </div>
         
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
               type="text" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="Filter by title or category..." 
-              className="bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-6 text-xs text-white focus:outline-none focus:border-green-500/50 transition-all w-64"
+              className="bg-white border border-slate-200 rounded-xl py-2.5 pl-12 pr-5 text-sm text-slate-700 focus:outline-none focus:border-[#00A86B]/50 transition-all w-64"
             />
           </div>
           <button 
@@ -97,104 +96,127 @@ const ListingManagementHub: React.FC = () => {
               setEditingListing(null);
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-3 px-8 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white shadow-xl transition-all group"
+            className="flex items-center gap-3 px-5 py-2.5 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-white shadow-lg shadow-[#00A86B]/25 transition-all font-bold text-sm"
           >
             <Plus className="w-4 h-4" />
-            <span className="text-[10px] font-black uppercase tracking-widest">{t("admin.hub.listings.add")}</span>
+            Add New Listing
           </button>
         </div>
       </div>
 
-      {/* Hub Body */}
+      {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-white/5 bg-slate-950/10">
-              <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Asset</th>
-              <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">{t("admin.hub.listings.category")}</th>
-              <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">{t("admin.hub.listings.price")}</th>
-              <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">{t("admin.hub.listings.status")}</th>
-              <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Controls</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {loading ? (
+        {loading ? (
+          <div className="p-20 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-[#00A86B] animate-spin" />
+          </div>
+        ) : filteredListings.length === 0 ? (
+          <div className="p-20 text-center">
+            <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-600 font-bold">No listings found</p>
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead className="bg-slate-50/50">
               <tr>
-                <td colSpan={5} className="py-20 text-center">
-                  <Loader2 className="w-8 h-8 text-green-500 animate-spin mx-auto" />
-                </td>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                  Asset
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                  Category
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                  Price
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                  Actions
+                </th>
               </tr>
-            ) : filteredListings.map((l) => (
-              <tr key={l.id} className="group hover:bg-white/[0.02] transition-colors">
-                <td className="px-10 py-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl overflow-hidden border border-white/5 shadow-lg">
-                      <img 
-                        src={typeof l.images === 'string' ? JSON.parse(l.images)[0] : l.images[0]} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                        alt="Listing" 
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-bold text-white line-clamp-1">{isAm ? l.title_am : l.title_en}</p>
-                      <div className="flex items-center gap-2">
-                        {l.is_premium === 1 && <Star className="w-3 h-3 text-amber-500 fill-current" />}
-                        {l.is_verified === 1 && <ShieldCheck className="w-3 h-3 text-green-500" />}
-                        <span className="text-[10px] font-mono text-slate-600">ID: {l.id}</span>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredListings.map(listing => (
+                <tr key={listing.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">
+                        <Package className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">
+                          {isAm ? listing.title_am : listing.title_en}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          ID: #{listing.id}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-10 py-6">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <Tag className="w-3 h-3 text-green-500" />
-                    {l.category}
-                  </div>
-                </td>
-                <td className="px-10 py-6">
-                  <span className="text-sm font-black text-white italic">{l.price.toLocaleString()} ETB</span>
-                </td>
-                <td className="px-10 py-6">
-                  <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                    l.is_active === 1 
-                      ? 'bg-green-500/10 border-green-500/20 text-green-500' 
-                      : 'bg-red-500/10 border-red-500/20 text-red-400'
-                  }`}>
-                    {l.is_active === 1 ? <Globe className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                    {l.is_active === 1 ? t("admin.hub.listings.active") : t("admin.hub.listings.inactive")}
-                  </div>
-                </td>
-                <td className="px-10 py-6">
-                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={() => {
-                        setEditingListing(l);
-                        setIsModalOpen(true);
-                      }}
-                      className="p-3 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:border-green-500/30 transition-all"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(l.id)}
-                      className="p-3 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-red-500 hover:border-red-500/30 transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                  <td className="px-6 py-5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                      <Tag className="w-3 h-3" />
+                      {listing.category}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5">
+                    <p className="text-sm font-bold text-slate-900">
+                      {(listing.price || 0).toLocaleString()} ETB
+                    </p>
+                  </td>
+                  <td className="px-6 py-5">
+                    {listing.verified ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#00A86B]/10 text-[#00A86B] text-xs font-bold rounded-full">
+                        <ShieldCheck className="w-3 h-3" />
+                        Verified
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-600 text-xs font-bold rounded-full">
+                        <Star className="w-3 h-3" />
+                        Pending
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => {
+                          setEditingListing(listing);
+                          setIsModalOpen(true);
+                        }}
+                        className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(listing.id)}
+                        className="p-2 bg-red-50 border border-red-200 rounded-lg text-red-600 hover:bg-red-100 hover:text-red-700 transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <button 
+                        className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all"
+                      >
+                        <EyeOff className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      <ListingEditorModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        listing={editingListing}
-        onSuccess={fetchListings}
-      />
+      {isModalOpen && (
+        <ListingEditorModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)}
+          listing={editingListing}
+          onSuccess={fetchListings}
+        />
+      )}
     </div>
   );
 };

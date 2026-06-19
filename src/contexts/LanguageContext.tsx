@@ -13,7 +13,7 @@ const dictionary = {
     "ticker": "✨ MALAZONE: Directly Buy, Sell, or Rent Assets & Ceremony Equipments in Sidama without Middlemen!",
     "nav.brandMala": "MALA",
     "nav.brandZone": "ZONE",
-    "nav.agentBtn": "Mala-Agent Hub",
+    "nav.agentBtn": "Mala-Agent Zone",
     "nav.cat1": "Property",
     "nav.cat2": "Motors & EV",
     "nav.cat3": "Rooms & Halls",
@@ -23,7 +23,7 @@ const dictionary = {
     "badge.verified": "Verified Assets",
     "badge.noCommission": "No Delala Commission",
     "hero.tagline": "The Zone of Smart Solutions",
-    "hero.subtitle": "Directly trade Land, Vehicles, Luxury Halls, and Heavy Industry in Hawassa without middlemen.",
+    "hero.subtitle": "Directly trade Land, Vehicles, Luxury Halls, and Heavy Industry without middlemen.",
     "cat.all": "All",
     "search.zone": "Search Zone",
     "search.location": "Location",
@@ -43,7 +43,7 @@ const dictionary = {
     "loc.chuko": "Chuko",
     // --- Middle Body Layer ---
     "grid.heading": "Premium Featured Listings",
-    "grid.chatCTA": "WhatsApp",
+    "grid.chatCTA": "Telegram",
     "grid.callCTA": "Direct Call",
     "grid.viewAll": "View All Assets",
     "badge.verifiedCarta": "Verified Carta",
@@ -52,14 +52,14 @@ const dictionary = {
     "price.suffix.etb": "ETB",
     "price.suffix.day": "ETB / Day",
     "price.suffix.hour": "ETB / Hour",
-    "banner.recruitment": "Onboard vehicle lots, property owners, and equipment rentals into Malazone's secure directory. Earn up to 1,000 ETB per day paid out instantly via telebirr.",
+    "banner.recruitment": "A great work opportunity for brokers, agents, and youth! Onboard vehicle showrooms, heavy machinery, hotels, guest houses, wedding gear, and land holdings in Hawassa, Yirgalem, Aleta Wondo, Bensa/Daye, Chuko, and other local zones into Malazone's legal sales zone. Earn high income paid out directly via Telebirr every day! (Mala-Agents Zone)",
     "banner.cta": "Apply as Mala-Agent"
   },
   amharic: {
     "ticker": "✨ መላዞን፡ በሐዋሳና በሲዳማ ክልል ያለምንም ደላላ ንብረትና የሰርግ ዕቃዎችን በቀጥታ የሚገበያዩበት ትክክለኛው መላዎ!",
     "nav.brandMala": "መላ",
     "nav.brandZone": "ዞን",
-    "nav.agentBtn": "የወኪል ወጣቶች ማዕከል",
+    "nav.agentBtn": "የወኪል ወጣቶች ዞን",
     "nav.cat1": "መሬትና ቤት",
     "nav.cat2": "መኪናና ኤሌክትሪክ",
     "nav.cat3": "አዳራሽና ጌስት ሃውስ",
@@ -69,7 +69,7 @@ const dictionary = {
     "badge.verified": "ካርታ የተረጋገጠ",
     "badge.noCommission": "ያለ ደላላ ኮሚሽን",
     "hero.tagline": "የብልሃት እና የመፍትሔ ዞን",
-    "hero.subtitle": "በሐዋሳ ከተማ መሬት፣ መኪና፣ የሰርግ አዳራሾች እና ከባድ ማሽነሪዎችን ያለምንም ደላላ ጣልቃ ገብነት በቀጥታ የሚያገኟበት ዲጂታል መላ!",
+    "hero.subtitle": "መሬት፣ መኪና፣ የሰርግ አዳራሾች እና ከባድ ማሽነሪዎችን ያለምንም ደላላ ጣልቃ ገብነት በቀጥታ የሚያገኟበት ዲጂታል መላ!",
     "cat.all": "ሁሉም",
     "search.zone": "የንግድ ዘርፍ",
     "search.location": "የሰፈር መገኛ",
@@ -89,7 +89,7 @@ const dictionary = {
     "loc.chuko": "ጩቆ",
     // --- Middle Body Layer ---
     "grid.heading": "ልዩና ተመራጭ ማስታወቂያዎች",
-    "grid.chatCTA": "በዋትስአፕ አውራ",
+    "grid.chatCTA": "በቴሌግራም አውራ",
     "grid.callCTA": "ቀጥታ ደውል",
     "grid.viewAll": "ሁሉንም ማስታወቂያዎች አሳይ",
     "badge.verifiedCarta": "ካርታ የተረጋገጠ",
@@ -98,7 +98,7 @@ const dictionary = {
     "price.suffix.etb": "ብር",
     "price.suffix.day": "ብር / ቀን",
     "price.suffix.hour": "ብር / ሰዓት",
-    "banner.recruitment": "በሐዋሳ ከተማ በየቀኑ ንብረቶችን መላዞን ላይ በመመዝገብ በቀን እስከ 1,000 ብር በቴሌብር ያግኙ! (Mala-Agents Hub)",
+    "banner.recruitment": "ለደላላዎች፣ ለወኪሎችና ለወጣቶች የቀረበ ታላቅ የስራ መላ! በሐዋሳ፣ በይርጋለም፣ በአሌታ ወንዶ፣ በቤንሳ/ዳዬ፣ በጩቆ እና በሌሎችም የአካባቢው ዞኖች ያሉ የመኪና ማሳያዎችን፣ ከባድ ማሽነሪዎችን፣ ሆቴሎችን፣ ጌስት ሃውሶችን፣ የሰርግ ዕቃዎችን እና የመሬት ይዞታዎችን በመላዞን ህጋዊ የሽያጭ ዞን ላይ በመመዝገብ በየቀኑ ከፍተኛ ገቢ በቴሌብር በቀጥታ ያግኙ! (Mala-Agents Zone)",
     "banner.cta": "የመላ-ወኪል ሁን"
   }
 };

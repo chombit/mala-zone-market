@@ -1,13 +1,13 @@
 /**
  * ZoneCatalogGrid.tsx
  * Malazone.com — Premium Listings Catalog Grid
- * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
+ * © 2026 Malazone Technologies PLC
  */
 
 import React, { useState, useMemo } from "react";
 import {
   Phone,
-  MessageCircle,
+  Send,
   MapPin,
   Star,
   CheckCircle2,
@@ -17,6 +17,7 @@ import {
   Ruler,
   Settings,
   Key,
+  Building2,
   ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
@@ -49,6 +50,8 @@ interface ListingItem {
   /* House-specific */
   titleDeed?: string;
   sqm?: number;
+  bedrooms?: number;
+  bathrooms?: number;
   /* Machinery-specific */
   billingTrack?: string;
   phone: string;
@@ -108,7 +111,7 @@ const listings: ListingItem[] = [
     price: 2500,
     priceSuffixKey: "price.hour",
     priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1579803815615-121815b3c3c7?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1541888081628-91219b12e3e5?auto=format&fit=crop&q=80&w=800",
     zone: "machinery",
     locationKey: "loc.bensa",
     locationTag: "PIASSA",
@@ -244,6 +247,43 @@ const listings: ListingItem[] = [
     phone: "+251911000009",
     whatsapp: "251911000009",
   },
+  {
+    id: "heavy-001",
+    titleEn: "Dozer D8R - Available for Construction Work",
+    titleAm: "ዶዘር D8R - ለኮንስትራክሽን ስራ የሚሆን",
+    price: 3500,
+    priceSuffixKey: "price.hour",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800",
+    zone: "machinery",
+    locationKey: "loc.aleta",
+    locationTag: "ALETA WONDO",
+    rating: 4.6,
+    isVerified: true,
+    isPremium: false,
+    badgeKey: "badge.withOperator",
+    billingTrack: "ETB / Hour",
+    phone: "+251911000010",
+    whatsapp: "251911000010",
+  },
+  {
+    id: "cer-002",
+    titleEn: "Full DJ Gear & Sound System for Weddings",
+    titleAm: "የዲጄ እቃዎች እና የድምፅ ሲስተም ለሰርግ",
+    price: 15000,
+    priceSuffixKey: "price.day",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800",
+    zone: "ceremony",
+    locationKey: "loc.hawassa",
+    locationTag: "LAKEFRONT",
+    rating: 4.8,
+    isVerified: true,
+    isPremium: false,
+    badgeKey: "badge.verified",
+    phone: "+251911000011",
+    whatsapp: "251911000011",
+  },
 ];
 
 /* ────────────────────────────────────────────
@@ -293,12 +333,59 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   /* ── Filter Logic ── */
   const filtered = useMemo(() => {
     return listings.filter((item) => {
+      // 1. Zone/Category Filter
       if (activeZone !== "all" && item.zone !== activeZone) return false;
-      if (filters.city && !item.locationTag.toLowerCase().includes(filters.city.toLowerCase())) return false;
-      if (filters.intent === "buy" && item.priceSuffixKey !== "price.etb") return false;
-      if (filters.intent === "rent" && item.priceSuffixKey === "price.etb") return false;
-      if (filters.plateCode && item.plateCode && !item.plateCode.toLowerCase().includes(filters.plateCode.replace("code", "Code "))) return false;
-      if (filters.fuelType && item.fuelTag && item.fuelTag.toLowerCase() !== filters.fuelType.toLowerCase()) return false;
+
+      // 2. Keyword Search
+      if (filters.search) {
+        const s = filters.search.toLowerCase();
+        const inTitleEn = item.titleEn.toLowerCase().includes(s);
+        const inTitleAm = item.titleAm.toLowerCase().includes(s);
+        if (!inTitleEn && !inTitleAm) return false;
+      }
+
+      // 3. Region Filter
+      if (filters.region && item.locationKey && !item.locationKey.toLowerCase().includes(filters.region.toLowerCase())) {
+        // Simple mapping: sidama region includes hawassa, bensa, yirgalem, chuko, aleta
+        const sidamaLocs = ["hawassa", "bensa", "yirgalem", "chuko", "aleta"];
+        const isSidama = sidamaLocs.some(loc => item.locationKey.toLowerCase().includes(loc));
+        if (filters.region === "sidama" && !isSidama) return false;
+        if (filters.region === "addis" && !item.locationKey.toLowerCase().includes("addis")) return false;
+      }
+
+      // 3. City/Locality Filter
+      if (filters.city) {
+        const c = filters.city.toLowerCase();
+        const inTag = item.locationTag.toLowerCase().includes(c);
+        const inKey = item.locationKey.toLowerCase().includes(c);
+        if (!inTag && !inKey) return false;
+      }
+
+      // 4. Intent Filter
+      if (filters.intent) {
+        if (filters.intent === "buy" && item.priceSuffixKey !== "price.etb") return false;
+        if (filters.intent === "rent" && item.priceSuffixKey === "price.etb") return false;
+        if (filters.intent === "hourly" && item.priceSuffixKey !== "price.hour") return false;
+      }
+
+      // 5. Car Specific Filters
+      if (item.zone === "car") {
+        if (filters.plateCode && item.plateCode && !item.plateCode.toLowerCase().replace(/\s/g, "").includes(filters.plateCode.toLowerCase())) return false;
+        if (filters.fuelType && item.fuelTag && item.fuelTag.toLowerCase() !== filters.fuelType.toLowerCase()) return false;
+        if (filters.condition && item.condition && !item.condition.toLowerCase().includes(filters.condition.toLowerCase())) return false;
+      }
+
+      // 6. House Specific Filters
+      if (item.zone === "house") {
+        if (filters.titleDeed && item.titleDeed && !item.titleDeed.toLowerCase().includes(filters.titleDeed.toLowerCase())) return false;
+        if (filters.sqm) {
+          const s = item.sqm || 0;
+          if (filters.sqm === "small" && s >= 200) return false;
+          if (filters.sqm === "medium" && (s < 200 || s > 500)) return false;
+          if (filters.sqm === "large" && s <= 500) return false;
+        }
+      }
+
       return true;
     });
   }, [activeZone, filters]);
@@ -426,7 +513,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                       <Key className="w-4 h-4 text-amber-500" />
                       <div>
                         <p className="text-[9px] text-slate-400 uppercase">{t("label.titleDeed")}</p>
-                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{item.titleDeed}</p>
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300 capitalize">{item.titleDeed}</p>
                       </div>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2">
@@ -436,6 +523,24 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                         <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{item.sqm} Sqm</p>
                       </div>
                     </div>
+                    {item.bedrooms && (
+                      <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-blue-500" />
+                        <div>
+                          <p className="text-[9px] text-slate-400 uppercase">Bedrooms</p>
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{item.bedrooms}</p>
+                        </div>
+                      </div>
+                    )}
+                    {item.bathrooms && (
+                      <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <div>
+                          <p className="text-[9px] text-slate-400 uppercase">Bathrooms</p>
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{item.bathrooms}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -471,18 +576,18 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   <div className="flex gap-2.5">
                     <a
                       href={`tel:${item.phone}`}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-sm font-bold transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 hover:bg-slate-100 dark:bg-slate-900/50 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md dark:shadow-none"
                     >
-                      <Phone className="w-4 h-4" />
+                      <Phone className="w-4 h-4 text-slate-500 dark:text-slate-400 transition-colors" />
                       {t("cta.call")}
                     </a>
                     <a
-                      href={`https://wa.me/${item.whatsapp}`}
+                      href={`https://t.me/+${item.whatsapp.replace("+", "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition-colors shadow-lg shadow-green-600/20 hover:shadow-green-500/30"
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 group/tg"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       {t("cta.whatsapp")}
                     </a>
                   </div>
@@ -513,9 +618,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
 
       {/* ── Executive Authority Footnote ── */}
       <div className="mt-16 pt-6 border-t border-slate-200/80 dark:border-white/5 text-center">
-        <p className="text-xs font-medium text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase">
-          Luwa Tesemma Kakawo — Founder &amp; CEO / ሉዋ ተሰማ ካካዎ — ዋና ስራ አስፈፃሚ
-        </p>
+        <p className="text-xs font-medium tracking-[0.2em] uppercase text-slate-500 dark:text-slate-500"></p>
       </div>
     </section>
   );

@@ -1,104 +1,186 @@
 /**
  * AdminLogin.tsx
- * Malazone.com — Secure CEO Gateway
+ * Malazone.com — Ultra-Premium Enterprise Admin Gateway
+ * MOBILE-FIRST & FULLY RESPONSIVE DESIGN
  * © 2026 Malazone Technologies PLC
  */
 
-import React, { useState } from "react";
-import { ShieldCheck, Lock, User, ArrowRight, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Lock, User, Loader2, RefreshCw, Eye, EyeOff, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import LogoImg from './images/Logo.png';
+import AdminLogoImg from './images/adminlogo.jpg';
+import { useAdminAuth } from './contexts/AdminAuthContext';
 
 const AdminLogin: React.FC = () => {
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'am'>('en');
   const navigate = useNavigate();
+  const { login } = useAdminAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     setLoading(true);
     
-    // Simulate secure CEO handshake
-    setTimeout(() => {
-      if (password === "admin") { // CEO would have a real secure password
-        localStorage.setItem("malazone_admin_token", "ceo_active_session");
-        navigate("/admin/dashboard");
+    try {
+      const success = await login(username, password);
+      if (success) {
+        navigate('/admin');
       } else {
-        alert("Access Denied: Invalid CEO Credentials");
+        alert(language === 'en' ? 'Access Denied: Invalid Credentials' : 'መግባት ተከልክሏል፡ የተሳሳተ መለያ ቃላት');
       }
+    } catch (e) {
+      alert(language === 'en' ? 'Error Occurred' : 'ስህተት ተከስቷል');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'am' : 'en');
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-600/5 blur-[120px] -z-10" />
-      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-emerald-600/5 blur-[80px] -z-10" />
-
-      <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-[2.5rem] p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)] space-y-10 animate-zoom-in">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      {/* Main Container */}
+      <div className="w-full max-w-md lg:max-w-6xl bg-white rounded-2xl lg:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row border border-slate-200">
         
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-green-600/10 border border-green-600/20 text-green-500 text-[10px] font-black uppercase tracking-[0.3em]">
-            <ShieldCheck className="w-4 h-4" />
-            CEO Command Center
+        {/* Left Branding Panel */}
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-50 via-white to-[#E8F7F4] p-10 flex-col items-center justify-center relative overflow-hidden">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#00A86B]/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#00A86B]/5 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-8">
+            <img 
+              src={LogoImg} 
+              alt="Malazone Official Logo" 
+              className="h-28 object-contain mx-auto"
+            />
+            
+            <div className="w-full">
+              <div className="relative rounded-[2rem] bg-white p-6 border border-slate-200 shadow-xl shadow-slate-200/60">
+                <img 
+                  src={AdminLogoImg} 
+                  alt="Malazone Admin Console" 
+                  className="w-full h-auto max-h-[350px] object-contain rounded-[1.5rem]"
+                />
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-xs text-slate-500">
+                © 2026 Malazone Technologies PLC. All Rights Reserved.
+              </p>
+            </div>
           </div>
-          <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter">
-            Malazone <span className="text-green-500 not-italic">Admin</span>
-          </h1>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Authorized Access Only</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">CEO Identity</label>
-            <div className="relative group">
-              <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-green-500 transition-colors" />
-              <input 
-                disabled
-                value="Luwa Tesemma Kakawo"
-                className="w-full bg-white/5 border border-white/5 rounded-2xl py-5 pl-14 pr-6 text-white text-sm font-bold opacity-50 cursor-not-allowed"
+        {/* Right Login Panel */}
+        <div className="w-full lg:w-1/2 bg-white p-6 sm:p-8 lg:p-12 flex flex-col items-center justify-center relative">
+          
+          {/* Language Toggle */}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 border border-slate-200 hover:bg-slate-200 transition-all duration-300 text-xs font-semibold text-slate-700"
+            >
+              <Globe className="w-4 h-4" />
+              {language === 'en' ? 'አማርኛ' : 'English'}
+            </button>
+          </div>
+          
+          <div className="w-full max-w-sm space-y-6">
+            {/* Mobile-Only Logo */}
+            <div className="lg:hidden text-center">
+              <img 
+                src={LogoImg} 
+                alt="Malazone Official Logo" 
+                className="h-20 object-contain mx-auto mb-2"
               />
             </div>
-          </div>
+            
+            {/* Login Header */}
+            <div className="text-center">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {language === 'en' ? 'Login' : 'ግባ'}
+              </h2>
+              <p className="mt-2 text-xs sm:text-sm text-slate-600">
+                {language === 'en' ? 'Secure access to admin management' : 'ለአስተዳደር ቁጥጥር ደህንነቱ የተጠበቀ መግባት'}
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Security Key</label>
-            <div className="relative group">
-              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-green-500 transition-colors" />
-              <input 
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter Password..."
-                className="w-full bg-white/5 border border-white/5 focus:border-green-500/50 rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-slate-700 focus:outline-none focus:ring-4 focus:ring-green-500/5 transition-all"
-              />
+            <form onSubmit={handleLogin} className="space-y-5">
+              {/* Username */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">
+                  {language === 'en' ? 'Username' : 'የተጠቃሚ ስም'}
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input 
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder={language === 'en' ? 'Enter username' : 'የተጠቃሚ ስምን ያስገቡ'}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all text-sm font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">
+                  {language === 'en' ? 'Password' : 'መለያ ቃል'}
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input 
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={language === 'en' ? 'Enter password' : 'መለያ ቃሉን ያስገቡ'}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-12 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all text-sm font-semibold"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button 
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-[0.2em] shadow-xl shadow-[#00A86B]/25 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {language === 'en' ? 'Signing in...' : 'በመግባት ላይ...'}
+                  </>
+                ) : (
+                  language === 'en' ? 'Login' : 'ግባ'
+                )}
+              </button>
+            </form>
+            
+            {/* Mobile-Only Copyright */}
+            <div className="lg:hidden text-center pt-4">
+              <p className="text-[9px] text-slate-400">
+                © 2026 Malazone Technologies PLC. All Rights Reserved.
+              </p>
             </div>
           </div>
-
-          <button 
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-4 py-6 rounded-2xl bg-green-600 hover:bg-green-500 text-white shadow-[0_20px_40px_rgba(22,163,74,0.2)] transition-all group active:scale-95"
-          >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <span className="text-xs font-black uppercase tracking-[0.3em]">Initialize Console</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-              </>
-            )}
-          </button>
-        </form>
-
-        <div className="text-center">
-          <button 
-            onClick={() => navigate("/")}
-            className="text-[10px] font-black text-slate-600 hover:text-slate-400 uppercase tracking-widest transition-colors"
-          >
-            ← Back to Marketplace
-          </button>
         </div>
       </div>
     </div>

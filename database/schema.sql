@@ -15,6 +15,22 @@ COLLATE utf8mb4_unicode_ci;
 USE malazone;
 
 -- ─────────────────────────────────────────────
+-- ADMIN USERS TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS admin_users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL, -- Never store plain passwords!
+  full_name VARCHAR(100) NOT NULL,
+  role ENUM('super_admin', 'admin') DEFAULT 'admin',
+  is_active BOOLEAN DEFAULT TRUE,
+  last_login TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_admin_username (username),
+  INDEX idx_admin_role (role)
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
 -- USERS TABLE
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
@@ -51,7 +67,8 @@ CREATE TABLE IF NOT EXISTS listings (
   -- Core Metadata
   title_am VARCHAR(255) NOT NULL,
   title_en VARCHAR(255) NOT NULL,
-  description TEXT,
+  description_am TEXT,
+  description_en TEXT,
   category ENUM('property', 'motors', 'stay', 'ceremony', 'heavy') NOT NULL,
   sub_category VARCHAR(50),
   
@@ -91,6 +108,7 @@ CREATE TABLE IF NOT EXISTS listings (
   bedrooms INT DEFAULT NULL,
   bathrooms INT DEFAULT NULL,
   area_sqm DECIMAL(10, 2) DEFAULT NULL,
+  title_deed VARCHAR(50) DEFAULT NULL, -- 'carta', 'village', etc.
   capacity INT DEFAULT NULL, -- Hall capacity or guest count
   
   -- Stats
@@ -123,8 +141,91 @@ CREATE TABLE IF NOT EXISTS agent_earnings (
 ) ENGINE=InnoDB;
 
 -- ─────────────────────────────────────────────
+-- SITE PROMO BANNER TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS promo_banners (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title_en VARCHAR(255) NOT NULL,
+  title_am VARCHAR(255) NOT NULL,
+  subtitle_en TEXT,
+  subtitle_am TEXT,
+  link_url VARCHAR(255),
+  image_url VARCHAR(255),
+  is_active BOOLEAN DEFAULT TRUE,
+  display_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- HERO SLIDES TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS hero_slides (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  image_url VARCHAR(255) NOT NULL,
+  pillar_key VARCHAR(100) NOT NULL,
+  category_id VARCHAR(50) NOT NULL,
+  label_en VARCHAR(100) NOT NULL,
+  label_am VARCHAR(100) NOT NULL,
+  display_order INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- SITE STATS TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS site_stats (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  key_name VARCHAR(50) NOT NULL UNIQUE,
+  value_int INT,
+  value_str VARCHAR(255),
+  description_en TEXT,
+  description_am TEXT,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- LOCATIONS TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS locations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  key_name VARCHAR(50) NOT NULL UNIQUE, -- e.g., 'hawassa', 'yirgalem'
+  label_en VARCHAR(100) NOT NULL,
+  label_am VARCHAR(100) NOT NULL,
+  sub_zones JSON, -- Array of sub-locations (e.g., [{"key":"tabor","label_en":"Tabor","label_am":"ታቦር"}, ...])
+  is_active BOOLEAN DEFAULT TRUE,
+  display_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- CATEGORIES TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  key_name VARCHAR(50) NOT NULL UNIQUE, -- e.g., 'property', 'motors'
+  label_en VARCHAR(100) NOT NULL,
+  label_am VARCHAR(100) NOT NULL,
+  description_en TEXT,
+  description_am TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  display_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
 -- INITIAL SETUP
 -- ─────────────────────────────────────────────
 -- Note: Use 'node database/seed.js' for full production-ready data population.
 INSERT IGNORE INTO users (full_name, phone_number, account_type, is_verified) 
 VALUES ('System Admin', '0900000000', 'Business', 1);
+
+INSERT IGNORE INTO site_stats (key_name, value_int, description_en, description_am) VALUES
+('clients', 1003, 'Total registered users', 'ጠቅላላ የተመዘገቡ ተጠቃሚዎች'),
+('listings', 2547, 'Total active listings', 'ጠቅላላ ተግባራዊ ዝርዝሮች'),
+('vehicles', 1412, 'Total vehicles listed', 'ጠቅላላ የተዘረዘሩ መኪናዎች'),
+('trade_success_rate', 100, 'Trade success rate percentage', 'የንግድ ስኬት መጠነኛያ');

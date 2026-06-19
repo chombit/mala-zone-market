@@ -16,22 +16,29 @@ const router = express.Router();
  */
 router.get("/", async (req, res) => {
   try {
+    // Get site stats from database
+    const [siteStats] = await db.execute("SELECT * FROM site_stats");
+    const statsMap = {};
+    siteStats.forEach(stat => {
+      statsMap[stat.key_name] = stat.value_int;
+    });
+
     // 1. Total Happy Clients (Users)
     const [[{ user_count }]] = await db.execute("SELECT COUNT(*) as user_count FROM users");
-    
+
     // 2. Active Listings
     const [[{ listing_count }]] = await db.execute("SELECT COUNT(*) as listing_count FROM listings WHERE is_active = 1");
-    
+
     // 3. Total Vehicles (Motors category)
     const [[{ vehicle_count }]] = await db.execute("SELECT COUNT(*) as vehicle_count FROM listings WHERE category = 'motors' AND is_active = 1");
 
     res.json({
       success: true,
       data: {
-        clients: (user_count || 0) + 1000, // Base offset for established feel
-        listings: (listing_count || 0) + 2500, // Base offset
-        vehicles: (vehicle_count || 0) + 1400, // Base offset
-        trade_success_rate: 100 // Constant for direct trade
+        clients: statsMap.clients || (user_count || 0) + 1000,
+        listings: statsMap.listings || (listing_count || 0) + 2500,
+        vehicles: statsMap.vehicles || (vehicle_count || 0) + 1400,
+        trade_success_rate: statsMap.trade_success_rate || 100
       }
     });
   } catch (err) {

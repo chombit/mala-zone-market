@@ -75,10 +75,14 @@ CREATE TABLE IF NOT EXISTS listings (
   bathrooms TINYINT UNSIGNED COMMENT 'Number of bathrooms',
   area_sqm DECIMAL(8, 2) COMMENT 'Land/building area in square meters',
   is_furnished BOOLEAN DEFAULT FALSE COMMENT 'Is property furnished?',
+  cata_registry VARCHAR(100) COMMENT 'CATA Registry Code for Deeds',
+  legal_document_url VARCHAR(500) COMMENT 'Admin uploaded Deed/Libre document URL',
 
   -- Motors-specific
   plate_code VARCHAR(20) COMMENT 'Vehicle plate code (AA-3-00000)',
   plate_region VARCHAR(100) COMMENT 'Plate region/city',
+  chassis_number VARCHAR(100) COMMENT 'Vehicle Identification Number (VIN)',
+  engine_number VARCHAR(100) COMMENT 'Engine serial number',
   fuel_type ENUM('benzine', 'diesel', 'electric') COMMENT 'Fuel type for vehicles',
   condition_type ENUM('new', 'invoiced', 'used') COMMENT 'Vehicle condition',
   mileage_km DECIMAL(10, 1) COMMENT 'Odometer reading',
@@ -260,6 +264,26 @@ VALUES
   ('Tewodros Dejene', '0988000008', 'Piassa Center', 'active', 28000),
   ('Marta Tadesse', '0999000009', 'Yirgalem', 'active', 15000)
 ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;
+
+-- ─────────────────────────────────────────────────────────────
+-- G2B AUDIT LOGS TABLE
+-- Track government officer verifications (Municipality/Transport)
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS g2b_audits (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'Audit ID',
+  listing_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to listings',
+  officer_name VARCHAR(255) NOT NULL COMMENT 'Digital signature name',
+  audit_type ENUM('land', 'vehicle') NOT NULL COMMENT 'Type of verification',
+  status ENUM('verified', 'fraudulent') NOT NULL COMMENT 'Outcome',
+  notes TEXT COMMENT 'Optional notes/findings',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Audit timestamp',
+
+  FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE,
+
+  KEY idx_listing_id (listing_id) COMMENT 'Find audits for a listing',
+  KEY idx_status (status) COMMENT 'Filter by outcome'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+  COMMENT='G2B Compliance Portal audit records';
 
 -- ─────────────────────────────────────────────────────────────
 -- VIEWS (for analytics convenience)

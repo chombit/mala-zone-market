@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Phone,
-  MessageCircle,
+  Send,
   BadgeCheck,
   Star,
   ChevronRight,
@@ -52,7 +52,7 @@ const catalogTranslations = {
     resetBtn: "Reset Filters",
     gridHeading: "MALA Specially Featured Listings",
     viewMore: "View All Assets",
-    chatBtn: "WhatsApp",
+    chatBtn: "Telegram",
     callBtn: "Direct Call",
     verifiedBadge: "Verified Carta",
     withOperatorBadge: "With Operator",
@@ -863,7 +863,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
                         <a
                           href={`tel:${listing.phone}`}
-                          className="flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300 group/btn"
+                          className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group/btn"
                         >
                           <Phone className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover/btn:text-slate-900 dark:group-hover/btn:text-white transition-colors" />
                           <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover/btn:text-slate-900 dark:group-hover/btn:text-white">
@@ -871,12 +871,12 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                           </span>
                         </a>
                         <a
-                          href={`https://wa.me/${listing.whatsapp.replace("+", "")}`}
+                          href={`https://t.me/+${listing.whatsapp.replace("+", "")}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600 hover:bg-green-500 shadow-sm hover:shadow-[0_10px_20px_rgba(22,163,74,0.3)] transition-all duration-300 text-white"
+                          className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 text-white group/tg"
                         >
-                          <MessageCircle className="w-3.5 h-3.5 text-white" />
+                          <Send className="w-3.5 h-3.5 text-white group-hover/tg:translate-x-0.5 group-hover/tg:-translate-y-0.5 transition-transform" />
                           <span className="text-[10px] font-black uppercase tracking-widest text-white">
                             {t.chatBtn}
                           </span>

@@ -3,7 +3,7 @@
  * Malazone.com — Dual-Theme Matrix Toggle Engine Provider
  * Manages 'light' | 'dark' state, reads system preference on mount,
  * persists to localStorage, and injects the 'dark' class on <html>.
- * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
+ * © 2026 Malazone Technologies PLC
  */
 
 import React, {

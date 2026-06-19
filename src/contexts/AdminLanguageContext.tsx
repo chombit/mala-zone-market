@@ -1,6 +1,6 @@
 /**
  * AdminLanguageContext.tsx
- * Malazone.com — Elite Admin Command Center i18n
+ * Malazone.com — Admin i18n (Super Admin & Admin)
  * © 2026 Malazone Technologies PLC
  */
 
@@ -10,14 +10,18 @@ export type Language = "en" | "amharic";
 
 const adminDictionary = {
   en: {
-    "admin.title": "Malazone CEO Console",
+    "admin.title": "Malazone Admin Console",
     "admin.sidebar.analytics": "Analytics Overview",
     "admin.sidebar.property": "Property Approval Hub",
     "admin.sidebar.motors": "Motors & EV Database",
     "admin.sidebar.stay": "Stay & Ceremony Hub",
     "admin.sidebar.heavy": "Heavy Machinery Hub",
     "admin.sidebar.agents": "Mala-Agents Payouts",
-    "admin.ceo.signature": "Luwa Tesemma Kakawo — CEO Console",
+    "admin.sidebar.hero": "Hero Slides",
+    "admin.sidebar.banners": "Promo Banners",
+    "admin.sidebar.locations": "Locations",
+    "admin.sidebar.categories": "Categories",
+    "admin.sidebar.users": "User Management",
     "admin.metrics.revenue": "Total Revenue",
     "admin.metrics.pending": "Pending Listings",
     "admin.metrics.agents": "Verified Agents",
@@ -26,7 +30,7 @@ const adminDictionary = {
     "admin.hub.property.owner": "Owner Name",
     "admin.hub.property.location": "Location",
     "admin.hub.property.carta": "Carta Number",
-    "admin.hub.property.verifyBtn": "Cross-Verify with Hawassa Municipal Bureau",
+    "admin.hub.property.verifyBtn": "Cross-Verify with Municipal Bureau",
     "admin.hub.property.approve": "Approve & Grant Verified Badge",
     "admin.hub.property.reject": "Reject",
     "admin.hub.property.rejectPlaceholder": "Reason for rejection...",
@@ -38,9 +42,9 @@ const adminDictionary = {
     "admin.hub.agents.status": "Payment Status",
     "admin.hub.agents.paid": "PAID",
     "admin.hub.agents.unpaid": "PENDING",
-    "admin.status.loading": "Authenticating with Municipal Registry...",
+    "admin.status.loading": "Processing...",
     "admin.status.success": "Operation Successful",
-    "admin.status.error": "Security Handshake Failed",
+    "admin.status.error": "Error Occurred",
     "admin.nav.toggle": "Switch to አማርኛ",
     "admin.sidebar.listings": "Global Listing Manager",
     "admin.hub.listings.add": "Add New Asset",
@@ -59,20 +63,26 @@ const adminDictionary = {
     "admin.form.desc_am": "Description (Amharic)",
     "admin.form.price": "Price (ETB)",
     "admin.form.phone": "Contact Phone",
-    "admin.form.whatsapp": "WhatsApp Number",
+    "admin.form.whatsapp": "Telegram Username / Phone",
     "admin.form.location": "Location Key",
     "admin.form.premium": "Premium Listing",
-    "admin.form.verified": "Verified Asset"
+    "admin.form.verified": "Verified Asset",
+    "admin.role.super_admin": "Super Admin",
+    "admin.role.admin": "Admin"
   },
   amharic: {
-    "admin.title": "መላዞን ዋና ስራ አስፈፃሚ ኮንሶል",
+    "admin.title": "መላዞን አስተዳደር ኮንሶል",
     "admin.sidebar.analytics": "የስራ እንቅስቃሴ ማጠቃለያ",
     "admin.sidebar.property": "የካርታና ይዞታ ማረጋገጫ",
     "admin.sidebar.motors": "የመኪናዎች ቁጥጥር",
     "admin.sidebar.stay": "አዳራሽ፣ ልብስና ዲጄ",
     "admin.sidebar.heavy": "የከባድ ማሽነሪዎች ቁጥጥር",
     "admin.sidebar.agents": "የወኪል ወጣቶች ክፍያ ሰሌዳ",
-    "admin.ceo.signature": "ሉዋ ተሰማ ካካዎ — ዋና ስራ አስፈፃሚ",
+    "admin.sidebar.hero": "ሄሮ ስላይዶች",
+    "admin.sidebar.banners": "የማስተዋወቂያ ባነሮች",
+    "admin.sidebar.locations": "አድራሻዎች",
+    "admin.sidebar.categories": "ምድቦች",
+    "admin.sidebar.users": "የተጠቃሚዎች ቁጥጥር",
     "admin.metrics.revenue": "አጠቃላይ ገቢ",
     "admin.metrics.pending": "በጥበቃ ላይ ያሉ",
     "admin.metrics.agents": "የተረጋገጡ ወኪሎች",
@@ -93,9 +103,9 @@ const adminDictionary = {
     "admin.hub.agents.status": "የክፍያ ሁኔታ",
     "admin.hub.agents.paid": "ተከፍሏል",
     "admin.hub.agents.unpaid": "አልተከፈለባውም",
-    "admin.status.loading": "ከማዘጋጃ ቤት መዝገብ ጋር በመገናኘት ላይ...",
+    "admin.status.loading": "በማሰራጨት ላይ...",
     "admin.status.success": "ተግባሩ ተሳክቷል",
-    "admin.status.error": "የደህንነት ማረጋገጫው አልተሳካም",
+    "admin.status.error": "ስህተት ተከስቷል",
     "admin.nav.toggle": "ወደ English ቀይር",
     "admin.sidebar.listings": "ጠቅላላ የንብረት ቁጥጥር",
     "admin.hub.listings.add": "አዲስ ንብረት ጨምር",
@@ -114,10 +124,12 @@ const adminDictionary = {
     "admin.form.desc_am": "ዝርዝር መግለጫ (Amharic)",
     "admin.form.price": "ዋጋ (በብር)",
     "admin.form.phone": "የመደወያ ስልክ",
-    "admin.form.whatsapp": "የዋትስአፕ ቁጥር",
+    "admin.form.whatsapp": "የቴሌግራም መለያ / ቁጥር",
     "admin.form.location": "መለያ መገኛ",
     "admin.form.premium": "ልዩ ማስታወቂያ",
-    "admin.form.verified": "የተረጋገጠ ንብረት"
+    "admin.form.verified": "የተረጋገጠ ንብረት",
+    "admin.role.super_admin": "ስኔፐር አስተዳደር",
+    "admin.role.admin": "አስተዳደር"
   }
 };
 

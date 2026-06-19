@@ -16,12 +16,25 @@ interface ListingForm {
   description_am: string;
   category: string;
   price: number;
+  price_suffix: string;
   phone: string;
   whatsapp: string;
   location_key: string;
   is_premium: boolean;
   is_verified: boolean;
   is_active: boolean;
+  images: string[];
+  // Zone specific
+  plate_code?: string;
+  fuel_type?: string;
+  condition_type?: string;
+  area_sqm?: number;
+  capacity?: number;
+  with_operator?: boolean;
+  is_zero_km?: boolean;
+  bedrooms?: number;
+  bathrooms?: number;
+  title_deed?: string;
 }
 
 interface ModalProps {
@@ -43,12 +56,24 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
     description_am: "",
     category: "property",
     price: 0,
+    price_suffix: "fixed",
     phone: "",
     whatsapp: "",
     location_key: "hawassa_piassa",
     is_premium: false,
     is_verified: true,
-    is_active: true
+    is_active: true,
+    images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"],
+    plate_code: "",
+    fuel_type: "benzine",
+    condition_type: "used",
+    area_sqm: 0,
+    capacity: 0,
+    with_operator: false,
+    is_zero_km: false,
+    bedrooms: 0,
+    bathrooms: 0,
+    title_deed: "carta"
   });
 
   useEffect(() => {
@@ -61,12 +86,24 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         description_am: listing.description_am || "",
         category: listing.category || "property",
         price: listing.price || 0,
+        price_suffix: listing.price_suffix || "fixed",
         phone: listing.phone || "",
         whatsapp: listing.whatsapp || "",
         location_key: listing.location_key || "hawassa_piassa",
         is_premium: listing.is_premium === 1 || listing.is_premium === true,
         is_verified: listing.is_verified === 1 || listing.is_verified === true,
-        is_active: listing.is_active === 1 || listing.is_active === true
+        is_active: listing.is_active === 1 || listing.is_active === true,
+        images: typeof listing.images === 'string' ? JSON.parse(listing.images) : (listing.images || ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"]),
+        plate_code: listing.plate_code || "",
+        fuel_type: listing.fuel_type || "benzine",
+        condition_type: listing.condition_type || "used",
+        area_sqm: listing.area_sqm || 0,
+        capacity: listing.capacity || 0,
+        with_operator: listing.with_operator === 1 || listing.with_operator === true,
+        is_zero_km: listing.is_zero_km === 1 || listing.is_zero_km === true,
+        bedrooms: listing.bedrooms || 0,
+        bathrooms: listing.bathrooms || 0,
+        title_deed: listing.title_deed || "carta"
       });
     } else {
       setFormData({
@@ -76,12 +113,24 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         description_am: "",
         category: "property",
         price: 0,
+        price_suffix: "fixed",
         phone: "",
         whatsapp: "",
         location_key: "hawassa_piassa",
         is_premium: false,
         is_verified: true,
-        is_active: true
+        is_active: true,
+        images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"],
+        plate_code: "",
+        fuel_type: "benzine",
+        condition_type: "used",
+        area_sqm: 0,
+        capacity: 0,
+        with_operator: false,
+        is_zero_km: false,
+        bedrooms: 0,
+        bathrooms: 0,
+        title_deed: "carta"
       });
     }
   }, [listing, isOpen]);
@@ -118,24 +167,24 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
-      <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-2xl animate-fade-in" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl animate-fade-in" onClick={onClose} />
       
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-white/10 rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] animate-zoom-in">
+      <div className="relative w-full max-w-4xl bg-white border border-slate-200 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col max-h-[90vh] animate-zoom-in">
         
         {/* Modal Header */}
-        <div className="p-8 border-b border-white/5 bg-slate-950/50 flex items-center justify-between">
+        <div className="p-8 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500">
+            <div className="w-12 h-12 rounded-2xl bg-[#00A86B]/10 flex items-center justify-center text-[#00A86B]">
               <Package className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                 {listing ? t("admin.hub.listings.edit") : t("admin.hub.listings.add")}
               </h2>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Malazone Asset Lifecycle Management</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-3 rounded-full hover:bg-white/5 text-slate-500 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -154,7 +203,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                     required
                     value={formData.title_en}
                     onChange={e => setFormData({...formData, title_en: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-green-500/50 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                     placeholder="Luxury Villa..."
                   />
                 </div>
@@ -164,7 +213,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                     required
                     value={formData.title_am}
                     onChange={e => setFormData({...formData, title_am: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-green-500/50 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                     placeholder="ምርጥ ቪላ..."
                   />
                 </div>
@@ -177,7 +226,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                   <select 
                     value={formData.category}
                     onChange={e => setFormData({...formData, category: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-green-500/50 transition-all appearance-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
                   >
                     <option value="property">Property</option>
                     <option value="motors">Motors</option>
@@ -188,12 +237,24 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                 </div>
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.price")}</label>
-                  <input 
-                    type="number"
-                    value={formData.price}
-                    onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-green-500/50 transition-all font-mono"
-                  />
+                  <div className="flex gap-2">
+                    <input 
+                      type="number"
+                      value={formData.price}
+                      onChange={e => setFormData({...formData, price: Number(e.target.value)})}
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all font-mono"
+                    />
+                    <select
+                      value={formData.price_suffix}
+                      onChange={e => setFormData({...formData, price_suffix: e.target.value})}
+                      className="w-32 bg-slate-50 border border-slate-200 rounded-xl py-4 px-4 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none text-[10px] font-black uppercase"
+                    >
+                      <option value="fixed">Fixed</option>
+                      <option value="per_day">/ Day</option>
+                      <option value="per_hour">/ Hour</option>
+                      <option value="per_month">/ Month</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -201,14 +262,178 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.location")}</label>
                 <div className="relative">
-                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input 
+                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select 
                     value={formData.location_key}
                     onChange={e => setFormData({...formData, location_key: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-white focus:outline-none focus:border-green-500/50 transition-all"
-                    placeholder="hawassa_tabor"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                  >
+                    <option value="hawassa_piassa">Hawassa - Piassa</option>
+                    <option value="hawassa_tabor">Hawassa - Tabor</option>
+                    <option value="hawassa_lakefront">Hawassa - Lakefront</option>
+                    <option value="yirgalem">Yirgalem</option>
+                    <option value="bensa">Bensa</option>
+                    <option value="chuko">Chuko</option>
+                    <option value="aleta_wondo">Aleta Wondo</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Images */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Asset Image URL</label>
+                <div className="relative">
+                  <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input 
+                    value={formData.images[0]}
+                    onChange={e => setFormData({...formData, images: [e.target.value]})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                    placeholder="https://images.unsplash.com/..."
                   />
                 </div>
+                {formData.images[0] && (
+                  <div className="mt-4 w-32 h-20 rounded-xl overflow-hidden border border-slate-200">
+                    <img src={formData.images[0]} className="w-full h-full object-cover" alt="Preview" />
+                  </div>
+                )}
+              </div>
+
+              {/* ── Dynamic Zone Specific Fields ── */}
+              <div className="p-8 rounded-2xl bg-slate-50 border border-slate-200 space-y-8 animate-fade-in">
+                <p className="text-[10px] font-black text-[#00A86B] uppercase tracking-[0.3em] mb-4">Zone Specific Details</p>
+                
+                {/* Motors / Heavy Machinery */}
+                {(formData.category === 'motors' || formData.category === 'heavy') && (
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Plate Code</label>
+                      <input 
+                        value={formData.plate_code}
+                        onChange={e => setFormData({...formData, plate_code: e.target.value})}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                        placeholder="Code 2..."
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Fuel Type</label>
+                      <select 
+                        value={formData.fuel_type}
+                        onChange={e => setFormData({...formData, fuel_type: e.target.value})}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                      >
+                        <option value="benzine">Benzine</option>
+                        <option value="diesel">Diesel</option>
+                        <option value="electric">Electric</option>
+                        <option value="hybrid">Hybrid</option>
+                      </select>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Condition</label>
+                      <select 
+                        value={formData.condition_type}
+                        onChange={e => setFormData({...formData, condition_type: e.target.value})}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                      >
+                        <option value="new">Brand New</option>
+                        <option value="invoiced">Invoiced (Duty Free)</option>
+                        <option value="used">Locally Used</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col justify-center gap-4">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <input 
+                          type="checkbox"
+                          checked={formData.is_zero_km}
+                          onChange={e => setFormData({...formData, is_zero_km: e.target.checked})}
+                          className="w-5 h-5 rounded-lg border-slate-300 bg-slate-50 text-[#00A86B] focus:ring-[#00A86B]/50 focus:ring-offset-0 transition-all"
+                        />
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Zero KM</span>
+                      </label>
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <input 
+                          type="checkbox"
+                          checked={formData.with_operator}
+                          onChange={e => setFormData({...formData, with_operator: e.target.checked})}
+                          className="w-5 h-5 rounded-lg border-slate-300 bg-slate-50 text-[#00A86B] focus:ring-[#00A86B]/50 focus:ring-offset-0 transition-all"
+                        />
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest group-hover:text-slate-900 transition-colors">With Operator</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Property / Stay */}
+                {(formData.category === 'property' || formData.category === 'stay') && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Area (SQM)</label>
+                        <input 
+                          type="number"
+                          value={formData.area_sqm}
+                          onChange={e => setFormData({...formData, area_sqm: Number(e.target.value)})}
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Capacity (Pax/Guests)</label>
+                        <input 
+                          type="number"
+                          value={formData.capacity}
+                          onChange={e => setFormData({...formData, capacity: Number(e.target.value)})}
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-6">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Bedrooms</label>
+                        <input 
+                          type="number"
+                          value={formData.bedrooms}
+                          onChange={e => setFormData({...formData, bedrooms: Number(e.target.value)})}
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Bathrooms</label>
+                        <input 
+                          type="number"
+                          value={formData.bathrooms}
+                          onChange={e => setFormData({...formData, bathrooms: Number(e.target.value)})}
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Title Deed</label>
+                        <select 
+                          value={formData.title_deed}
+                          onChange={e => setFormData({...formData, title_deed: e.target.value})}
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                        >
+                          <option value="carta">Verified Carta</option>
+                          <option value="village">Village Deed</option>
+                          <option value="none">No Deed</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Ceremony */}
+                {formData.category === 'ceremony' && (
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Equipment Capacity / Count</label>
+                    <input 
+                      type="number"
+                      value={formData.capacity}
+                      onChange={e => setFormData({...formData, capacity: Number(e.target.value)})}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                      placeholder="e.g. 500 chairs..."
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -222,7 +447,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                     rows={3}
                     value={formData.description_en}
                     onChange={e => setFormData({...formData, description_en: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-green-500/50 transition-all resize-none"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all resize-none"
                   />
                 </div>
                 <div className="space-y-3">
@@ -231,7 +456,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                     rows={3}
                     value={formData.description_am}
                     onChange={e => setFormData({...formData, description_am: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-green-500/50 transition-all resize-none"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all resize-none"
                   />
                 </div>
               </div>
@@ -243,7 +468,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                   <input 
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-green-500/50 transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                   />
                 </div>
                 <div className="space-y-3">
@@ -251,7 +476,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                   <input 
                     value={formData.whatsapp}
                     onChange={e => setFormData({...formData, whatsapp: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-green-500/50 transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                   />
                 </div>
               </div>
@@ -269,8 +494,8 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                     onClick={() => setFormData({...formData, [toggle.key]: !formData[toggle.key as keyof ListingForm]})}
                     className={`p-4 rounded-2xl border flex flex-col items-center gap-3 transition-all ${
                       formData[toggle.key as keyof ListingForm] 
-                        ? 'bg-green-600/10 border-green-500/50 text-green-500' 
-                        : 'bg-white/5 border-white/5 text-slate-500'
+                        ? 'bg-[#00A86B]/10 border-[#00A86B]/30 text-[#00A86B]' 
+                        : 'bg-slate-50 border-slate-200 text-slate-500'
                     }`}
                   >
                     {React.cloneElement(toggle.icon as React.ReactElement, { className: "w-5 h-5" })}
@@ -283,14 +508,14 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         </form>
 
         {/* Modal Footer */}
-        <div className="p-8 border-t border-white/5 bg-slate-950/50 flex justify-end gap-4">
-          <button onClick={onClose} className="px-8 py-4 rounded-2xl text-slate-400 font-black uppercase tracking-widest text-xs hover:text-white transition-all">
+        <div className="p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-4">
+          <button onClick={onClose} className="px-8 py-4 rounded-xl text-slate-600 font-black uppercase tracking-widest text-xs hover:text-slate-900 transition-all">
             Cancel
           </button>
           <button 
             onClick={handleSubmit}
             disabled={loading}
-            className="px-12 py-4 rounded-2xl bg-green-600 hover:bg-green-500 text-white font-black uppercase tracking-widest text-xs shadow-xl transition-all flex items-center gap-3"
+            className="px-12 py-4 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-[#00A86B]/25 transition-all flex items-center gap-3"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {t("admin.hub.listings.save")}

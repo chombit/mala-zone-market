@@ -2,7 +2,7 @@
  * MainSite.tsx
  * Malazone.com — Client-Facing Marketplace Entry Point
  * Dual-theme root wrapper: bg-slate-50 (light) | bg-slate-950 (dark)
- * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
+ * © 2026 Malazone Technologies PLC
  */
 
 import React, { useState } from 'react';
@@ -12,8 +12,14 @@ import ZoneFilterSidebar, { ActiveZone, FilterState } from './components/ZoneFil
 import ZoneCatalogGrid from './components/ZoneCatalogGrid';
 import MalaAgentsBanner from './components/MalaAgentsBanner';
 import Footer from './components/Footer';
+import AboutPage from './components/pages/AboutPage';
+import ContactPage from './components/pages/ContactPage';
+import PrivacyPage from './components/pages/PrivacyPage';
+
+export type PageView = "home" | "about" | "contact" | "privacy";
 
 const defaultFilters: FilterState = {
+  search: "",
   region: "",
   city: "",
   intent: "",
@@ -28,6 +34,7 @@ const MainSite: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [activeZone, setActiveZone] = useState<ActiveZone>("all");
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [currentPage, setCurrentPage] = useState<PageView>("home");
 
   /* Sync header category pills → activeZone for the catalog grid */
   const handleCategoryChange = (cat: string) => {
@@ -53,6 +60,22 @@ const MainSite: React.FC = () => {
     setFilters(defaultFilters);
   };
 
+  const navigateTo = (page: PageView) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  /* ── Sub-page views ── */
+  if (currentPage === "about") {
+    return <AboutPage onBack={() => navigateTo("home")} />;
+  }
+  if (currentPage === "contact") {
+    return <ContactPage onBack={() => navigateTo("home")} />;
+  }
+  if (currentPage === "privacy") {
+    return <PrivacyPage onBack={() => navigateTo("home")} />;
+  }
+
   return (
     <div
       className="
@@ -65,13 +88,16 @@ const MainSite: React.FC = () => {
       "
     >
       {/* Fixed navigation header */}
-      <Header onCategoryChange={handleCategoryChange} />
+      <Header 
+        activeCategory={activeCategory}
+        onCategoryChange={handleCategoryChange} 
+      />
 
       <main>
         {/* Full-bleed hero carousel + search */}
         <Hero
           onCategoryChange={handleCategoryChange}
-          onFilterChange={handleFilterChange}
+          onFilterChange={(key, value) => handleFilterChange(key as keyof FilterState, value)}
         />
 
         {/* ── Split-Screen Catalog Section ──────────────────────── */}
@@ -99,10 +125,11 @@ const MainSite: React.FC = () => {
         </div>
       </main>
 
-      {/* ── Global Footer with CEO Anchor ─────────────────────── */}
-      <Footer />
+      {/* ── Global Footer ─────────────────────── */}
+      <Footer onNavigate={navigateTo} />
     </div>
   );
 };
 
 export default MainSite;
+

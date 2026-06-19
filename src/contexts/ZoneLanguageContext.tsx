@@ -2,7 +2,7 @@
  * ZoneLanguageContext.tsx
  * Malazone.com — Zone-Centric Bilingual State Provider
  * Strict Rule: ቀጠና is NEVER used — only ዞን (Zone)
- * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
+ * © 2026 Malazone Technologies PLC
  */
 
 import React, {
@@ -59,7 +59,7 @@ const dictionary = {
         /* ── Hero ── */
         "hero.tagline": "The Zone of Smart Solutions",
         "hero.subtitle":
-            "Directly trade Land, Vehicles, Luxury Halls, and Heavy Industry in Hawassa without middlemen.",
+            "Directly trade Land, Vehicles, Luxury Halls, and Heavy Industry without middlemen.",
 
         /* ── Search Bar ── */
         "search.zone": "Search Zone",
@@ -140,7 +140,7 @@ const dictionary = {
 
         /* ── Card CTAs ── */
         "cta.call": "Direct Call",
-        "cta.whatsapp": "WhatsApp",
+        "cta.whatsapp": "Telegram",
 
         /* ── Card Badges ── */
         "badge.verifiedCarta": "Verified Carta",
@@ -174,11 +174,10 @@ const dictionary = {
 
         /* ── Agent Banner ── */
         "banner.recruitment":
-            "Onboard vehicle lots, property owners, and equipment rentals into Malazone's secure directory. Earn up to 1,000 ETB per day paid out instantly via telebirr.",
+            "A great work opportunity for brokers, agents, and youth! Onboard vehicle showrooms, heavy machinery, hotels, guest houses, wedding gear, and land holdings in Hawassa, Yirgalem, Aleta Wondo, Bensa/Daye, Chuko, and other local zones into Malazone's legal sales zone. Earn high income paid out directly via Telebirr every day! (Mala-Agents Zone)",
         "banner.cta": "Apply as Mala-Agent",
 
         /* ── Executive Footnote ── */
-        "footnote.ceo": "Luwa Tesemma Kakawo — Founder & CEO",
     },
 
     amharic: {
@@ -194,10 +193,10 @@ const dictionary = {
 
         /* ── Industry Zones ── */
         "zone.all": "ሁሉም ዞኖች",
-        "zone.car": "🚗 መኪና መግዣና ኪራይ",
-        "zone.house": "🏠 ቤትና መሬት",
-        "zone.ceremony": "🎵 የሰርግና የደግስ ዕቃዎች",
-        "zone.machinery": "🚜 ከባድ ማሽነሪዎች",
+        "zone.car": "መኪና መግዣና ኪራይ",
+        "zone.house": "ቤትና መሬት",
+        "zone.ceremony": "የሰርግና የደግስ ዕቃዎች",
+        "zone.machinery": "ከባድ ማሽነሪዎች",
 
         /* ── Geographic Zones ── */
         "geo.all": "ሁሉም መገኛዎች",
@@ -208,17 +207,17 @@ const dictionary = {
         "geo.chuko": "የጩቆ ዞን",
 
         /* ── Header Nav Categories ── */
-        "nav.cat1": "🏠 ቤትና መሬት",
-        "nav.cat2": "🚗 መኪና መግዣና ኪራይ",
-        "nav.cat3": "🏨 ሆቴልና ጌስት ሃውስ",
-        "nav.cat4": "🎵 የሰርግና የደግስ ዕቃዎች",
-        "nav.cat5": "🚜 ከባድ ማሽነሪዎች",
+        "nav.cat1": "ቤትና መሬት",
+        "nav.cat2": "መኪና መግዣና ኪራይ",
+        "nav.cat3": "ሆቴልና ጌስት ሃውስ",
+        "nav.cat4": "የሰርግና የደግስ ዕቃዎች",
+        "nav.cat5": "ከባድ ማሽነሪዎች",
         "nav.agentBtn": "የወኪል ወጣቶች ዞን",
 
         /* ── Hero ── */
         "hero.tagline": "የብልሃት እና የመፍትሔ ዞን",
         "hero.subtitle":
-            "በሐዋሳ ከተማ መሬት፣ መኪና፣ የሰርግ አዳራሾች እና ከባድ ማሽነሪዎችን ያለምንም ደላላ ጣልቃ ገብነት በቀጥታ የሚያገኟበት ዲጂታል መላ!",
+            "መሬት፣ መኪና፣ የሰርግ አዳራሾች እና ከባድ ማሽነሪዎችን ያለምንም ደላላ ጣልቃ ገብነት በቀጥታ የሚያገኟበት ዲጂታል መላ!",
 
         /* ── Search Bar ── */
         "search.zone": "የንግድ ዘርፍ",
@@ -299,7 +298,7 @@ const dictionary = {
 
         /* ── Card CTAs ── */
         "cta.call": "ቀጥታ ደውል",
-        "cta.whatsapp": "በዋትስአፕ አውራ",
+        "cta.whatsapp": "በቴሌግራም አውራ",
 
         /* ── Card Badges ── */
         "badge.verifiedCarta": "ካርታ የተረጋገጠ",
@@ -333,7 +332,7 @@ const dictionary = {
 
         /* ── Agent Banner ── */
         "banner.recruitment":
-            "በሐዋሳ ከተማ በየቀኑ ንብረቶችን መላዞን ላይ በመመዝገብ በቀን እስከ 1,000 ብር በቴሌብር ያግኙ! (Mala-Agents Hub)",
+            "ለደላላዎች፣ ለወኪሎችና ለወጣቶች የቀረበ ታላቅ የስራ መላ! በሐዋሳ፣ በይርጋለም፣ በአሌታ ወንዶ፣ በቤንሳ/ዳዬ፣ በጩቆ እና በሌሎችም የአካባቢው ዞኖች ያሉ የመኪና ማሳያዎችን፣ ከባድ ማሽነሪዎችን፣ ሆቴሎችን፣ ጌስት ሃውሶችን፣ የሰርግ ዕቃዎችን እና የመሬት ይዞታዎችን በመላዞን ህጋዊ የሽያጭ ዞን ላይ በመመዝገብ በየቀኑ ከፍተኛ ገቢ በቴሌብር በቀጥታ ያግኙ! (Mala-Agents Zone)",
         "banner.cta": "የመላ-ወኪል ሁን",
 
         /* ── Executive Footnote ── */

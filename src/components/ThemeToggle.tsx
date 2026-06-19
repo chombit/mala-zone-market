@@ -3,7 +3,7 @@
  * Malazone.com — Elite Theme Switcher with Smooth Micro-Interactions
  * Sun (Light Mode) ↔ Moon (Dark Mode) toggle button
  * Mounts inside Header's right control cluster.
- * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
+ * © 2026 Malazone Technologies PLC
  */
 
 import React from "react";

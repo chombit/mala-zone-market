@@ -1,48 +1,52 @@
 /**
  * database/init.js
- * Malazone.com — Database Initialization Script
- * Drops existing tables and recreates them from schema.sql
+ * Malazone.com — Initialize Database via Node.js
  * © 2026 Malazone Technologies PLC
  */
 
 "use strict";
 
-const mysql = require("mysql2/promise");
+const db = require("./db");
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
 
-async function init() {
-  const dbConfig = {
-    host: process.env.DB_HOST || "localhost",
-    port: parseInt(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
-    multipleStatements: true // Essential for running schema.sql
-  };
-
-  let connection;
+const initDatabase = async () => {
   try {
-    console.log("[INIT] Connecting to MySQL...");
-    connection = await mysql.createConnection(dbConfig);
+    console.log("🏗️  Initializing Malazone Database...");
 
+    // Read and execute schema.sql
     const schemaPath = path.join(__dirname, "schema.sql");
-    const schemaSql = fs.readFileSync(schemaPath, "utf8");
+    let schema = fs.readFileSync(schemaPath, "utf-8");
 
-    console.log("[INIT] dropping old tables if they exist...");
-    await connection.query("DROP DATABASE IF EXISTS malazone");
-    
-    console.log("[INIT] Applying schema.sql...");
-    await connection.query(schemaSql);
+    // Remove comments and split into individual statements
+    const statements = schema
+      .replace(/\/\*[\s\S]*?\*\//g, "") // remove multi-line comments
+      .replace(/--.*$/gm, "") // remove single-line comments
+      .split(";")
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
 
-    console.log("[INIT] Database initialized successfully.");
-    process.exit(0);
+    // Execute each statement
+    for (let statement of statements) {
+      try {
+        // Skip USE database statement (already handled by db.js connection)
+        if (statement.toLowerCase().startsWith("use")) continue;
+        await db.execute(statement);
+      } catch (err) {
+        // Ignore errors about database/table already existing
+        if (!err.message.includes("exists") && !err.message.includes("Duplicate")) {
+          console.warn("⚠️", err.message);
+        }
+      }
+    }
+
+    console.log("✅ Database schema created/updated successfully!");
+
   } catch (err) {
-    console.error("[INIT] ✗ Error initializing database:", err.message);
-    process.exit(1);
+    console.error("❌ Database init failed:", err);
   } finally {
-    if (connection) await connection.end();
+    process.exit(0);
   }
-}
+};
 
-init();
+initDatabase();

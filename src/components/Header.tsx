@@ -10,47 +10,33 @@ import React, { useState, useEffect, useRef } from "react";
 import { Globe, Menu, Sun, Moon, X, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import LogoImg from "@/images/Logo.png";
-
-const navDictionary = {
-  en: {
-    property: "Property Zone",
-    motors: "Motors & EV Zone",
-    stay: "Stay & Hall Zone",
-    ceremony: "Ceremony Zone",
-    heavy: "Heavy Machinery Zone",
-    hubBtn: "Mala-Agent Zone",
-    ticker: "✨ MALAZONE.COM • NO BROKER, NO COMMISSION • HAWASSA SIDAMA MARKETPLACE"
-  },
-  amharic: {
-    property: "የቤትና ይዞታ ዞን",
-    motors: "የመኪና ዞን",
-    stay: "የአዳራሽ ዞን",
-    ceremony: "የክብረ-በዓላት ዞን",
-    heavy: "የከባድ ማሽነሪዎች ዞን",
-    hubBtn: "የወኪል ወጣቶች ዞን",
-    ticker: "✨ MALAZONE.COM • ያለ ደላላ ቀጥታ ቢዝነስ • HAWASSA SIDAMA MARKETPLACE"
-  }
-};
+import LogoImg from "../images/Logo.png";
 
 interface HeaderProps {
+  activeCategory?: string;
   onCategoryChange?: (cat: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
-  const { language, toggleLanguage } = useLanguage();
+const highlightTicker = (text: string) => {
+  const green = '<span class="text-[#00A86B] underline decoration-[#00A86B] decoration-2 underline-offset-4">$&</span>';
+  return {
+    __html: text
+      .replace(/Middlemen!?/gi, green)
+      .replace(/ያለምንም ደላላ/gi, green),
+  };
+};
+
+const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => {
+  const { language, toggleLanguage, t } = useLanguage();
   const { isDark, toggleTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Pick the current language dictionary
-  const t = navDictionary[language as "en" | "amharic"] || navDictionary.en;
-
   const categories = [
-    { key: "property", id: "property" },
-    { key: "motors", id: "motors" },
-    { key: "stay", id: "stay" },
-    { key: "ceremony", id: "ceremony" },
-    { key: "heavy", id: "heavy" },
+    { key: "nav.cat1", id: "property" },
+    { key: "nav.cat2", id: "motors" },
+    { key: "nav.cat3", id: "stay" },
+    { key: "nav.cat4", id: "ceremony" },
+    { key: "nav.cat5", id: "heavy" },
   ];
 
   const handleNavClick = (id: string) => {
@@ -65,10 +51,11 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
   return (
     <div className="fixed top-0 left-0 w-full z-[150]">
       {/* ── Ticker / Announcement Bar ──────────────────────────────── */}
-      <div className="w-full bg-[#00A86B] border-b border-emerald-600/30 py-2 px-6 overflow-hidden">
-        <p className="text-[10px] sm:text-[11px] font-black tracking-[0.15em] text-white uppercase whitespace-nowrap animate-marquee text-center">
-          {t.ticker}
-        </p>
+      <div className="w-full bg-[#0B132B] border-b border-emerald-600/30 py-4 px-6 overflow-hidden">
+        <p
+          className="text-xs sm:text-[13px] font-bold tracking-widest text-white uppercase whitespace-nowrap animate-marquee text-center"
+          dangerouslySetInnerHTML={highlightTicker(t("ticker"))}
+        />
       </div>
 
       {/* ── Main Navigation Bar ───────────────────────────────────── */}
@@ -90,9 +77,9 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
           role="button"
           aria-label="Malazone Home"
         >
-          <img 
-            src={LogoImg} 
-            alt="Malazone Logo" 
+          <img
+            src={LogoImg}
+            alt="Malazone Logo"
             className="h-12 sm:h-16 w-auto object-contain dark:brightness-110"
           />
         </div>
@@ -103,16 +90,16 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
             <button
               key={cat.id}
               onClick={() => handleNavClick(cat.id)}
-              className="
+              className={`
                 px-5 py-2.5 rounded-full text-xs font-bold
                 whitespace-nowrap uppercase tracking-wider
-                text-slate-600 dark:text-slate-300
-                hover:text-[#00A86B] dark:hover:text-white
-                hover:bg-white dark:hover:bg-white/10
                 transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-none
-              "
+                ${activeCategory === cat.id
+                  ? "bg-[#00A86B] text-black shadow-lg shadow-emerald-500/20"
+                  : "text-slate-600 dark:text-slate-300 hover:text-[#00A86B] dark:hover:text-white hover:bg-white dark:hover:bg-white/10"}
+              `}
             >
-              {t[cat.key as keyof typeof t]}
+              {t(cat.key as any)}
             </button>
           ))}
         </nav>
@@ -156,7 +143,7 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
             "
           >
             <Globe className="w-4 h-4 text-[#00A86B] group-hover:rotate-[30deg] transition-transform duration-500" />
-            <span className="text-[10px] font-black tracking-widest text-slate-700 dark:text-white uppercase">
+            <span className="text-[10px] font-black tracking-widest text-malazone-navy dark:text-white uppercase">
               {language === "en" ? "አማርኛ" : "EN"}
             </span>
           </button>
@@ -176,7 +163,7 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
               transition-transform duration-200
             "
           >
-            {t.hubBtn}
+            {t("nav.agentBtn")}
           </button>
 
           {/* Mobile Menu Icon */}
@@ -213,19 +200,18 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
                 <button
                   key={cat.id}
                   onClick={() => handleNavClick(cat.id)}
-                  className="
+                  className={`
                     flex items-center justify-between
                     w-full px-5 py-4 rounded-2xl
                     text-sm font-bold tracking-wide uppercase
-                    text-slate-700 dark:text-slate-200
-                    bg-slate-50 dark:bg-white/5
-                    hover:bg-emerald-50 dark:hover:bg-emerald-500/10
-                    hover:text-[#00A86B] dark:hover:text-emerald-400
                     transition-all duration-200
-                  "
+                    ${activeCategory === cat.id
+                      ? "bg-[#00A86B] text-black"
+                      : "text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 hover:bg-emerald dark:hover:bg-emerald-500/10 hover:text-[#00A86B] dark:hover:text-emerald-400"}
+                  `}
                 >
-                  {t[cat.key as keyof typeof t]}
-                  <ChevronRight className="w-4 h-4 opacity-40" />
+                  {t(cat.key as any)}
+                  <ChevronRight className={`w-4 h-4 ${activeCategory === cat.id ? "text-black" : "opacity-40"}`} />
                 </button>
               ))}
 
@@ -246,7 +232,7 @@ const Header: React.FC<HeaderProps> = ({ onCategoryChange }) => {
                   shadow-lg shadow-emerald-500/20
                 "
               >
-                {t.hubBtn}
+                {t("nav.agentBtn")}
               </button>
             </div>
           </nav>

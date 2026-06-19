@@ -5,14 +5,14 @@
  */
 
 import React from "react";
-import { 
-  LayoutDashboard, 
-  Home, 
-  Car, 
-  Palmtree, 
-  Construction, 
-  Wallet, 
-  Globe, 
+import {
+  LayoutDashboard,
+  Home,
+  Car,
+  Palmtree,
+  Construction,
+  Wallet,
+  Globe,
   LogOut,
   Package
 } from "lucide-react";
@@ -72,7 +72,7 @@ const AdminSidebar: React.FC = () => {
         <div className="space-y-3">
           <div className="w-8 h-px bg-green-500/30" />
           <p className="text-[10px] font-bold text-slate-400 leading-relaxed italic">
-            {t("admin.ceo.signature")}
+            {t("admin.ceo.signature" as any)}
           </p>
         </div>
 
