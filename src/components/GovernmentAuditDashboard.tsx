@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Building2,
-  Car,
   CheckCircle2,
   Download,
   Eye,
@@ -18,7 +17,6 @@ import {
 } from "lucide-react";
 import { useAdminAuth } from "../contexts/AdminAuthContext";
 
-type PortalType = "municipality" | "transport";
 type AuditStatus = "verified" | "fraudulent";
 type AssetCategory = "all" | "land" | "house" | "business";
 
@@ -56,15 +54,6 @@ interface LandRecord {
   submittedDate: string;
 }
 
-interface VehicleRecord {
-  id: number;
-  vehicleType: string;
-  sellerName: string;
-  plateNumber: string;
-  chassisNumber: string;
-  libreImageUrl: string | null;
-}
-
 interface LandFormState {
   registryMatch: boolean;
   noCourtInjunctions: boolean;
@@ -73,24 +62,10 @@ interface LandFormState {
   notes: string;
 }
 
-interface VehicleFormState {
-  crimeCheck: boolean;
-  ownershipMatch: boolean;
-  digitalSignature: string;
-  notes: string;
-}
-
 const createLandForm = (): LandFormState => ({
   registryMatch: false,
   noCourtInjunctions: false,
   taxClear: false,
-  digitalSignature: "",
-  notes: ""
-});
-
-const createVehicleForm = (): VehicleFormState => ({
-  crimeCheck: false,
-  ownershipMatch: false,
   digitalSignature: "",
   notes: ""
 });
@@ -134,25 +109,6 @@ const fallbackLandRecords: LandRecord[] = [
     code: "የካርታ / የፕላን ቁጥር: HAW-BZ-7712",
     docName: "የንግድ_ቦታ_ይዞታ_ማረጋገጫ.pdf",
     submittedDate: "ሰኔ 15/2018"
-  }
-];
-
-const fallbackVehicleRecords: VehicleRecord[] = [
-  {
-    id: 9201,
-    vehicleType: "Car",
-    sellerName: "Abel Tadesse",
-    plateNumber: "03-A-45891",
-    chassisNumber: "JH4KA9650MC012845",
-    libreImageUrl: "https://placehold.co/960x720/f8fafc/0f172a?text=የሰነድ+ምስል"
-  },
-  {
-    id: 9207,
-    vehicleType: "Bajaj",
-    sellerName: "Rahel Mulugeta",
-    plateNumber: "01-B-77214",
-    chassisNumber: "MD2A76AZ8PWA44102",
-    libreImageUrl: "https://placehold.co/960x720/f8fafc/0f172a?text=የሰነድ+ምስል"
   }
 ];
 
@@ -222,33 +178,6 @@ const normalizeLandRecord = (item: ApiPendingItem): LandRecord => {
   };
 };
 
-const normalizeVehicleRecord = (item: ApiPendingItem): VehicleRecord => {
-  const fallbackImage = parseImages(item.images)[0] ?? null;
-
-  return {
-    id: item.id,
-    vehicleType: item.title || "Vehicle",
-    sellerName: item.seller_name || "Unknown Seller",
-    plateNumber: item.plate_code || "PLATE-PENDING",
-    chassisNumber: item.chassis_number || "VIN-PENDING",
-    libreImageUrl: item.legal_document_url || fallbackImage
-  };
-};
-
-const getDefaultOfficerProfile = (portal: PortalType) => {
-  if (portal === "transport") {
-    return {
-      officerName: "Tigist A.",
-      bureau: "Hawassa Transport Dept"
-    };
-  }
-
-  return {
-    officerName: "Tigist A.",
-    bureau: "Hawassa City Municipality"
-  };
-};
-
 const isPdfDocument = (url: string) => /\.pdf($|\?)/i.test(url);
 
 const ethiopicFont = {
@@ -281,17 +210,13 @@ const QueuePanel: React.FC<QueuePanelProps> = ({ title, subtitle, countLabel, ic
   </div>
 );
 
-export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?: PortalType }) {
+export default function GovernmentAuditDashboard(props: { overrideTab?: string }) {
   const { user } = useAdminAuth();
-  const [activePortal, setActivePortal] = useState<PortalType>(overrideTab || "municipality");
   const [propertyQueue, setPropertyQueue] = useState<LandRecord[]>(fallbackLandRecords);
-  const [vehicleQueue, setVehicleQueue] = useState<VehicleRecord[]>(fallbackVehicleRecords);
   const [municipalityCategory, setMunicipalityCategory] = useState<AssetCategory>("all");
   const [municipalitySearch, setMunicipalitySearch] = useState("");
   const [municipalityReviewId, setMunicipalityReviewId] = useState<number | null>(null);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(fallbackVehicleRecords[0]?.id ?? null);
   const [landForms, setLandForms] = useState<Record<number, LandFormState>>({});
-  const [vehicleForms, setVehicleForms] = useState<Record<number, VehicleFormState>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [submittingKey, setSubmittingKey] = useState<string | null>(null);
   const [selectedDocUrl, setSelectedDocUrl] = useState<string | null>(null);
@@ -299,41 +224,27 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
   const [municipalityApprovedCount, setMunicipalityApprovedCount] = useState(0);
   const [municipalityRejectedCount, setMunicipalityRejectedCount] = useState(0);
 
-  useEffect(() => {
-    if (overrideTab) {
-      setActivePortal(overrideTab);
-    }
-  }, [overrideTab]);
-
   const officerProfile = useMemo(() => {
-    const fallback = getDefaultOfficerProfile(activePortal);
+    const fallback = { officerName: "Tigist A.", bureau: "Hawassa City Municipality" };
 
     if (!user) {
       return fallback;
     }
 
     const bureau =
-      user.role === "g2b_transport"
-        ? "Hawassa Transport Dept"
-        : user.role === "g2b_municipality"
-          ? "Hawassa City Municipality"
-          : activePortal === "transport"
-            ? "Hawassa Transport Dept"
-            : "Hawassa City Municipality";
+      user.role === "g2b_municipality"
+        ? "Hawassa City Municipality"
+        : "Hawassa City Municipality";
 
     return {
       officerName: user.full_name || fallback.officerName,
       bureau
     };
-  }, [activePortal, user]);
+  }, [user]);
 
   const municipalityReviewRecord = useMemo(
     () => propertyQueue.find((record) => record.id === municipalityReviewId) ?? null,
     [municipalityReviewId, propertyQueue]
-  );
-  const selectedVehicle = useMemo(
-    () => vehicleQueue.find((record) => record.id === selectedVehicleId) ?? null,
-    [vehicleQueue, selectedVehicleId]
   );
   const filteredMunicipalityQueue = useMemo(() => {
     const query = municipalitySearch.trim().toLowerCase();
@@ -371,27 +282,6 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
     });
   }, [propertyQueue]);
 
-  useEffect(() => {
-    setVehicleForms((previous) => {
-      const next = { ...previous };
-      vehicleQueue.forEach((record) => {
-        if (!next[record.id]) {
-          next[record.id] = createVehicleForm();
-        }
-      });
-      return next;
-    });
-  }, [vehicleQueue]);
-
-  useEffect(() => {
-    setSelectedVehicleId((current) => {
-      if (current !== null && vehicleQueue.some((record) => record.id === current)) {
-        return current;
-      }
-      return vehicleQueue[0]?.id ?? null;
-    });
-  }, [vehicleQueue]);
-
   const fetchPending = useCallback(async () => {
     setLoading(true);
     setStatusMessage(null);
@@ -406,14 +296,11 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
 
       const incoming = payload.data ?? [];
       const land = incoming.filter((item) => item.category === "property").map(normalizeLandRecord);
-      const vehicles = incoming.filter((item) => item.category === "motors").map(normalizeVehicleRecord);
 
       setPropertyQueue(land.length > 0 ? land : fallbackLandRecords);
-      setVehicleQueue(vehicles.length > 0 ? vehicles : fallbackVehicleRecords);
     } catch (error) {
       console.error("Failed to fetch pending G2B audits:", error);
       setPropertyQueue(fallbackLandRecords);
-      setVehicleQueue(fallbackVehicleRecords);
       setStatusMessage({
         tone: "error",
         text: "የቀጥታ የማረጋገጫ ወረፋ አልተገኘም። በምትኩ የውሳኔ ዝግጁ ምዝግቦች ታይተዋል።"
@@ -437,23 +324,12 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
     }));
   };
 
-  const updateVehicleForm = (id: number, patch: Partial<VehicleFormState>) => {
-    setVehicleForms((previous) => ({
-      ...previous,
-      [id]: {
-        ...(previous[id] ?? createVehicleForm()),
-        ...patch
-      }
-    }));
-  };
-
   const submitAudit = async (
     id: number,
-    auditType: "land" | "vehicle",
     status: AuditStatus,
     notes: string
   ) => {
-    setSubmittingKey(`${auditType}-${id}-${status}`);
+    setSubmittingKey(`land-${id}-${status}`);
     setStatusMessage(null);
 
     try {
@@ -462,7 +338,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           officer_name: officerProfile.officerName,
-          audit_type: auditType,
+          audit_type: "land",
           status,
           notes
         })
@@ -474,26 +350,17 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
         throw new Error(payload.message || "Audit submission failed.");
       }
 
-      if (auditType === "land") {
-        setPropertyQueue((previous) => previous.filter((record) => record.id !== id));
-        setLandForms((previous) => {
-          const next = { ...previous };
-          delete next[id];
-          return next;
-        });
-        setMunicipalityReviewId((current) => (current === id ? null : current));
-        if (status === "verified") {
-          setMunicipalityApprovedCount((current) => current + 1);
-        } else {
-          setMunicipalityRejectedCount((current) => current + 1);
-        }
+      setPropertyQueue((previous) => previous.filter((record) => record.id !== id));
+      setLandForms((previous) => {
+        const next = { ...previous };
+        delete next[id];
+        return next;
+      });
+      setMunicipalityReviewId((current) => (current === id ? null : current));
+      if (status === "verified") {
+        setMunicipalityApprovedCount((current) => current + 1);
       } else {
-        setVehicleQueue((previous) => previous.filter((record) => record.id !== id));
-        setVehicleForms((previous) => {
-          const next = { ...previous };
-          delete next[id];
-          return next;
-        });
+        setMunicipalityRejectedCount((current) => current + 1);
       }
 
       setStatusMessage({
@@ -515,14 +382,10 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
   };
 
   const currentLandForm = municipalityReviewRecord ? landForms[municipalityReviewRecord.id] ?? createLandForm() : null;
-  const currentVehicleForm = selectedVehicle ? vehicleForms[selectedVehicle.id] ?? createVehicleForm() : null;
 
   const landSignatureMatches =
     currentLandForm !== null &&
     currentLandForm.digitalSignature.trim().toLowerCase() === officerProfile.officerName.trim().toLowerCase();
-  const vehicleSignatureMatches =
-    currentVehicleForm !== null &&
-    currentVehicleForm.digitalSignature.trim().toLowerCase() === officerProfile.officerName.trim().toLowerCase();
 
   const canVerifyLand = !!municipalityReviewRecord && !!currentLandForm;
   const canFlagLand =
@@ -530,18 +393,6 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
     !!currentLandForm &&
     landSignatureMatches &&
     currentLandForm.notes.trim().length >= 10;
-
-  const canVerifyVehicle =
-    !!selectedVehicle &&
-    !!currentVehicleForm &&
-    currentVehicleForm.crimeCheck &&
-    currentVehicleForm.ownershipMatch &&
-    vehicleSignatureMatches;
-  const canRejectVehicle =
-    !!selectedVehicle &&
-    !!currentVehicleForm &&
-    vehicleSignatureMatches &&
-    currentVehicleForm.notes.trim().length >= 10;
 
   return (
     <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-50 text-slate-900 shadow-sm" style={ethiopicFont}>
@@ -558,24 +409,19 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
             </div>
           </div>
 
-          <div className="grid w-full gap-4 sm:grid-cols-3 lg:w-auto lg:min-w-[430px]">
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Officer Session</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 min-w-[200px]">
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">የሰራተኛ ክፍለ-ጊዜ (Officer Session)</p>
               <p className="mt-3 flex items-center gap-2 text-sm font-bold text-slate-900">
                 <UserCheck className="h-4 w-4 text-[#00A86B]" />
-                Officer: {officerProfile.officerName}
+                {officerProfile.officerName}
               </p>
-              <p className="mt-2 text-xs text-slate-500">Bureau: {officerProfile.bureau}</p>
+              <p className="mt-2 text-xs text-slate-500">{officerProfile.bureau}</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Pending Deeds</p>
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 min-w-[160px]">
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">የተላኩ ማህደሮች</p>
               <p className="mt-3 text-3xl font-black text-slate-900">{propertyQueue.length}</p>
-              <p className="mt-1 text-xs text-slate-500">Municipality archive cross-check queue</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Pending Transport Logs</p>
-              <p className="mt-3 text-3xl font-black text-slate-900">{vehicleQueue.length}</p>
-              <p className="mt-1 text-xs text-slate-500">Vehicle ownership and crime status queue</p>
+              <p className="mt-1 text-xs text-slate-500">በማዘጋጃ ቤቱ ማህደር ውስጥ የሚጠበቁ</p>
             </div>
           </div>
         </div>
@@ -590,29 +436,24 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
           </div>
         )}
 
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-2xl border border-[#00A86B] bg-[#00A86B] px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-500/20"
-            >
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-2xl bg-[#00A86B] px-5 py-3 text-sm font-black text-black shadow-lg shadow-emerald-500/20">
               <Building2 className="h-4 w-4" />
-              Land & Deed Registry
-            </button>
+              የማዘጋጃ ቤት ማህደር ማረጋገጫ
+            </span>
           </div>
-
           <button
             type="button"
             onClick={() => void fetchPending()}
             className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Refresh Queue
+            ያድሱ (Refresh)
           </button>
         </div>
 
-        {activePortal === "municipality" && (
-          <div className="mx-auto max-w-6xl space-y-6">
+        <div className="mx-auto max-w-6xl space-y-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -759,268 +600,6 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
               </div>
             </QueuePanel>
           </div>
-        )}
-
-        {activePortal === "transport" && (
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <QueuePanel
-              title="Vehicle Transport Log"
-              subtitle="Validate transport records before certifying a verified badge request for a listed vehicle."
-              countLabel={`${vehicleQueue.length} pending`}
-              icon={<Car className="h-5 w-5" />}
-            >
-              <div className="overflow-hidden rounded-2xl border border-slate-200">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-left">
-                    <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.25em] text-slate-500">
-                      <tr>
-                        <th className="px-5 py-4">Vehicle Type</th>
-                        <th className="px-5 py-4">Plate Number</th>
-                        <th className="px-5 py-4">Chassis (VIN) Number</th>
-                        <th className="px-5 py-4">Libre Image</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white text-sm text-slate-700">
-                      {vehicleQueue.map((record) => (
-                        <tr
-                          key={record.id}
-                          onClick={() => setSelectedVehicleId(record.id)}
-                          className={`cursor-pointer transition ${
-                            selectedVehicleId === record.id ? "bg-emerald-50/80" : "hover:bg-slate-50"
-                          }`}
-                        >
-                          <td className="px-5 py-5 font-black text-slate-900">{record.vehicleType}</td>
-                          <td className="px-5 py-5">{record.plateNumber}</td>
-                          <td className="px-5 py-5 font-mono text-xs font-bold text-slate-800">{record.chassisNumber}</td>
-                          <td className="px-5 py-5">
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                if (record.libreImageUrl) {
-                                  setSelectedDocUrl(record.libreImageUrl);
-                                }
-                              }}
-                              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
-                            >
-                              <FileText className="h-4 w-4 text-[#00A86B]" />
-                              {record.libreImageUrl ? "Preview Libre" : "No Upload"}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {vehicleQueue.length === 0 && !loading && (
-                        <tr>
-                          <td colSpan={4} className="px-5 py-12 text-center text-sm text-slate-500">
-                            No vehicle transport logs are waiting for review.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </QueuePanel>
-
-            <QueuePanel
-              title="Transport Workbench"
-              subtitle="Confirm crime status, ownership, and signature before certifying or rejecting the transport file."
-              countLabel="Secure officer attestation"
-              icon={<ShieldCheck className="h-5 w-5" />}
-            >
-              {selectedVehicle && currentVehicleForm ? (
-                <div className="space-y-6">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">Input Data</p>
-                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Vehicle Type</p>
-                        <p className="mt-1 text-sm font-black text-slate-900">{selectedVehicle.vehicleType}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Seller Name</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-700">{selectedVehicle.sellerName}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Plate Number</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-700">{selectedVehicle.plateNumber}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Chassis (VIN) Number</p>
-                        <p className="mt-1 rounded-full border border-slate-200 bg-white px-3 py-1 font-mono text-xs font-black text-slate-700">
-                          {selectedVehicle.chassisNumber}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                    <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                      <p className="text-sm font-black text-slate-900">Libre Image</p>
-                      {selectedVehicle.libreImageUrl && (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedDocUrl(selectedVehicle.libreImageUrl)}
-                          className="inline-flex items-center gap-2 text-sm font-bold text-[#00A86B] transition hover:text-emerald-700"
-                        >
-                          <Eye className="h-4 w-4" />
-                          Open Preview
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex min-h-[240px] items-center justify-center bg-slate-100 p-4">
-                      {selectedVehicle.libreImageUrl ? (
-                        <img
-                          src={selectedVehicle.libreImageUrl}
-                          alt={`${selectedVehicle.plateNumber} libre preview`}
-                          className="max-h-64 rounded-2xl border border-slate-200 bg-white object-contain shadow-sm"
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center gap-3 text-slate-400">
-                          <FileText className="h-12 w-12" />
-                          <p className="text-sm font-semibold">No libre image uploaded for preview.</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
-                    <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">የማረጋገጫ መስፈርቶች</p>
-
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm font-black text-slate-900">Crime Check</p>
-                          <p className="text-xs text-slate-500">Not Reported Stolen</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateVehicleForm(selectedVehicle.id, {
-                              crimeCheck: !currentVehicleForm.crimeCheck
-                            })
-                          }
-                          className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-black transition ${
-                            currentVehicleForm.crimeCheck
-                              ? "bg-[#00A86B] text-white"
-                              : "bg-white text-slate-600 ring-1 ring-slate-200"
-                          }`}
-                        >
-                          {currentVehicleForm.crimeCheck ? "Cleared" : "Pending Check"}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <label className="flex items-start gap-3 text-sm text-slate-700">
-                        <input
-                          type="checkbox"
-                          checked={currentVehicleForm.ownershipMatch}
-                          onChange={(event) =>
-                            updateVehicleForm(selectedVehicle.id, {
-                              ownershipMatch: event.target.checked
-                            })
-                          }
-                          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#00A86B] focus:ring-[#00A86B]"
-                        />
-                        <span>
-                          <span className="block font-black text-slate-900">Ownership Match</span>
-                          Confirm the seller name matches the Libre record.
-                        </span>
-                      </label>
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-black text-slate-900">የአረጋጋጩ ዲጂታል ፊርማ</label>
-                      <input
-                        type="text"
-                        value={currentVehicleForm.digitalSignature}
-                        onChange={(event) =>
-                          updateVehicleForm(selectedVehicle.id, {
-                            digitalSignature: event.target.value
-                          })
-                        }
-                        placeholder={`ለማረጋገጥ "${officerProfile.officerName}" ብለው ይተይቡ`}
-                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#00A86B] focus:bg-white"
-                      />
-                      <p className={`mt-2 text-xs font-semibold ${vehicleSignatureMatches ? "text-[#00A86B]" : "text-slate-500"}`}>
-                        Officer must type full name exactly: {officerProfile.officerName}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-black text-slate-900">Audit Notes</label>
-                      <textarea
-                        rows={4}
-                        value={currentVehicleForm.notes}
-                        onChange={(event) =>
-                          updateVehicleForm(selectedVehicle.id, {
-                            notes: event.target.value
-                          })
-                        }
-                        placeholder="Add certification notes or impound rationale."
-                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#00A86B] focus:bg-white"
-                      />
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-end gap-3">
-                      <button
-                        type="button"
-                        disabled={!canRejectVehicle || submittingKey === `vehicle-${selectedVehicle.id}-fraudulent`}
-                        onClick={() =>
-                          void submitAudit(
-                            selectedVehicle.id,
-                            "vehicle",
-                            "fraudulent",
-                            `Reject / Impound Alert raised by ${officerProfile.officerName}. ${currentVehicleForm.notes.trim()}`
-                          )
-                        }
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-black text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:border-rose-100 disabled:bg-rose-50/70 disabled:text-rose-300"
-                      >
-                        {submittingKey === `vehicle-${selectedVehicle.id}-fraudulent` ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <AlertTriangle className="h-4 w-4" />
-                        )}
-                        Reject / Impound Alert
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!canVerifyVehicle || submittingKey === `vehicle-${selectedVehicle.id}-verified`}
-                        onClick={() =>
-                          void submitAudit(
-                            selectedVehicle.id,
-                            "vehicle",
-                            "verified",
-                            `Crime Check: ${currentVehicleForm.crimeCheck ? "clear" : "pending"} | Ownership Match: ${
-                              currentVehicleForm.ownershipMatch ? "confirmed" : "not confirmed"
-                            } | Notes: ${currentVehicleForm.notes.trim() || "Transport record certified."}`
-                          )
-                        }
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00A86B] px-5 py-3 text-sm font-black text-black shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-black/50"
-                      >
-                        {submittingKey === `vehicle-${selectedVehicle.id}-verified` ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="h-4 w-4" />
-                        )}
-                        Certify Transport Record
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex min-h-[420px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center">
-                  <Search className="h-10 w-10 text-slate-400" />
-                  <div>
-                    <p className="text-sm font-black text-slate-700">No transport record selected</p>
-                    <p className="mt-1 text-sm text-slate-500">Choose a vehicle file from the audit queue to begin.</p>
-                  </div>
-                </div>
-              )}
-            </QueuePanel>
-          </div>
-        )}
       </div>
 
       {selectedDocUrl && (
@@ -1264,7 +843,6 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                         onClick={() =>
                           void submitAudit(
                             municipalityReviewRecord.id,
-                            "land",
                             "fraudulent",
                             `ጉድለት አለበት: ${currentLandForm.notes.trim()}`
                           )
@@ -1284,7 +862,6 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                         onClick={() =>
                           void submitAudit(
                             municipalityReviewRecord.id,
-                            "land",
                             "verified",
                             `Registry Match: ${currentLandForm.registryMatch ? "yes" : "no"} | No Active Court Injunctions: ${
                               currentLandForm.noCourtInjunctions ? "yes" : "no"
