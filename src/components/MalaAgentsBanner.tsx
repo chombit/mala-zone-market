@@ -5,9 +5,10 @@
  */
 
 import React, { useState } from "react";
-import { Users, ArrowRight, TrendingUp, Wallet, ShieldCheck, Zap } from "lucide-react";
+import { Users, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import AgentRegistrationModal from "./AgentRegistrationModal";
+import { MalaZoneMasterPlayer } from "./MalaZoneVideoPlayer";
 
 const MalaAgentsBanner: React.FC = () => {
   const { t, language } = useLanguage();
@@ -31,7 +32,9 @@ const MalaAgentsBanner: React.FC = () => {
             <div className="lg:col-span-7 space-y-12">
               <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-emerald-50 dark:bg-green-600/10 border border-emerald-200 dark:border-green-600/20 text-emerald-600 dark:text-green-500 text-[11px] font-black uppercase tracking-[0.3em] animate-fade-in">
                 <Users className="w-4 h-4" />
-                Mala-Agents Zone
+                <span>Mala-Agents Zone</span>
+                <span className="w-px h-4 bg-emerald-300 dark:bg-green-600/40" />
+                <span className="lowercase not-italic tracking-normal text-[11px]">የሥራ ዕድል መላ!</span>
               </div>
 
               <div className="space-y-8">
@@ -76,40 +79,9 @@ const MalaAgentsBanner: React.FC = () => {
               </div>
             </div>
 
-            {/* Right: Feature Matrix (5/12 cols) */}
-            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {[
-                {
-                  icon: <TrendingUp className="w-6 h-6 text-green-500" />,
-                  title: isAm ? "ከፍተኛ ገቢ" : "High Payouts",
-                  val: "1,000 ETB+"
-                },
-                {
-                  icon: <Wallet className="w-6 h-6 text-green-500" />,
-                  title: isAm ? "ፈጣን ክፍያ" : "Instant Cash",
-                  val: "Via Telebirr"
-                },
-                {
-                  icon: <ShieldCheck className="w-6 h-6 text-green-500" />,
-                  title: isAm ? "ነፃ ምዝገባ" : "Free Onboard",
-                  val: "0 ETB Fee"
-                },
-                {
-                  icon: <Zap className="w-6 h-6 text-green-500" />,
-                  title: isAm ? "ቀጥተኛ" : "Direct Flow",
-                  val: "No Middlemen"
-                }
-              ].map((f, i) => (
-                <div key={i} className="p-8 rounded-[2.5rem] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:border-emerald-500/20 dark:hover:border-green-500/20 transition-all duration-500 flex flex-col items-center text-center space-y-4 group">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 dark:bg-green-600/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    {f.icon}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-slate-900 dark:text-white font-black text-[10px] uppercase tracking-widest transition-colors duration-300">{f.title}</span>
-                    <span className="text-emerald-600 dark:text-green-500 font-black text-lg tracking-tighter italic">{f.val}</span>
-                  </div>
-                </div>
-              ))}
+            {/* Right: Circular Video Explainer */}
+            <div className="lg:col-span-5 flex items-center justify-center">
+              <MalaZoneMasterPlayer />
             </div>
           </div>
         </div>

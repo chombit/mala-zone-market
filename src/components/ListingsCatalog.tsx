@@ -80,7 +80,7 @@ const catalogTranslations = {
     resetBtn: "ሁሉንም አድስ",
     gridHeading: "MALA ልዩና ተመራጭ ማስታወቂያዎች",
     viewMore: "ሁሉም ማስታወቂያዎች",
-    chatBtn: "በዋትስአፕ አውራ",
+    chatBtn: "በዋትስአፕ",
     callBtn: "ቀጥታ ደውል",
     verifiedBadge: "ካርታ የተረጋገጠ",
     withOperatorBadge: "ባለሙያ ያለው",

@@ -562,26 +562,34 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             ].map((stat, i) => (
               <div
                 key={i}
+                style={{ animationDelay: `${i * 0.12}s` }}
                 className="
-                  flex flex-col items-center gap-1.5 sm:gap-2 py-4 sm:py-5
+                  relative flex flex-col items-center gap-1.5 sm:gap-2 py-5 sm:py-6
                   rounded-2xl backdrop-blur-md
-                  bg-white dark:bg-white/[0.04]
+                  bg-white/70 dark:bg-white/[0.04]
                   border border-slate-200 dark:border-white/[0.06]
-                  hover:border-malazone-green/30 dark:hover:border-malazone-green/20
-                  hover:bg-slate-50 dark:hover:bg-white/[0.06]
+                  hover:border-[#00A86B]/40
+                  hover:-translate-y-2 hover:scale-[1.02]
+                  hover:shadow-[0_16px_32px_rgba(0,168,107,0.15)]
+                  hover:ring-1 hover:ring-[#00A86B]/20
+                  hover:bg-white/90 dark:hover:bg-white/[0.08]
+                  hover:backdrop-blur-2xl
                   shadow-sm dark:shadow-none
-                  transition-all duration-500 group cursor-default
+                  transition-all duration-500 ease-out group cursor-default
+                  animate-fade-in-up
+                  active:scale-[0.97]
                 "
               >
-                <div className="w-8 h-8 rounded-lg bg-malazone-green/10 flex items-center justify-center text-malazone-green group-hover:scale-110 group-hover:bg-malazone-green/15 transition-all duration-500">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-malazone-green/10 flex items-center justify-center text-malazone-green dark:text-malazone-green animate-float group-hover:animate-none group-hover:bg-[#00A86B] group-hover:text-white group-hover:scale-125 group-hover:-rotate-6 group-hover:shadow-[0_6px_16px_rgba(0,168,107,0.3)] transition-all duration-500">
                   {stat.icon}
                 </div>
-                <span className="text-xl sm:text-2xl lg:text-3xl font-black leading-none tracking-tighter transition-colors duration-500 text-malazone-navy dark:text-white">
+                <span className="text-xl sm:text-2xl lg:text-3xl font-black leading-none tracking-tighter text-malazone-navy dark:text-white group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-500">
                   {stat.val}
                 </span>
-                <span className="text-[7px] sm:text-[8px] font-bold tracking-[0.15em] uppercase text-center px-1 transition-colors duration-500 text-slate-500 dark:text-slate-500">
+                <span className="text-[10px] sm:text-[11px] font-bold leading-relaxed tracking-wider uppercase text-center px-1 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 group-hover:tracking-[0.2em] transition-all duration-500 font-sans antialiased">
                   {stat.label}
                 </span>
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#00A86B]/60 rounded-full group-hover:w-8 transition-all duration-500" />
               </div>
             ))}
           </div>

@@ -89,7 +89,7 @@ const dictionary = {
     "loc.chuko": "ጩቆ",
     // --- Middle Body Layer ---
     "grid.heading": "ልዩና ተመራጭ ማስታወቂያዎች",
-    "grid.chatCTA": "በቴሌግራም አውራ",
+    "grid.chatCTA": "በቴሌግራም",
     "grid.callCTA": "ቀጥታ ደውል",
     "grid.viewAll": "ሁሉንም ማስታወቂያዎች አሳይ",
     "badge.verifiedCarta": "ካርታ የተረጋገጠ",

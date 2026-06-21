@@ -298,7 +298,7 @@ const dictionary = {
 
         /* ── Card CTAs ── */
         "cta.call": "ቀጥታ ደውል",
-        "cta.whatsapp": "በቴሌግራም አውራ",
+        "cta.whatsapp": "በቴሌግራም",
 
         /* ── Card Badges ── */
         "badge.verifiedCarta": "ካርታ የተረጋገጠ",

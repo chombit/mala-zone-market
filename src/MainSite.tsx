@@ -10,7 +10,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import ZoneFilterSidebar, { ActiveZone, FilterState } from './components/ZoneFilterSidebar';
 import ZoneCatalogGrid from './components/ZoneCatalogGrid';
-import MalaAgentsBanner from './components/MalaAgentsBanner';
+import { MalaAgentsUnified } from './components/MalaAgentsUnified';
 import Footer from './components/Footer';
 import AboutPage from './components/pages/AboutPage';
 import ContactPage from './components/pages/ContactPage';
@@ -121,7 +121,7 @@ const MainSite: React.FC = () => {
 
         {/* ── Mala-Agents Recruitment Banner ───────────────────── */}
         <div id="agents">
-          <MalaAgentsBanner />
+          <MalaAgentsUnified />
         </div>
       </main>
 
