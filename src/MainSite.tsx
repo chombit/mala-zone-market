@@ -103,7 +103,7 @@ const MainSite: React.FC = () => {
         {/* ── Split-Screen Catalog Section ──────────────────────── */}
         <div
           id="listings-catalog"
-          className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12"
+          className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4"
         >
           <div className="flex flex-col lg:flex-row gap-8">
             <ZoneFilterSidebar

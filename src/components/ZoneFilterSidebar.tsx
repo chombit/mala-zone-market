@@ -69,13 +69,13 @@ const FilterSelect: React.FC<{
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
-      <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1">
+      <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1 font-sans">
         {label}
       </label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl px-4 py-3.5 text-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none hover:border-green-500/40 dark:hover:border-green-500/30 transition-all duration-200"
+        className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl px-4 py-3.5 text-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none hover:border-[#00A86B]/40 dark:hover:border-[#00A86B]/30 transition-all duration-200 font-sans tracking-wide leading-relaxed"
       >
         <span className="truncate">{selectedOption.label}</span>
         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
@@ -91,8 +91,8 @@ const FilterSelect: React.FC<{
                   onChange(opt.value);
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${value === opt.value
-                  ? "text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-500/5"
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 font-sans tracking-wide leading-relaxed ${value === opt.value
+                  ? "text-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
                   : "text-slate-700 dark:text-slate-300"
                   }`}
               >
@@ -206,17 +206,17 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
 
       {/* ── Text Search ── */}
       <div className="mb-6">
-        <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1">
+        <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1 font-sans">
           {language === "amharic" ? "በቁልፍ ቃል ፈልግ" : "Search by Keyword"}
         </label>
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-green-500 transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#00A86B] transition-colors" />
           <input
             type="text"
             value={filters.search}
             onChange={(e) => onFilterChange("search", e.target.value)}
             placeholder={language === "amharic" ? "ለምሳሌ፦ ቪትዝ፣ ቪላ..." : "e.g. Vitz, Villa..."}
-            className="w-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:border-green-500/40 dark:focus:border-green-500/30 transition-all duration-200"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:border-[#00A86B]/40 dark:focus:border-[#00A86B]/30 transition-all duration-200 font-sans tracking-wide leading-relaxed"
           />
         </div>
       </div>

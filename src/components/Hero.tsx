@@ -25,6 +25,7 @@ import {
   Compass,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import { useMouseParallax } from "@/hooks/useWorldClassAnimations";
 
 /* ────────────────────────────────────────────
    Icon mapping for categories
@@ -64,10 +65,45 @@ interface HeroProps {
 }
 
 /* ────────────────────────────────────────────
+   Animated Counter Hook
+   ──────────────────────────────────────────── */
+const useAnimatedCounter = (target: number, duration: number = 2000) => {
+  const [count, setCount] = useState(0);
+  const countRef = useRef(0);
+  const startTimeRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const animate = (timestamp: number) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const progress = Math.min((timestamp - startTimeRef.current) / duration, 1);
+      
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const currentCount = Math.floor(easeOutQuart * target);
+      
+      if (currentCount !== countRef.current) {
+        countRef.current = currentCount;
+        setCount(currentCount);
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+    return () => { startTimeRef.current = null; };
+  }, [target, duration]);
+
+  return count;
+};
+
+/* ────────────────────────────────────────────
    Component
    ──────────────────────────────────────────── */
 const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
   const { t, language } = useLanguage();
+  const { x, y } = useMouseParallax(25, 0.06);
 
   /* Deduplicate slides by category_id — keep only the first occurrence */
   const dedupeSlides = (arr: Slide[]): Slide[] => {
@@ -312,7 +348,14 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
         <div className="w-full max-w-6xl flex flex-col items-center gap-6 sm:gap-7">
 
           {/* ── 1. STRICT PLATFORM BRAND HEADING ── */}
-          <h1 className="text-6xl sm:text-7xl lg:text-[8.5rem] font-black leading-[0.85] tracking-tighter uppercase italic text-center animate-fade-in-up mb-5 flex justify-center">
+          <h1 
+            className="text-6xl sm:text-7xl lg:text-[8.5rem] font-black leading-[0.85] tracking-tighter uppercase italic text-center animate-fade-in-up mb-5 flex justify-center"
+            style={{
+              transform: `translate3d(${x * 0.3}px, ${y * 0.3}px, 0)`,
+              willChange: 'transform',
+              transition: 'transform 0.1s ease-out'
+            }}
+          >
             <span className="text-malazone-green drop-shadow-[0_0_40px_rgba(0,168,107,0.3)]">
               MALA
             </span>
@@ -322,7 +365,14 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           </h1>
 
           {/* ── 2. LOCALIZED MOTTO SEGREGATION ── */}
-          <div className="flex items-center justify-center gap-3 animate-fade-in-up mb-6">
+          <div 
+            className="flex items-center justify-center gap-3 animate-fade-in-up mb-6"
+            style={{
+              transform: `translate3d(${x * 0.2}px, ${y * 0.2}px, 0)`,
+              willChange: 'transform',
+              transition: 'transform 0.1s ease-out'
+            }}
+          >
             <div className="flex items-center gap-3 bg-white/60 dark:bg-black/30 backdrop-blur-md px-6 py-2.5 rounded-full border border-slate-200/50 dark:border-white/10 shadow-lg dark:shadow-none">
               <Sparkles className="w-4 h-4 text-[#00A86B] animate-pulse" />
               <span className="text-slate-700 dark:text-slate-200 font-bold text-[11px] sm:text-sm uppercase tracking-[0.25em]">
@@ -333,12 +383,26 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           </div>
 
           {/* ── 3. SUB-HEADLINE ── */}
-          <p className="text-sm sm:text-base lg:text-lg font-medium tracking-tight max-w-2xl mx-auto text-center leading-relaxed animate-fade-in-up text-slate-600 dark:text-slate-400 transition-colors duration-500">
+          <p 
+            className="text-sm sm:text-base lg:text-lg font-medium tracking-tight max-w-2xl mx-auto text-center leading-relaxed animate-fade-in-up text-slate-600 dark:text-slate-400 transition-colors duration-500"
+            style={{
+              transform: `translate3d(${x * 0.15}px, ${y * 0.15}px, 0)`,
+              willChange: 'transform',
+              transition: 'transform 0.1s ease-out'
+            }}
+          >
             {t("hero.subtitle")}
           </p>
 
           {/* ── Inline Search Bar ─────────────────────────────────── */}
-          <div className="w-full max-w-4xl animate-fade-in-up relative z-50">
+          <div 
+            className="w-full max-w-4xl animate-fade-in-up relative z-50"
+            style={{
+              transform: `translate3d(${x * 0.1}px, ${y * 0.1}px, 0)`,
+              willChange: 'transform',
+              transition: 'transform 0.1s ease-out'
+            }}
+          >
             <div
               className="
                 flex flex-col sm:flex-row items-stretch
@@ -502,7 +566,14 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           </div>
 
           {/* ── Category Icon Pills ───────────────────────────────── */}
-          <div className="flex items-center justify-center flex-wrap gap-2.5 sm:gap-3 animate-fade-in-up">
+          <div 
+            className="flex items-center justify-center flex-wrap gap-2.5 sm:gap-3 animate-fade-in-up"
+            style={{
+              transform: `translate3d(${x * 0.08}px, ${y * 0.08}px, 0)`,
+              willChange: 'transform',
+              transition: 'transform 0.1s ease-out'
+            }}
+          >
             {/* "All" pill */}
             <button
               onClick={() => {
@@ -537,7 +608,14 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           </div>
 
           {/* ── Stats Strip ─────────────────────────────────────────── */}
-          <div className="w-full max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 animate-fade-in-up">
+          <div 
+            className="w-full max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 animate-fade-in-up perspective-[1200px]"
+            style={{
+              transform: `translate3d(${x * 0.05}px, ${y * 0.05}px, 0)`,
+              willChange: 'transform',
+              transition: 'transform 0.1s ease-out'
+            }}
+          >
             {[
               {
                 label: t("stats.clients"),
@@ -569,8 +647,9 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                   bg-white/70 dark:bg-white/[0.04]
                   border border-slate-200 dark:border-white/[0.06]
                   hover:border-[#00A86B]/40
-                  hover:-translate-y-2 hover:scale-[1.02]
-                  hover:shadow-[0_16px_32px_rgba(0,168,107,0.15)]
+                  [transform-style:preserve-3d] transform-gpu
+                  hover:[transform:perspective(1200px)_rotateY(-12deg)_rotateX(6deg)_translateZ(32px)]
+                  hover:shadow-[0_32px_56px_rgba(0,168,107,0.25)]
                   hover:ring-1 hover:ring-[#00A86B]/20
                   hover:bg-white/90 dark:hover:bg-white/[0.08]
                   hover:backdrop-blur-2xl
@@ -583,13 +662,14 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                 <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-malazone-green/10 flex items-center justify-center text-malazone-green dark:text-malazone-green animate-float group-hover:animate-none group-hover:bg-[#00A86B] group-hover:text-white group-hover:scale-125 group-hover:-rotate-6 group-hover:shadow-[0_6px_16px_rgba(0,168,107,0.3)] transition-all duration-500">
                   {stat.icon}
                 </div>
-                <span className="text-xl sm:text-2xl lg:text-3xl font-black leading-none tracking-tighter text-malazone-navy dark:text-white group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-500">
+                <span className="text-xl sm:text-2xl lg:text-3xl font-black leading-none tracking-tighter text-malazone-navy dark:text-white group-hover:text-[#00A86B] group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-500">
                   {stat.val}
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-bold leading-relaxed tracking-wider uppercase text-center px-1 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 group-hover:tracking-[0.2em] transition-all duration-500 font-sans antialiased">
+                <span className="text-[10px] sm:text-[11px] font-bold leading-relaxed tracking-wider uppercase text-center px-1 text-slate-500 dark:text-slate-400 group-hover:text-[#00A86B] group-hover:tracking-[0.2em] transition-all duration-500 font-sans antialiased">
                   {stat.label}
                 </span>
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#00A86B]/60 rounded-full group-hover:w-8 transition-all duration-500" />
+                <span className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/60 via-transparent to-[#00A86B]/5 dark:from-white/[0.02] dark:to-[#00A86B]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               </div>
             ))}
           </div>

@@ -4,7 +4,7 @@
  * © 2026 Malazone Technologies PLC
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Phone,
   Send,
@@ -207,8 +207,8 @@ const fallbackListings: Listing[] = [
   {
     id: "motor-3",
     category: "motors",
-    title_en: "Hyundai Elantra 2023 EV - Zero Mileage",
-    title_am: "ሃዩንዳይ ኢላንትራ 2023 ኤሌክትሪክ - ዜሮ ኪሎሜትር",
+    title_en: "Hyundai Elantra 2023 EV - New / አዲስ",
+    title_am: "ሃዩንዳይ ኢላንትራ 2023 ኤሌክትሪክ - አዲስ",
     price: 4900000,
     price_suffix: "fixed",
     images: ["https://images.unsplash.com/photo-1563720223185-11003d516935?w=800&q=80&fm=webp"],
@@ -476,20 +476,22 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
     setVisibleLimit(prev => prev + 6);
   };
 
+  const visibleCards = filteredListings.slice(0, visibleLimit);
+
   return (
     <section id="listings-catalog" className="bg-slate-50 dark:bg-slate-950 py-16 transition-colors duration-300">
 
-      {/* Upper Title Banner block matching Image 2 */}
+      {/* Upper Title Banner block */}
       <div className="max-w-7xl mx-auto px-4 mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-1.5 h-8 bg-emerald-600 dark:bg-green-500 rounded-full" />
-          <span className="text-emerald-600 dark:text-green-500 text-[11px] font-black uppercase tracking-[0.3em]">
-            {isAm ? "ልዩና ታማኝ የዲጂታል ገበያ" : "Verified Premium Deals"}
-          </span>
-        </div>
-        <h2 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic leading-none transition-colors duration-300">
-          {t.gridHeading}
+        <h2 className="text-3xl sm:text-4xl font-sans font-black text-slate-900 dark:text-white tracking-tight leading-snug transition-colors duration-300">
+          {isAm ? (
+            <>የተረጋገጡ የ <span className="text-[#00A86B] lowercase font-bold tracking-normal">malazone</span> ይፋዊ ማህደሮች</>
+          ) : (
+            <><span className="text-[#00A86B] lowercase font-bold tracking-normal">malazone</span> Verified Ledgers</>
+          )}
         </h2>
+
+        <div className="w-14 h-1 bg-[#00A86B] rounded-full mt-4 opacity-90 shadow-[0_2px_10px_rgba(0,168,107,0.3)]" />
       </div>
 
       {/* Main Split-Screen Desktop Layout */}
@@ -520,7 +522,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
               <select
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-emerald-600 dark:focus:border-green-500 transition-colors"
+                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
               >
                 <option value="all">{t.allOption}</option>
                 <option value="sidama">{isAm ? "ሲዳማ" : "Sidama"}</option>
@@ -536,7 +538,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
               <select
                 value={locality}
                 onChange={(e) => setLocality(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-emerald-600 dark:focus:border-green-500 transition-colors"
+                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
               >
                 <option value="all">{t.allOption}</option>
                 <option value="tabor">{isAm ? "ታቦር (ሀዋሳ)" : "Tabor (Hawassa)"}</option>
@@ -556,7 +558,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
               <select
                 value={intent}
                 onChange={(e) => setIntent(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-emerald-600 dark:focus:border-green-500 transition-colors"
+                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
               >
                 <option value="all">{t.allOption}</option>
                 <option value="buy">{isAm ? "ለመግዛት" : "To Buy"}</option>
@@ -582,8 +584,8 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                     <button
                       key={btn.key}
                       onClick={() => setLandType(btn.key)}
-                      className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border ${landType === btn.key
-                          ? "bg-emerald-600 text-white border-emerald-600 dark:bg-green-600 dark:border-green-600"
+                      className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border font-sans tracking-wide leading-relaxed ${landType === btn.key
+                          ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
                           : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                         }`}
                     >
@@ -605,7 +607,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                   <select
                     value={plateCode}
                     onChange={(e) => setPlateCode(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-emerald-600 dark:focus:border-green-500 transition-colors"
+                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
                   >
                     <option value="all">{t.allOption}</option>
                     <option value="Code 2">Code 2</option>
@@ -621,7 +623,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                   <select
                     value={fuelType}
                     onChange={(e) => setFuelType(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-emerald-600 dark:focus:border-green-500 transition-colors"
+                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
                   >
                     <option value="all">{t.allOption}</option>
                     <option value="benzine">{isAm ? "በንዚን" : "Benzine"}</option>
@@ -644,9 +646,9 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       <button
                         key={btn.key}
                         onClick={() => setCondition(btn.key)}
-                        className={`flex-1 py-2 rounded-lg text-center text-[10px] font-bold transition-all border ${condition === btn.key
-                            ? "bg-emerald-600 text-white border-emerald-600 dark:bg-green-600 dark:border-green-600"
-                            : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                      className={`flex-1 py-2 rounded-lg text-center text-[10px] font-bold transition-all border font-sans tracking-wide leading-relaxed ${condition === btn.key
+                          ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
+                          : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                           }`}
                       >
                         {isAm ? btn.label_am : btn.label_en}
@@ -672,8 +674,8 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                     <button
                       key={btn.key}
                       onClick={() => setRentalInterval(btn.key)}
-                      className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border ${rentalInterval === btn.key
-                          ? "bg-emerald-600 text-white border-emerald-600 dark:bg-green-600 dark:border-green-600"
+                      className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border font-sans tracking-wide leading-relaxed ${rentalInterval === btn.key
+                          ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
                           : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                         }`}
                     >
@@ -699,8 +701,8 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                     <button
                       key={btn.key}
                       onClick={() => setMachineryScope(btn.key)}
-                      className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border ${machineryScope === btn.key
-                          ? "bg-emerald-600 text-white border-emerald-600 dark:bg-green-600 dark:border-green-600"
+                      className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border font-sans tracking-wide leading-relaxed ${machineryScope === btn.key
+                          ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
                           : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                         }`}
                     >
@@ -731,7 +733,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredListings.slice(0, visibleLimit).map((listing) => {
+              {visibleCards.map((listing) => {
                 // Parse image string if it's JSON from API
                 const imagesArray = Array.isArray(listing.images)
                   ? listing.images
@@ -761,17 +763,17 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                 return (
                   <div
                     key={listing.id}
-                    className="group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-3xl overflow-hidden hover:border-emerald-500/30 dark:hover:border-green-500/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all duration-500 shadow-md hover:shadow-xl flex flex-col h-full relative"
+                    className="group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-3xl hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col h-full relative transition-all duration-500"
                   >
                     {/* Glowing Accent Border Line */}
                     <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-emerald-500/0 via-emerald-500/0 to-emerald-500/0 group-hover:via-emerald-500 dark:group-hover:via-green-500 transition-all duration-700" />
 
                     {/* Image Container */}
-                    <div className="relative aspect-[16/11] w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
+                    <div className="relative aspect-[16/11] w-full overflow-hidden rounded-t-3xl bg-slate-100 dark:bg-slate-950">
                       <img
                         src={mainImage}
                         alt={isAm ? listing.title_am : listing.title_en}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                         loading="lazy"
                       />
 
@@ -789,7 +791,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       {/* Premium Listing Pulsing Star Badge */}
                       {listing.is_premium ? (
                         <div className="absolute top-4 right-4">
-                          <div className="w-8 h-8 rounded-full bg-emerald-600 dark:bg-green-600 flex items-center justify-center text-white shadow-xl border border-white/20 hover:scale-105 transition-transform duration-300">
+                          <div className="w-8 h-8 rounded-full bg-emerald-600 dark:bg-green-600 flex items-center justify-center text-white shadow-xl border border-white/20 animate-pulse hover:animate-none hover:scale-110 transition-all duration-300">
                             <Star className="w-4 h-4 fill-current" />
                           </div>
                         </div>
@@ -863,7 +865,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
                         <a
                           href={`tel:${listing.phone}`}
-                          className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group/btn"
+                          className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/50 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/[0.12] hover:border-slate-400 dark:hover:border-white/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group/btn"
                         >
                           <Phone className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover/btn:text-slate-900 dark:group-hover/btn:text-white transition-colors" />
                           <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover/btn:text-slate-900 dark:group-hover/btn:text-white">
@@ -874,7 +876,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                           href={`https://t.me/+${listing.whatsapp.replace("+", "")}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 text-white group/tg"
+                          className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-blue-500/10 hover:shadow-[0_6px_15px_rgba(36,161,222,0.3)] transition-all duration-300 text-white group/tg"
                         >
                           <Send className="w-3.5 h-3.5 text-white group-hover/tg:translate-x-0.5 group-hover/tg:-translate-y-0.5 transition-transform" />
                           <span className="text-[10px] font-black uppercase tracking-widest text-white">
@@ -888,6 +890,8 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
               })}
             </div>
           )}
+
+
 
           {/* 3. SCROLLING & DATA PAGINATION ARCHITECTURE */}
           {filteredListings.length > visibleLimit && (

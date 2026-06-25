@@ -4,7 +4,7 @@
  * © 2026 Malazone Technologies PLC
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Phone,
   Send,
@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import { useScrollReveal, use3DTilt } from "@/hooks/useWorldClassAnimations";
 import type { ActiveZone } from "./ZoneFilterSidebar";
 import type { FilterState } from "./ZoneFilterSidebar";
 
@@ -321,6 +322,212 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
 };
 
 /* ────────────────────────────────────────────
+   Listing Card Component
+   ──────────────────────────────────────────── */
+const ListingCard: React.FC<{
+  item: any;
+  index: number;
+  gridVisible: boolean;
+}> = ({ item, index, gridVisible }) => {
+  const { language, t } = useLanguage();
+  const { ref: tiltRef, style: tiltStyle } = use3DTilt(10, 1200);
+
+  const formatPrice = (n: number) => n.toLocaleString();
+
+  return (
+    <article
+      ref={tiltRef}
+      style={{ 
+        ...tiltStyle,
+        animationDelay: `${index * 0.1}s`,
+        opacity: gridVisible ? 1 : 0,
+        transform: gridVisible 
+          ? tiltStyle.transform 
+          : 'translateY(20px)',
+        transition: `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`
+      }}
+      className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-4 hover:scale-[1.03] hover:shadow-[0_32px_64px_rgba(0,168,107,0.25)] shadow-md flex flex-col relative transition-all duration-500 ease-out"
+    >
+      {/* ── Image Container ── */}
+      <div className="relative h-52 overflow-hidden">
+        <img
+          src={item.image}
+          alt={language === "amharic" ? item.titleAm : item.titleEn}
+          loading="lazy"
+          crossOrigin="anonymous"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 group-hover:opacity-100" />
+
+        {/* Glassmorphic Status Badge */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/25 dark:bg-black/35 backdrop-blur-xl border border-white/30 rounded-xl px-3 py-1.5 group-hover:scale-105 transition-transform duration-300">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#00A86B] animate-pulse" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+          <span className="text-[11px] font-semibold text-white tracking-wide">
+            {t(item.badgeKey as any)}
+          </span>
+        </div>
+
+        {/* Premium Star */}
+        {item.isPremium && (
+          <div className="absolute top-3 right-3 w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-400">
+            <Sparkles className="w-4.5 h-4.5 text-white" />
+          </div>
+        )}
+      </div>
+
+      {/* ── Card Body ── */}
+      <div className="p-5 flex flex-col flex-grow">
+        {/* Star Rating */}
+        <div className="mb-2">
+          <StarRating rating={item.rating} />
+        </div>
+
+        {/* Title */}
+        <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white leading-snug mb-3 line-clamp-2 group-hover:text-[#00A86B] transition-all duration-300 font-sans tracking-wide">
+          {language === "amharic" ? item.titleAm : item.titleEn}
+        </h3>
+
+        {/* Info Micro-Pills */}
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {/* Location pill */}
+          <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider group-hover:bg-[#00A86B]/10 group-hover:border-[#00A86B]/20 transition-all duration-300">
+            <MapPin className="w-3.5 h-3.5 text-red-500" />
+            {item.locationTag}
+          </span>
+
+          {/* Car-specific pills */}
+          {item.zone === "car" && item.plateCode && (
+            <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider group-hover:bg-[#00A86B]/10 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <FileText className="w-3.5 h-3.5 text-amber-500" />
+              {item.plateCode}
+            </span>
+          )}
+          {item.zone === "car" && item.fuelTag && (
+            <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider group-hover:bg-[#00A86B]/10 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <Zap className="w-3.5 h-3.5 text-[#00A86B]" />
+              {item.fuelTag}
+            </span>
+          )}
+
+          {/* House-specific pills */}
+          {item.zone === "house" && item.sqm && (
+            <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider group-hover:bg-[#00A86B]/10 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <Ruler className="w-3.5 h-3.5 text-blue-500" />
+              {item.sqm} SQM
+            </span>
+          )}
+        </div>
+
+        {/* Zone-Specific Data Rows */}
+        {item.zone === "car" && (
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 text-center group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <p className="text-[9px] text-slate-400 uppercase mb-0.5">{t("label.plateCode")}</p>
+              <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.plateCode}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 text-center group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <p className="text-[9px] text-slate-400 uppercase mb-0.5">{t("label.fuel")}</p>
+              <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.fuelType}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 text-center group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <p className="text-[9px] text-slate-400 uppercase mb-0.5">{t("label.condition")}</p>
+              <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.condition}</p>
+            </div>
+          </div>
+        )}
+
+        {item.zone === "house" && (
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2 group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <Key className="w-4.5 h-4.5 text-amber-500" />
+              <div>
+                <p className="text-[9px] text-slate-400 uppercase">{t("label.titleDeed")}</p>
+                <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300 capitalize">{item.titleDeed}</p>
+              </div>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2 group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <Ruler className="w-4.5 h-4.5 text-[#00A86B]" />
+              <div>
+                <p className="text-[9px] text-slate-400 uppercase">{t("label.sqm")}</p>
+                <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.sqm} Sqm</p>
+              </div>
+            </div>
+            {item.bedrooms && (
+              <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2 group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
+                <Building2 className="w-4.5 h-4.5 text-blue-500" />
+                <div>
+                  <p className="text-[9px] text-slate-400 uppercase">Bedrooms</p>
+                  <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.bedrooms}</p>
+                </div>
+              </div>
+            )}
+            {item.bathrooms && (
+              <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2 group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
+                <CheckCircle2 className="w-4.5 h-4.5 text-[#00A86B]" />
+                <div>
+                  <p className="text-[9px] text-slate-400 uppercase">Bathrooms</p>
+                  <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.bathrooms}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {item.zone === "machinery" && (
+          <div className="mb-4">
+            <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2 group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
+              <Settings className="w-4.5 h-4.5 text-amber-500" />
+              <div>
+                <p className="text-[9px] text-slate-400 uppercase">{t("label.billing")}</p>
+                <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.billingTrack}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Price Block ── */}
+        <div className="mt-auto">
+          <div className="flex items-baseline justify-between mb-4">
+            <div>
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white group-hover:text-[#00A86B] transition-colors duration-300">
+                {formatPrice(item.price)}
+              </span>
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 ml-1.5">
+                {t(item.priceSuffixKey as any)}
+              </span>
+            </div>
+            <span className="text-[10px] font-extrabold text-red-500 dark:text-red-400 uppercase tracking-wider">
+              {t(item.priceTagKey as any)}
+            </span>
+          </div>
+
+          {/* ── Delala Eliminator Buttons ── */}
+          <div className="flex gap-2.5">
+            <a
+              href={`tel:${item.phone}`}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 hover:bg-gradient-to-r hover:from-[#00A86B] hover:to-emerald-600 hover:border-[#00A86B] hover:text-white backdrop-blur-md text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all duration-400 hover:scale-[1.03] active:scale-[0.97] shadow-sm hover:shadow-xl hover:shadow-emerald-500/30 dark:shadow-none font-sans"
+            >
+              <Phone className="w-4.5 h-4.5 text-slate-500 dark:text-slate-400 group-hover:text-white transition-colors" />
+              {t("cta.call")}
+            </a>
+            <a
+              href={`https://wa.me/${item.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-[#00A86B] to-emerald-600 text-white text-xs sm:text-sm font-extrabold uppercase tracking-wider hover:from-emerald-600 hover:to-emerald-700 transition-all duration-400 hover:scale-[1.03] active:scale-[0.97] shadow-lg hover:shadow-2xl hover:shadow-emerald-500/40"
+            >
+              <Send className="w-4.5 h-4.5" />
+              {t("cta.whatsapp")}
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+/* ────────────────────────────────────────────
    Component
    ──────────────────────────────────────────── */
 const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
@@ -329,6 +536,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
 }) => {
   const { language, t } = useLanguage();
   const [visibleCount, setVisibleCount] = useState(6);
+  const { ref: gridRef, isVisible: gridVisible } = useScrollReveal({ threshold: 0.1 });
 
   /* ── Filter Logic ── */
   const filtered = useMemo(() => {
@@ -399,24 +607,40 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   const formatPrice = (n: number) => n.toLocaleString();
 
   return (
-    <section className="flex-1 min-w-0">
+    <section 
+      ref={gridRef}
+      className={`flex-1 min-w-0 transition-all duration-700 ease-out ${
+        gridVisible 
+          ? 'animate-fade-in-up opacity-100 translate-y-0' 
+          : 'opacity-0 translate-y-8'
+      }`}
+    >
       {/* ── Section Heading ── */}
       <div className="mb-8">
-        <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-          <span className="bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-            {t(headingKey)}
-          </span>
+        <h2 className="text-3xl sm:text-4xl font-sans font-black text-slate-900 dark:text-white tracking-tight leading-snug transition-colors duration-300">
+          {language === "amharic" ? (
+            <>የተረጋገጡ የ <span className="text-[#00A86B] lowercase font-bold tracking-normal">malazone</span> ይፋዊ ማህደሮች</>
+          ) : (
+            <><span className="text-[#00A86B] lowercase font-bold tracking-normal">malazone</span> Verified Ledgers</>
+          )}
         </h2>
-        <div className="mt-2.5 h-1 w-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-600" />
+
+        <div className="w-14 h-1 bg-[#00A86B] rounded-full mt-4 opacity-90 shadow-[0_2px_10px_rgba(0,168,107,0.3)]" />
       </div>
 
       {/* ── Card Grid ── */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {visibleListings.map((item) => (
+          {visibleListings.map((item, index) => (
             <article
               key={item.id}
-              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:shadow-xl hover:shadow-green-900/5 dark:hover:shadow-green-500/5 hover:border-green-500/20 transition-all duration-300 flex flex-col"
+              style={{ 
+                animationDelay: `${index * 0.1}s`,
+                opacity: gridVisible ? 1 : 0,
+                transform: gridVisible ? 'translateY(0)' : 'translateY(20px)',
+                transition: `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`
+              }}
+              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col relative transition-all duration-500"
             >
               {/* ── Image Container ── */}
               <div className="relative h-52 overflow-hidden">
@@ -431,7 +655,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
 
                 {/* Glassmorphic Status Badge */}
                 <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/20 dark:bg-black/30 backdrop-blur-md border border-white/20 rounded-lg px-2.5 py-1.5">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />
                   <CheckCircle2 className="w-3 h-3 text-white" />
                   <span className="text-[11px] font-semibold text-white tracking-wide">
                     {t(item.badgeKey as any)}
@@ -454,7 +678,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                 </div>
 
                 {/* Title */}
-                <h3 className="text-[15px] font-bold text-slate-900 dark:text-white leading-snug mb-3 line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                <h3 className="text-[15px] font-bold text-slate-900 dark:text-white leading-snug mb-3 line-clamp-2 group-hover:text-[#00A86B] transition-colors font-sans tracking-wide">
                   {language === "amharic" ? item.titleAm : item.titleEn}
                 </h3>
 
@@ -475,7 +699,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   )}
                   {item.zone === "car" && item.fuelTag && (
                     <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 rounded-md px-2 py-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                      <Zap className="w-3 h-3 text-green-500" />
+                      <Zap className="w-3 h-3 text-[#00A86B]" />
                       {item.fuelTag}
                     </span>
                   )}
@@ -517,7 +741,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                       </div>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2">
-                      <Ruler className="w-4 h-4 text-green-500" />
+                      <Ruler className="w-4 h-4 text-[#00A86B]" />
                       <div>
                         <p className="text-[9px] text-slate-400 uppercase">{t("label.sqm")}</p>
                         <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{item.sqm} Sqm</p>
@@ -534,7 +758,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                     )}
                     {item.bathrooms && (
                       <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <CheckCircle2 className="w-4 h-4 text-[#00A86B]" />
                         <div>
                           <p className="text-[9px] text-slate-400 uppercase">Bathrooms</p>
                           <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{item.bathrooms}</p>
@@ -576,7 +800,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   <div className="flex gap-2.5">
                     <a
                       href={`tel:${item.phone}`}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 hover:bg-slate-100 dark:bg-slate-900/50 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md dark:shadow-none"
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 hover:bg-slate-100 dark:bg-slate-900/50 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md dark:shadow-none font-sans"
                     >
                       <Phone className="w-4 h-4 text-slate-500 dark:text-slate-400 transition-colors" />
                       {t("cta.call")}
@@ -585,7 +809,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                       href={`https://t.me/+${item.whatsapp.replace("+", "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 group/tg"
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-[0_6px_15px_rgba(36,161,222,0.3)] group/tg font-sans"
                     >
                       <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       {t("cta.whatsapp")}
@@ -608,7 +832,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
         <div className="flex justify-center mt-10">
           <button
             onClick={() => setVisibleCount((p) => p + 6)}
-            className="flex items-center gap-2 px-8 py-3 rounded-full border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 hover:border-green-500 text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:text-green-600 dark:hover:text-green-400 transition-all"
+            className="flex items-center gap-2 px-8 py-3 rounded-full border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 hover:border-[#00A86B] text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:text-[#00A86B] transition-all font-sans"
           >
             {t("grid.viewAll")}
             <ChevronRight className="w-4 h-4" />
@@ -616,10 +840,6 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
         </div>
       )}
 
-      {/* ── Executive Authority Footnote ── */}
-      <div className="mt-16 pt-6 border-t border-slate-200/80 dark:border-white/5 text-center">
-        <p className="text-xs font-medium tracking-[0.2em] uppercase text-slate-500 dark:text-slate-500"></p>
-      </div>
     </section>
   );
 };
