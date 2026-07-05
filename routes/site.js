@@ -11,6 +11,25 @@ const db = require("../database/db");
 const router = express.Router();
 
 // ──────────────────────────────────────────────────────────────
+// TRANSLATIONS (Public CMS Text)
+// ──────────────────────────────────────────────────────────────
+router.get("/translations", async (req, res) => {
+  try {
+    const [translations] = await db.execute(
+      "SELECT text_key, en_value, am_value, section FROM translations"
+    );
+    // Convert array to a key-value map for the frontend context
+    const textsMap = translations.reduce((acc, row) => {
+      acc[row.text_key] = { en: row.en_value, amharic: row.am_value, section: row.section };
+      return acc;
+    }, {});
+    res.json({ success: true, data: textsMap });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
 // PROMO BANNERS
 // ──────────────────────────────────────────────────────────────
 router.get("/promo-banners", async (req, res) => {

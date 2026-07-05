@@ -10,6 +10,7 @@ import React, {
     useContext,
     useState,
     useCallback,
+    useEffect,
     ReactNode,
 } from "react";
 
@@ -39,6 +40,7 @@ const dictionary = {
         "zone.house": "House & Land",
         "zone.ceremony": "Wedding & DJ Gear",
         "zone.machinery": "Heavy Machineries",
+        "zone.electronics": "Electronics Zone 📱",
 
         /* ── Geographic Zones ── */
         "geo.all": "All Areas",
@@ -54,12 +56,13 @@ const dictionary = {
         "nav.cat3": "Hotels & Guest Houses",
         "nav.cat4": "Wedding & DJ Gear",
         "nav.cat5": "Heavy Machineries",
+        "nav.cat6": "Electronics",
         "nav.agentBtn": "Mala-Agent Zone ",
 
         /* ── Hero ── */
         "hero.tagline": "The Zone of Smart Solutions",
         "hero.subtitle":
-            "Directly trade Land, Vehicles, Luxury Halls, and Heavy Industry without middlemen.",
+            "Directly trade Land, Vehicles, Luxury Halls, Heavy Industry, and Electronics without middlemen.",
 
         /* ── Search Bar ── */
         "search.zone": "Search Zone",
@@ -71,7 +74,7 @@ const dictionary = {
         /* ── Stats Strip ── */
         "stats.clients": "Happy Clients",
         "stats.listings": "Active Listings",
-        "stats.vehicles": "Vehicles Live",
+        "stats.electronics": "Verified Electronics",
         "stats.trade": "Direct Trade",
 
         /* ── Sidebar Filters ── */
@@ -133,8 +136,8 @@ const dictionary = {
         "grid.heading.car": "MALA Specially Featured Car Zone Listings",
         "grid.heading.house": "MALA Specially Featured House Zone Listings",
         "grid.heading.ceremony": "MALA Specially Featured Ceremony Zone Listings",
-        "grid.heading.machinery":
-            "MALA Specially Featured Machinery Zone Listings",
+        "grid.heading.machinery": "MALA Specially Featured Machinery Zone Listings",
+        "grid.heading.electronics": "MALA Specially Featured Electronics Zone Listings",
         "grid.viewAll": "View All Assets",
         "grid.empty": "No listings found for the selected zone parameters.",
 
@@ -197,6 +200,7 @@ const dictionary = {
         "zone.house": "ቤትና መሬት",
         "zone.ceremony": "የሰርግና የደግስ ዕቃዎች",
         "zone.machinery": "ከባድ ማሽነሪዎች",
+        "zone.electronics": "ኤሌክትሮኒክስ ዞን 📱",
 
         /* ── Geographic Zones ── */
         "geo.all": "ሁሉም መገኛዎች",
@@ -212,12 +216,13 @@ const dictionary = {
         "nav.cat3": "ሆቴልና ጌስት ሃውስ",
         "nav.cat4": "የሰርግና የደግስ ዕቃዎች",
         "nav.cat5": "ከባድ ማሽነሪዎች",
+        "nav.cat6": "ኤሌክትሮኒክስ",
         "nav.agentBtn": "የወኪል ወጣቶች ዞን",
 
         /* ── Hero ── */
         "hero.tagline": "የብልሃት እና የመፍትሔ ዞን",
         "hero.subtitle":
-            "መሬት፣ መኪና፣ የሰርግ አዳራሾች እና ከባድ ማሽነሪዎችን ያለምንም ደላላ ጣልቃ ገብነት በቀጥታ የሚያገኟበት ዲጂታል መላ!",
+            "መሬት፣ መኪና፣ የሰርግ አዳራሾች፣ ከባድ ማሽነሪዎች እና ኤሌክትሮኒክስን ያለምንም ደላላ ጣልቃ ገብነት በቀጥታ የሚያገኟበት ዲጂታል መላ!",
 
         /* ── Search Bar ── */
         "search.zone": "የንግድ ዘርፍ",
@@ -229,7 +234,7 @@ const dictionary = {
         /* ── Stats Strip ── */
         "stats.clients": "ደስተኛ ደንበኞች",
         "stats.listings": "ንቁ ማስታወቂያዎች",
-        "stats.vehicles": "ተሽከርካሪዎች በስራ ላይ",
+        "stats.electronics": "የተረጋገጡ ኤሌክትሮኒክስ",
         "stats.trade": "ቀጥተኛ ግይት",
 
         /* ── Sidebar Filters ── */
@@ -291,8 +296,8 @@ const dictionary = {
         "grid.heading.car": "MALA ልዩና ተመራጭ የመኪና ዞን ማስታወቂያዎች",
         "grid.heading.house": "MALA ልዩና ተመራጭ የቤትና ይዞታ ዞን ማስታወቂያዎች",
         "grid.heading.ceremony": "MALA ልዩና ተመራጭ የክብረ-በዓላት ዞን ማስታወቂያዎች",
-        "grid.heading.machinery":
-            "MALA ልዩና ተመራጭ የከባድ ማሽነሪዎች ዞን ማስታወቂያዎች",
+        "grid.heading.machinery": "MALA ልዩና ተመራጭ የከባድ ማሽነሪዎች ዞን ማስታወቂያዎች",
+        "grid.heading.electronics": "MALA ልዩና ተመራጭ የኤሌክትሮኒክስ ዞን ማስታወቂያዎች",
         "grid.viewAll": "ሁሉም ማስታወቂያዎች",
         "grid.empty": "በተመረጠው ዞን ውስጥ ምንም ማስታወቂያ አልተገኘም።",
 
@@ -347,7 +352,7 @@ type DictionaryKey = keyof typeof dictionary.en;
 
 interface ZoneLanguageContextValue {
     language: Language;
-    t: (key: DictionaryKey) => string;
+    t: (key: string) => string;
     toggleLanguage: () => void;
     setLanguage: (lang: Language) => void;
 }
@@ -361,12 +366,30 @@ export const ZoneLanguageProvider: React.FC<{ children: ReactNode }> = ({
     children,
 }) => {
     const [language, setLangState] = useState<Language>("amharic");
+    const [dynamicDict, setDynamicDict] = useState<Record<string, { en: string; amharic: string }>>({});
+
+    useEffect(() => {
+        // Fetch dynamic translations on boot
+        fetch('/api/translations')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setDynamicDict(data.data);
+                }
+            })
+            .catch(err => console.error("Failed to load dynamic translations:", err));
+    }, []);
 
     const t = useCallback(
-        (key: DictionaryKey): string => {
+        (key: string): string => {
+            // Check dynamic texts first, then fallback to static dictionary
+            if (dynamicDict[key] && dynamicDict[key][language]) {
+                return dynamicDict[key][language];
+            }
+            // @ts-ignore - allow string indexing for static dictionary fallback
             return dictionary[language][key] ?? key;
         },
-        [language]
+        [language, dynamicDict]
     );
 
     const toggleLanguage = useCallback(() => {

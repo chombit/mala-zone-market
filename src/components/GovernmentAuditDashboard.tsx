@@ -267,11 +267,11 @@ const QueuePanel: React.FC<QueuePanelProps> = ({ title, subtitle, countLabel, ic
   <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
     <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
       <div className="space-y-1">
-        <h2 className="flex items-center gap-3 text-lg font-black tracking-tight text-slate-900">
+        <h2 className="flex items-center gap-3 text-lg font-black tracking-tight text-malazone-navy">
           <span className="rounded-2xl bg-emerald-50 p-2 text-[#00A86B]">{icon}</span>
           {title}
         </h2>
-        <p className="text-sm text-slate-500">{subtitle}</p>
+        <p className="text-sm text-malazone-navy">{subtitle}</p>
       </div>
       <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-[#00A86B]">
         {countLabel}
@@ -544,7 +544,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
     currentVehicleForm.notes.trim().length >= 10;
 
   return (
-    <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-50 text-slate-900 shadow-sm" style={ethiopicFont}>
+    <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-50 text-malazone-navy shadow-sm" style={ethiopicFont}>
       <div className="border-b border-slate-200 bg-white px-6 py-6 sm:px-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4">
@@ -552,7 +552,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
               <p className="text-3xl font-black tracking-tight text-[#00A86B]">
                 malazone
               </p>
-              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-600">
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-malazone-navy">
                 የማዘጋጃ ቤት የሰነድ ማረጋገጫ ማዕከል | G2B Compliance Ledger
               </p>
             </div>
@@ -560,22 +560,22 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
 
           <div className="grid w-full gap-4 sm:grid-cols-3 lg:w-auto lg:min-w-[430px]">
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Officer Session</p>
-              <p className="mt-3 flex items-center gap-2 text-sm font-bold text-slate-900">
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy">Officer Session</p>
+              <p className="mt-3 flex items-center gap-2 text-sm font-bold text-malazone-navy">
                 <UserCheck className="h-4 w-4 text-[#00A86B]" />
                 Officer: {officerProfile.officerName}
               </p>
-              <p className="mt-2 text-xs text-slate-500">Bureau: {officerProfile.bureau}</p>
+              <p className="mt-2 text-xs text-malazone-navy">Bureau: {officerProfile.bureau}</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Pending Deeds</p>
-              <p className="mt-3 text-3xl font-black text-slate-900">{propertyQueue.length}</p>
-              <p className="mt-1 text-xs text-slate-500">Municipality archive cross-check queue</p>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy">Pending Deeds</p>
+              <p className="mt-3 text-3xl font-black text-malazone-navy">{propertyQueue.length}</p>
+              <p className="mt-1 text-xs text-malazone-navy">Municipality archive cross-check queue</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Pending Transport Logs</p>
-              <p className="mt-3 text-3xl font-black text-slate-900">{vehicleQueue.length}</p>
-              <p className="mt-1 text-xs text-slate-500">Vehicle ownership and crime status queue</p>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy">Pending Transport Logs</p>
+              <p className="mt-3 text-3xl font-black text-malazone-navy">{vehicleQueue.length}</p>
+              <p className="mt-1 text-xs text-malazone-navy">Vehicle ownership and crime status queue</p>
             </div>
           </div>
         </div>
@@ -604,7 +604,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
           <button
             type="button"
             onClick={() => void fetchPending()}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-malazone-navy transition hover:border-slate-300 hover:bg-slate-50"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             Refresh Queue
@@ -615,11 +615,11 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
           <div className="mx-auto max-w-6xl space-y-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-malazone-navy">
                   ጠቅላላ የሚጠበቁ ማረጋገጫዎች
                 </p>
-                <p className="mt-2 text-3xl font-black text-slate-900">{propertyQueue.length}</p>
-                <p className="mt-1 text-xs text-slate-500">የመሬት ካርታ፣ የቤት ፕላን እና የንግድ ድርጅት ሰነዶች</p>
+                <p className="mt-2 text-3xl font-black text-malazone-navy">{propertyQueue.length}</p>
+                <p className="mt-1 text-xs text-malazone-navy">የመሬት ካርታ፣ የቤት ፕላን እና የንግድ ድርጅት ሰነዶች</p>
               </div>
               <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600">
@@ -640,8 +640,8 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                   </div>
                   <div>
                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-600">Auditor Security Session Key</p>
-                    <p className="mt-2 text-sm font-black text-slate-900">{officerProfile.officerName}</p>
-                    <p className="mt-1 text-xs font-medium text-slate-500">{officerProfile.bureau}</p>
+                    <p className="mt-2 text-sm font-black text-malazone-navy">{officerProfile.officerName}</p>
+                    <p className="mt-1 text-xs font-medium text-malazone-navy">{officerProfile.bureau}</p>
                   </div>
                 </div>
               </div>
@@ -656,7 +656,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
               <div className="space-y-5">
                 <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="mr-1 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+                    <div className="mr-1 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-malazone-navy">
                       <Filter className="h-4 w-4" />
                       ምድብ ማጣሪያ
                     </div>
@@ -676,7 +676,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           className={`rounded-xl px-4 py-2 text-xs font-black transition ${
                             isActive
                               ? "bg-[#00A86B] text-white shadow"
-                              : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              : "border border-slate-200 bg-white text-malazone-navy hover:border-slate-300 hover:text-malazone-navy"
                           }`}
                         >
                           {category.label}
@@ -686,13 +686,13 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                   </div>
 
                   <div className="relative w-full lg:w-80">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-malazone-navy" />
                     <input
                       type="text"
                       value={municipalitySearch}
                       onChange={(event) => setMunicipalitySearch(event.target.value)}
                       placeholder="በስም፣ በመለያ ቁጥር ወይም በካርታ ቁጥር ይፈልጉ..."
-                      className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#00A86B]"
+                      className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm font-semibold text-malazone-navy outline-none transition focus:border-[#00A86B]"
                     />
                   </div>
                 </div>
@@ -700,7 +700,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                 <div className="overflow-hidden rounded-2xl border border-slate-200">
                   <div className="overflow-x-auto">
                     <table className="min-w-full text-left text-sm">
-                      <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+                      <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.2em] text-malazone-navy">
                         <tr>
                           <th className="px-4 py-[14px]">የማህደር ቁጥር (ID)</th>
                           <th className="px-4 py-[14px]">የባለይዞታው ሙሉ ስም</th>
@@ -711,18 +711,18 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           <th className="px-4 py-[14px] text-right">የኦዲት ውሳኔ</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 bg-white text-slate-700">
+                      <tbody className="divide-y divide-slate-200 bg-white text-malazone-navy">
                         {filteredMunicipalityQueue.map((record) => (
                           <tr key={record.id} className="transition hover:bg-slate-50/80">
-                            <td className="px-4 py-[14px] font-black text-slate-900">{record.propertyId}</td>
-                            <td className="px-4 py-[14px] font-semibold text-slate-800">{record.sellerName}</td>
+                            <td className="px-4 py-[14px] font-black text-malazone-navy">{record.propertyId}</td>
+                            <td className="px-4 py-[14px] font-semibold text-malazone-navy">{record.sellerName}</td>
                             <td className="px-4 py-[14px]">
-                              <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-black text-slate-700">
+                              <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-black text-malazone-navy">
                                 {record.categoryLabelAm}
                               </span>
                             </td>
-                            <td className="px-4 py-[14px] text-slate-500">{record.kebeleZoneLocation}</td>
-                            <td className="px-4 py-[14px] font-mono text-xs font-bold text-slate-800">{record.code}</td>
+                            <td className="px-4 py-[14px] text-malazone-navy">{record.kebeleZoneLocation}</td>
+                            <td className="px-4 py-[14px] font-mono text-xs font-bold text-malazone-navy">{record.code}</td>
                             <td className="px-4 py-[14px]">
                               <button
                                 type="button"
@@ -737,7 +737,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                               <button
                                 type="button"
                                 onClick={() => setMunicipalityReviewId(record.id)}
-                                className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-700 transition hover:border-[#00A86B]/30 hover:text-[#00A86B]"
+                                className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-black text-malazone-navy transition hover:border-[#00A86B]/30 hover:text-[#00A86B]"
                               >
                                 <Eye className="h-3.5 w-3.5" />
                                 መርምርና ወስን
@@ -747,7 +747,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                         ))}
                         {filteredMunicipalityQueue.length === 0 && !loading && (
                           <tr>
-                            <td colSpan={7} className="px-5 py-14 text-center text-sm text-slate-500">
+                            <td colSpan={7} className="px-5 py-14 text-center text-sm text-malazone-navy">
                               በአሁኑ ማጣሪያ ውስጥ የሚጠበቁ ማረጋገጫ ሰነዶች የሉም።
                             </td>
                           </tr>
@@ -772,7 +772,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
               <div className="overflow-hidden rounded-2xl border border-slate-200">
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-left">
-                    <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.25em] text-slate-500">
+                    <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.25em] text-malazone-navy">
                       <tr>
                         <th className="px-5 py-4">Vehicle Type</th>
                         <th className="px-5 py-4">Plate Number</th>
@@ -780,7 +780,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                         <th className="px-5 py-4">Libre Image</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white text-sm text-slate-700">
+                    <tbody className="divide-y divide-slate-200 bg-white text-sm text-malazone-navy">
                       {vehicleQueue.map((record) => (
                         <tr
                           key={record.id}
@@ -789,9 +789,9 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                             selectedVehicleId === record.id ? "bg-emerald-50/80" : "hover:bg-slate-50"
                           }`}
                         >
-                          <td className="px-5 py-5 font-black text-slate-900">{record.vehicleType}</td>
+                          <td className="px-5 py-5 font-black text-malazone-navy">{record.vehicleType}</td>
                           <td className="px-5 py-5">{record.plateNumber}</td>
-                          <td className="px-5 py-5 font-mono text-xs font-bold text-slate-800">{record.chassisNumber}</td>
+                          <td className="px-5 py-5 font-mono text-xs font-bold text-malazone-navy">{record.chassisNumber}</td>
                           <td className="px-5 py-5">
                             <button
                               type="button"
@@ -801,7 +801,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                                   setSelectedDocUrl(record.libreImageUrl);
                                 }
                               }}
-                              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+                              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-bold text-malazone-navy transition hover:border-slate-300 hover:bg-slate-100"
                             >
                               <FileText className="h-4 w-4 text-[#00A86B]" />
                               {record.libreImageUrl ? "Preview Libre" : "No Upload"}
@@ -811,7 +811,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                       ))}
                       {vehicleQueue.length === 0 && !loading && (
                         <tr>
-                          <td colSpan={4} className="px-5 py-12 text-center text-sm text-slate-500">
+                          <td colSpan={4} className="px-5 py-12 text-center text-sm text-malazone-navy">
                             No vehicle transport logs are waiting for review.
                           </td>
                         </tr>
@@ -831,23 +831,23 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
               {selectedVehicle && currentVehicleForm ? (
                 <div className="space-y-6">
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">Input Data</p>
+                    <p className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy">Input Data</p>
                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Vehicle Type</p>
-                        <p className="mt-1 text-sm font-black text-slate-900">{selectedVehicle.vehicleType}</p>
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-malazone-navy">Vehicle Type</p>
+                        <p className="mt-1 text-sm font-black text-malazone-navy">{selectedVehicle.vehicleType}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Seller Name</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-700">{selectedVehicle.sellerName}</p>
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-malazone-navy">Seller Name</p>
+                        <p className="mt-1 text-sm font-semibold text-malazone-navy">{selectedVehicle.sellerName}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Plate Number</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-700">{selectedVehicle.plateNumber}</p>
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-malazone-navy">Plate Number</p>
+                        <p className="mt-1 text-sm font-semibold text-malazone-navy">{selectedVehicle.plateNumber}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Chassis (VIN) Number</p>
-                        <p className="mt-1 rounded-full border border-slate-200 bg-white px-3 py-1 font-mono text-xs font-black text-slate-700">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-malazone-navy">Chassis (VIN) Number</p>
+                        <p className="mt-1 rounded-full border border-slate-200 bg-white px-3 py-1 font-mono text-xs font-black text-malazone-navy">
                           {selectedVehicle.chassisNumber}
                         </p>
                       </div>
@@ -856,7 +856,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
 
                   <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                     <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                      <p className="text-sm font-black text-slate-900">Libre Image</p>
+                      <p className="text-sm font-black text-malazone-navy">Libre Image</p>
                       {selectedVehicle.libreImageUrl && (
                         <button
                           type="button"
@@ -876,7 +876,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           className="max-h-64 rounded-2xl border border-slate-200 bg-white object-contain shadow-sm"
                         />
                       ) : (
-                        <div className="flex flex-col items-center gap-3 text-slate-400">
+                        <div className="flex flex-col items-center gap-3 text-malazone-navy">
                           <FileText className="h-12 w-12" />
                           <p className="text-sm font-semibold">No libre image uploaded for preview.</p>
                         </div>
@@ -885,13 +885,13 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                   </div>
 
                   <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
-                    <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">የማረጋገጫ መስፈርቶች</p>
+                    <p className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy">የማረጋገጫ መስፈርቶች</p>
 
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                          <p className="text-sm font-black text-slate-900">Crime Check</p>
-                          <p className="text-xs text-slate-500">Not Reported Stolen</p>
+                          <p className="text-sm font-black text-malazone-navy">Crime Check</p>
+                          <p className="text-xs text-malazone-navy">Not Reported Stolen</p>
                         </div>
                         <button
                           type="button"
@@ -903,7 +903,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-black transition ${
                             currentVehicleForm.crimeCheck
                               ? "bg-[#00A86B] text-white"
-                              : "bg-white text-slate-600 ring-1 ring-slate-200"
+                              : "bg-white text-malazone-navy ring-1 ring-slate-200"
                           }`}
                         >
                           {currentVehicleForm.crimeCheck ? "Cleared" : "Pending Check"}
@@ -912,7 +912,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                     </div>
 
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <label className="flex items-start gap-3 text-sm text-slate-700">
+                      <label className="flex items-start gap-3 text-sm text-malazone-navy">
                         <input
                           type="checkbox"
                           checked={currentVehicleForm.ownershipMatch}
@@ -924,14 +924,14 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#00A86B] focus:ring-[#00A86B]"
                         />
                         <span>
-                          <span className="block font-black text-slate-900">Ownership Match</span>
+                          <span className="block font-black text-malazone-navy">Ownership Match</span>
                           Confirm the seller name matches the Libre record.
                         </span>
                       </label>
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-black text-slate-900">የአረጋጋጩ ዲጂታል ፊርማ</label>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">የአረጋጋጩ ዲጂታል ፊርማ</label>
                       <input
                         type="text"
                         value={currentVehicleForm.digitalSignature}
@@ -941,15 +941,15 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           })
                         }
                         placeholder={`ለማረጋገጥ "${officerProfile.officerName}" ብለው ይተይቡ`}
-                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#00A86B] focus:bg-white"
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
                       />
-                      <p className={`mt-2 text-xs font-semibold ${vehicleSignatureMatches ? "text-[#00A86B]" : "text-slate-500"}`}>
+                      <p className={`mt-2 text-xs font-semibold ${vehicleSignatureMatches ? "text-[#00A86B]" : "text-malazone-navy"}`}>
                         Officer must type full name exactly: {officerProfile.officerName}
                       </p>
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-black text-slate-900">Audit Notes</label>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">Audit Notes</label>
                       <textarea
                         rows={4}
                         value={currentVehicleForm.notes}
@@ -959,7 +959,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           })
                         }
                         placeholder="Add certification notes or impound rationale."
-                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#00A86B] focus:bg-white"
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
                       />
                     </div>
 
@@ -997,7 +997,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                             } | Notes: ${currentVehicleForm.notes.trim() || "Transport record certified."}`
                           )
                         }
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00A86B] px-5 py-3 text-sm font-black text-black shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-black/50"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00A86B] px-5 py-3 text-sm font-black text-malazone-navy shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-malazone-navy/50"
                       >
                         {submittingKey === `vehicle-${selectedVehicle.id}-verified` ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -1011,10 +1011,10 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                 </div>
               ) : (
                 <div className="flex min-h-[420px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center">
-                  <Search className="h-10 w-10 text-slate-400" />
+                  <Search className="h-10 w-10 text-malazone-navy" />
                   <div>
-                    <p className="text-sm font-black text-slate-700">No transport record selected</p>
-                    <p className="mt-1 text-sm text-slate-500">Choose a vehicle file from the audit queue to begin.</p>
+                    <p className="text-sm font-black text-malazone-navy">No transport record selected</p>
+                    <p className="mt-1 text-sm text-malazone-navy">Choose a vehicle file from the audit queue to begin.</p>
                   </div>
                 </div>
               )}
@@ -1032,14 +1032,14 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                   <Eye className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-slate-900">የሰነድ ቅድመ-እይታ መስኮት</p>
-                  <p className="text-xs text-slate-500">ለመንግስት የሰነድ ማረጋገጫ የሚውል የተጠበቀ ቅድመ-እይታ</p>
+                  <p className="text-sm font-black text-malazone-navy">የሰነድ ቅድመ-እይታ መስኮት</p>
+                  <p className="text-xs text-malazone-navy">ለመንግስት የሰነድ ማረጋገጫ የሚውል የተጠበቀ ቅድመ-እይታ</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedDocUrl(null)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-malazone-navy transition hover:bg-slate-50 hover:text-malazone-navy"
               >
                 ዝጋ (Close)
               </button>
@@ -1058,7 +1058,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
             </div>
 
             <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">
+                <p className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy">
                   የመንግስት የሰነድ ቅድመ-እይታ
                 </p>
                 <a
@@ -1083,14 +1083,14 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-slate-900">የማዘጋጃ ቤት የሰነድ ማረጋገጫ መስኮት</p>
-                  <p className="text-xs text-slate-500">malazone ላይ በAdmin የተጫነ ፋይል ላይ የሚሰጥ የመንግስት ውሳኔ</p>
+                  <p className="text-sm font-black text-malazone-navy">የማዘጋጃ ቤት የሰነድ ማረጋገጫ መስኮት</p>
+                  <p className="text-xs text-malazone-navy">malazone ላይ በAdmin የተጫነ ፋይል ላይ የሚሰጥ የመንግስት ውሳኔ</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setMunicipalityReviewId(null)}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-malazone-navy transition hover:bg-slate-50"
               >
                 ዝጋ
               </button>
@@ -1099,26 +1099,26 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
             <div className="grid grid-cols-1 gap-6 overflow-auto p-6 md:grid-cols-12">
               <div className="space-y-5 md:col-span-7">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">የሰነዱ ዝርዝር መረጃ</p>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-malazone-navy">የሰነዱ ዝርዝር መረጃ</p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <p className="text-sm text-slate-600">
-                      ባለቤት: <span className="font-black text-slate-900">{municipalityReviewRecord.sellerName}</span>
+                    <p className="text-sm text-malazone-navy">
+                      ባለቤት: <span className="font-black text-malazone-navy">{municipalityReviewRecord.sellerName}</span>
                     </p>
-                    <p className="text-sm text-slate-600">
-                      ዓይነት: <span className="font-black text-slate-900">{municipalityReviewRecord.categoryLabelAm}</span>
+                    <p className="text-sm text-malazone-navy">
+                      ዓይነት: <span className="font-black text-malazone-navy">{municipalityReviewRecord.categoryLabelAm}</span>
                     </p>
-                    <p className="text-sm text-slate-600">
-                      መለያ ቁጥር: <span className="font-black text-slate-900">{municipalityReviewRecord.code}</span>
+                    <p className="text-sm text-malazone-navy">
+                      መለያ ቁጥር: <span className="font-black text-malazone-navy">{municipalityReviewRecord.code}</span>
                     </p>
-                    <p className="text-sm text-slate-600">
-                      የመጣበት ቀን: <span className="font-black text-slate-900">{municipalityReviewRecord.submittedDate}</span>
+                    <p className="text-sm text-malazone-navy">
+                      የመጣበት ቀን: <span className="font-black text-malazone-navy">{municipalityReviewRecord.submittedDate}</span>
                     </p>
                   </div>
                 </div>
 
                 <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                   <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                    <p className="text-sm font-black text-slate-900">{municipalityReviewRecord.docName}</p>
+                    <p className="text-sm font-black text-malazone-navy">{municipalityReviewRecord.docName}</p>
                     {municipalityReviewRecord.deedImageUrl && (
                       <button
                         type="button"
@@ -1138,13 +1138,13 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                         className="max-h-72 rounded-2xl border border-slate-200 bg-white object-contain shadow-sm"
                       />
                     ) : (
-                      <div className="flex flex-col items-center gap-3 text-slate-400">
+                      <div className="flex flex-col items-center gap-3 text-malazone-navy">
                         <FileText className="h-12 w-12" />
                         <p className="text-sm font-semibold">የሰነዱ ምስል አልተገኘም።</p>
                       </div>
                     )}
                   </div>
-                  <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 text-sm text-malazone-navy">
                     ከላይ ከተጠቀሰው መለያ ኮድ ጋር ማህደር ላይ ያለውን ዋና ሰነድ ያመሳክሩ።
                   </div>
                 </div>
@@ -1152,14 +1152,14 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
 
               <div className="space-y-5 md:col-span-5">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">የማረጋገጫ መስፈርቶች ዝርዝር</p>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-malazone-navy">የማረጋገጫ መስፈርቶች ዝርዝር</p>
 
                   <div className="mt-4 space-y-4">
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-black text-slate-900">ማህደር ፍለጋ ሁኔታ</p>
-                          <p className="text-xs text-slate-500">በማዘጋጃ ቤቱ ማህደር ውስጥ የተገኘ</p>
+                          <p className="text-sm font-black text-malazone-navy">ማህደር ፍለጋ ሁኔታ</p>
+                          <p className="text-xs text-malazone-navy">በማዘጋጃ ቤቱ ማህደር ውስጥ የተገኘ</p>
                         </div>
                         <button
                           type="button"
@@ -1171,7 +1171,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           className={`rounded-full px-4 py-2 text-xs font-black transition ${
                             currentLandForm.registryMatch
                               ? "bg-[#00A86B] text-white"
-                              : "bg-white text-slate-600 ring-1 ring-slate-200"
+                              : "bg-white text-malazone-navy ring-1 ring-slate-200"
                           }`}
                         >
                           {currentLandForm.registryMatch ? "ተገኝቷል" : "ማጣራት ላይ ያለ"}
@@ -1180,9 +1180,9 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                     </div>
 
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <p className="text-sm font-black text-slate-900">የንብረት ነፃነት ማረጋገጫ (ክሊራንስ)</p>
+                      <p className="text-sm font-black text-malazone-navy">የንብረት ነፃነት ማረጋገጫ (ክሊራንስ)</p>
                       <div className="mt-3 space-y-3">
-                        <label className="flex items-start gap-3 text-sm text-slate-700">
+                        <label className="flex items-start gap-3 text-sm text-malazone-navy">
                           <input
                             type="checkbox"
                             checked={currentLandForm.noCourtInjunctions}
@@ -1195,7 +1195,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           />
                           <span>ከዕገዳና ከክስ ነፃ የሆነ</span>
                         </label>
-                        <label className="flex items-start gap-3 text-sm text-slate-700">
+                        <label className="flex items-start gap-3 text-sm text-malazone-navy">
                           <input
                             type="checkbox"
                             checked={currentLandForm.taxClear}
@@ -1212,7 +1212,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-black text-slate-900">የአረጋጋጩ ዲጂታል ፊርማ</label>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">የአረጋጋጩ ዲጂታል ፊርማ</label>
                       <input
                         type="text"
                         value={currentLandForm.digitalSignature}
@@ -1222,15 +1222,15 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           })
                         }
                         placeholder={`ለማረጋገጥ "${officerProfile.officerName}" ብለው ይተይቡ`}
-                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#00A86B] focus:bg-white"
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
                       />
-                      <p className={`mt-2 text-xs font-semibold ${landSignatureMatches ? "text-[#00A86B]" : "text-slate-500"}`}>
+                      <p className={`mt-2 text-xs font-semibold ${landSignatureMatches ? "text-[#00A86B]" : "text-malazone-navy"}`}>
                         የአውዲተሩን ሙሉ ስም በትክክል ያስገቡ: {officerProfile.officerName}
                       </p>
                     </div>
 
                     <div>
-                      <label className="mb-2 flex items-center gap-2 text-sm font-black text-slate-900">
+                      <label className="mb-2 flex items-center gap-2 text-sm font-black text-malazone-navy">
                         <MessageSquare className="h-4 w-4 text-[#00A86B]" />
                         የአረጋጋጩ አስተያየት
                       </label>
@@ -1243,9 +1243,9 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                           })
                         }
                         placeholder="ሰነዱ ትክክል ከሆነ 'የጸደቀ' ወይም ጉድለት ካለ 'የዘመኑ ግብር አልተከፈለም' ያሉ ዝርዝሮችን ያስፍሩ..."
-                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#00A86B] focus:bg-white"
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
                       />
-                      <p className="mt-2 text-xs text-slate-500">
+                      <p className="mt-2 text-xs text-malazone-navy">
                         ውድቅ ሲደረግ የጉድለቱን ምክንያት በዝርዝር መጻፍ ግዴታ ነው።
                       </p>
                     </div>
@@ -1254,7 +1254,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                       <button
                         type="button"
                         onClick={() => setMunicipalityReviewId(null)}
-                        className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+                        className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-malazone-navy transition hover:bg-slate-50 hover:text-malazone-navy"
                       >
                         ዝጋ (Close)
                       </button>
@@ -1293,7 +1293,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                             }`
                           )
                         }
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00A86B] px-5 py-3 text-sm font-black text-black shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-black/50"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00A86B] px-5 py-3 text-sm font-black text-malazone-navy shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-malazone-navy/50"
                       >
                         {submittingKey === `land-${municipalityReviewRecord.id}-verified` ? (
                           <Loader2 className="h-4 w-4 animate-spin" />

@@ -35,7 +35,7 @@ export function MalaZoneMasterPlayer() {
               absolute ${item.pos} size-12 rounded-full bg-[#050B1A]
               border border-slate-800 text-[#00A86B] flex items-center justify-center
               shadow-lg cursor-pointer transition-all duration-300 ease-out
-              hover:bg-[#00A86B] hover:text-black hover:scale-110
+              hover:bg-[#00A86B] hover:text-malazone-navy hover:scale-110
               hover:shadow-[0_0_15px_rgba(0,168,107,0.6)] group
             `}
           >
@@ -48,9 +48,9 @@ export function MalaZoneMasterPlayer() {
           <button
             onClick={() => setIsPlaying(true)}
             className="
-              w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white text-black
+              w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white text-malazone-navy
               flex items-center justify-center shadow-2xl transition-all duration-300
-              hover:scale-105 active:scale-95 group-hover:bg-[#00A86B] group-hover:text-black
+              hover:scale-105 active:scale-95 group-hover:bg-[#00A86B] group-hover:text-malazone-navy
               hover:shadow-[0_0_25px_rgba(0,168,107,0.4)] cursor-pointer z-10
             "
           >
@@ -59,7 +59,7 @@ export function MalaZoneMasterPlayer() {
 
           <div className="absolute bottom-6 left-0 right-0 text-center space-y-0.5">
             <h3 className="text-sm font-black text-white tracking-wide font-sans">ስለ አጠቃቀም</h3>
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">How to use this platform</p>
+            <p className="text-[10px] font-black uppercase text-malazone-navy tracking-widest">How to use this platform</p>
           </div>
 
         </div>
@@ -76,7 +76,7 @@ export function MalaZoneMasterPlayer() {
             <p className="text-[10px] font-black uppercase text-[#00A86B] tracking-wider">{hoveredLabel.en}</p>
           </div>
         ) : (
-          <p className="text-xs font-bold text-slate-500 tracking-wide uppercase italic animate-pulse">
+          <p className="text-xs font-bold text-malazone-navy tracking-wide uppercase italic animate-pulse">
             በእያንዳንዱ አዶ ላይ በማሳረፍ ዝርዝሩን ይመልከቱ (Hover over icons to preview)
           </p>
         )}

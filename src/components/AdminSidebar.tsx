@@ -39,7 +39,7 @@ const AdminSidebar: React.FC = () => {
           <span className="text-xl font-black tracking-tighter text-green-500 uppercase">MALA</span>
           <span className="text-xl font-black tracking-tighter text-white uppercase">ZONE</span>
         </div>
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Admin Console</p>
+        <p className="text-[10px] font-bold text-malazone-navy uppercase tracking-[0.3em]">Admin Console</p>
       </div>
 
       {/* Navigation */}
@@ -47,9 +47,9 @@ const AdminSidebar: React.FC = () => {
         {menuItems.map((item) => (
           <button
             key={item.path}
-            className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group"
+            className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-malazone-navy hover:text-white hover:bg-white/5 transition-all group"
           >
-            <div className="text-slate-500 group-hover:text-green-500 transition-colors">
+            <div className="text-malazone-navy group-hover:text-green-500 transition-colors">
               {item.icon}
             </div>
             <span className="text-[11px] font-black uppercase tracking-widest">
@@ -71,12 +71,12 @@ const AdminSidebar: React.FC = () => {
 
         <div className="space-y-3">
           <div className="w-8 h-px bg-green-500/30" />
-          <p className="text-[10px] font-bold text-slate-400 leading-relaxed italic">
+          <p className="text-[10px] font-bold text-malazone-navy leading-relaxed italic">
             {t("admin.ceo.signature" as any)}
           </p>
         </div>
 
-        <button className="flex items-center gap-3 text-slate-500 hover:text-red-400 transition-colors text-[10px] font-black uppercase tracking-widest">
+        <button className="flex items-center gap-3 text-malazone-navy hover:text-red-400 transition-colors text-[10px] font-black uppercase tracking-widest">
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>

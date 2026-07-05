@@ -249,7 +249,7 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#00A86B]/40 hover:text-[#00A86B] transition-all duration-300 text-xs font-bold uppercase tracking-widest group"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-malazone-navy dark:text-slate-300 hover:border-[#00A86B]/40 hover:text-[#00A86B] transition-all duration-300 text-xs font-bold uppercase tracking-widest group"
           >
             <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
             {d.backBtn}
@@ -265,13 +265,13 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
             <Shield className="w-3.5 h-3.5" />
             {d.badge}
           </span>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tighter">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-malazone-navy dark:text-white tracking-tighter">
             {d.title}
           </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
+          <p className="text-lg text-malazone-navy dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
             {d.subtitle}
           </p>
-          <div className="flex items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          <div className="flex items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-malazone-navy">
             <span>{d.effectiveDate}</span>
             <span className="w-1 h-1 rounded-full bg-slate-300" />
             <span>{d.lastUpdated}</span>
@@ -291,11 +291,11 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
                   <div className="w-10 h-10 rounded-xl bg-[#00A86B]/10 flex items-center justify-center text-[#00A86B] shrink-0">
                     <IconComp className="w-5 h-5" />
                   </div>
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{section.title}</h2>
+                  <h2 className="text-lg font-black text-malazone-navy dark:text-white tracking-tight">{section.title}</h2>
                 </div>
                 <div className="space-y-4 pl-14">
                   {section.content.map((paragraph, j) => (
-                    <p key={j} className="text-sm leading-[1.9] text-slate-600 dark:text-slate-400 font-medium">
+                    <p key={j} className="text-sm leading-[1.9] text-malazone-navy dark:text-slate-400 font-medium">
                       {paragraph}
                     </p>
                   ))}
@@ -311,18 +311,18 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
             <div className="w-10 h-10 rounded-xl bg-[#00A86B]/10 flex items-center justify-center text-[#00A86B]">
               <Mail className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{d.contactTitle}</h3>
+            <h3 className="text-lg font-black text-malazone-navy dark:text-white tracking-tight">{d.contactTitle}</h3>
           </div>
-          <p className="text-sm leading-[1.8] text-slate-600 dark:text-slate-400 font-medium pl-14">{d.contactText}</p>
+          <p className="text-sm leading-[1.8] text-malazone-navy dark:text-slate-400 font-medium pl-14">{d.contactText}</p>
           <div className="pl-14 space-y-2">
             <p className="text-sm font-black text-[#00A86B]">{d.contactEmail}</p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium whitespace-pre-line">{d.contactAddress}</p>
+            <p className="text-sm text-malazone-navy dark:text-slate-400 font-medium whitespace-pre-line">{d.contactAddress}</p>
           </div>
         </section>
 
         {/* ── Bottom Copyright ── */}
         <div className="pt-12 border-t border-slate-200 dark:border-white/5 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-600">{d.copyright}</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-malazone-navy dark:text-slate-600">{d.copyright}</p>
         </div>
       </div>
     </div>

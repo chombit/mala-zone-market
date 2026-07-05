@@ -4,7 +4,7 @@
  * © 2026 Malazone Technologies PLC
  */
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 
 export type Language = "en" | "amharic";
 
@@ -107,7 +107,7 @@ type DictionaryKey = keyof typeof dictionary.en;
 
 interface LanguageContextValue {
   language: Language;
-  t: (key: DictionaryKey) => string;
+  t: (key: string) => string;
   toggleLanguage: () => void;
   setLanguage: (lang: Language) => void;
 }
@@ -116,10 +116,26 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>("amharic");
+  const [dynamicDict, setDynamicDict] = useState<Record<string, { en: string; amharic: string }>>({});
 
-  const t = useCallback((key: DictionaryKey) => {
+  useEffect(() => {
+    fetch('/api/translations')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setDynamicDict(data.data);
+        }
+      })
+      .catch(err => console.error("Failed to load global translations:", err));
+  }, []);
+
+  const t = useCallback((key: string) => {
+    if (dynamicDict[key] && dynamicDict[key][language]) {
+      return dynamicDict[key][language];
+    }
+    // @ts-ignore
     return dictionary[language][key] || key;
-  }, [language]);
+  }, [language, dynamicDict]);
 
   const toggleLanguage = useCallback(() => {
     setLanguageState(prev => prev === "en" ? "amharic" : "en");

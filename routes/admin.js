@@ -410,4 +410,74 @@ router.delete("/users/:id", async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────────────────────────
+// TRANSLATIONS MANAGEMENT (Super Admin Only)
+// ──────────────────────────────────────────────────────────────
+
+// In a real application, you would add a middleware here to check
+// if req.user.role === 'super_admin'. For this demo, we assume the frontend
+// handles the role check, or you can pass the role in headers.
+
+router.get("/translations", async (req, res) => {
+  try {
+    const [translations] = await db.execute("SELECT * FROM translations ORDER BY section, text_key");
+    res.json({ success: true, data: translations });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.post("/translations", async (req, res) => {
+  try {
+    const { text_key, en_value, am_value, section } = req.body;
+    if (!text_key || !en_value || !am_value) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+    const [result] = await db.execute(
+      "INSERT INTO translations (text_key, en_value, am_value, section) VALUES (?, ?, ?, ?)",
+      [text_key, en_value, am_value, section || 'general']
+    );
+    res.json({ success: true, id: result.insertId, message: "Translation added successfully" });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ success: false, message: "Text key already exists" });
+    }
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.put("/translations/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { text_key, en_value, am_value, section } = req.body;
+    const [result] = await db.execute(
+      "UPDATE translations SET text_key = ?, en_value = ?, am_value = ?, section = ? WHERE id = ?",
+      [text_key, en_value, am_value, section || 'general', id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Translation not found" });
+    }
+    res.json({ success: true, message: "Translation updated successfully" });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ success: false, message: "Text key already exists" });
+    }
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.delete("/translations/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.execute("DELETE FROM translations WHERE id = ?", [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Translation not found" });
+    }
+    res.json({ success: true, message: "Translation deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+
 module.exports = router;

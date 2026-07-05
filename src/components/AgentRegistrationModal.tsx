@@ -75,7 +75,7 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">
                 {isAm ? "እንኳን ደስ አሎት!" : "Welcome Aboard!"}
               </h3>
-              <p className="text-slate-400 font-medium leading-relaxed">
+              <p className="text-malazone-navy font-medium leading-relaxed">
                 {isAm 
                   ? "የምዝገባ ጥያቄዎ ተቀባይነት አግኝቷል። በቅርቡ በስልክ ቁጥርዎ እናገኝዎታለን።" 
                   : "Your registration is successful. A Malazone coordinator will contact you shortly."}
@@ -104,7 +104,7 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             </div>
             <button 
               onClick={onClose}
-              className="p-3 rounded-full bg-white/5 border border-white/5 text-slate-400 hover:text-white transition-colors"
+              className="p-3 rounded-full bg-white/5 border border-white/5 text-malazone-navy hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -115,47 +115,47 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             <div className="space-y-6">
               {/* Full Name */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">
+                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-[0.2em] ml-2">
                   {isAm ? "ሙሉ ስም" : "Full Name"}
                 </label>
                 <div className="relative group">
-                  <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-green-500 transition-colors" />
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-malazone-navy group-focus-within:text-green-500 transition-colors" />
                   <input 
                     required
                     type="text"
                     value={formData.full_name}
                     onChange={(e) => setFormData({...formData, full_name: e.target.value})}
                     placeholder={isAm ? "ለምሳሌ፦ አበበ በቀለ" : "e.g. Abebe Bekele"}
-                    className="w-full bg-white/5 border border-white/5 focus:border-green-500/50 rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-green-500/5 transition-all"
+                    className="w-full bg-white/5 border border-white/5 focus:border-green-500/50 rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-malazone-navy focus:outline-none focus:ring-4 focus:ring-green-500/5 transition-all"
                   />
                 </div>
               </div>
 
               {/* Phone */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">
+                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-[0.2em] ml-2">
                   {isAm ? "ስልክ ቁጥር" : "Phone Number"}
                 </label>
                 <div className="relative group">
-                  <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-green-500 transition-colors" />
+                  <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-malazone-navy group-focus-within:text-green-500 transition-colors" />
                   <input 
                     required
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     placeholder="0912..."
-                    className="w-full bg-white/5 border border-white/5 focus:border-green-500/50 rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-green-500/5 transition-all"
+                    className="w-full bg-white/5 border border-white/5 focus:border-green-500/50 rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-malazone-navy focus:outline-none focus:ring-4 focus:ring-green-500/5 transition-all"
                   />
                 </div>
               </div>
 
               {/* Sub-City */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">
+                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-[0.2em] ml-2">
                   {isAm ? "ክፍለ ከተማ / ሰፈር" : "Sub-City / Zone"}
                 </label>
                 <div className="relative group">
-                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-green-500 transition-colors" />
+                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-malazone-navy group-focus-within:text-green-500 transition-colors" />
                   <select 
                     required
                     value={formData.sub_city}
@@ -194,7 +194,7 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             </button>
           </form>
           
-          <p className="text-[10px] text-center text-slate-500 font-medium leading-relaxed">
+          <p className="text-[10px] text-center text-malazone-navy font-medium leading-relaxed">
             {isAm 
               ? "በመመዝገብዎ በመላዞን ውሎች እና ደንቦች ተስማምተዋል።" 
               : "By applying, you agree to Malazone's Terms of Service for independent agents."}

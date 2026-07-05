@@ -72,7 +72,7 @@ const AdminLogin: React.FC = () => {
             </div>
             
             <div className="text-center">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-malazone-navy">
                 © 2026 Malazone Technologies PLC. All Rights Reserved.
               </p>
             </div>
@@ -86,7 +86,7 @@ const AdminLogin: React.FC = () => {
           <div className="absolute top-4 right-4">
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 border border-slate-200 hover:bg-slate-200 transition-all duration-300 text-xs font-semibold text-slate-700"
+              className="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 border border-slate-200 hover:bg-slate-200 transition-all duration-300 text-xs font-semibold text-malazone-navy"
             >
               <Globe className="w-4 h-4" />
               {language === 'en' ? 'አማርኛ' : 'English'}
@@ -105,10 +105,10 @@ const AdminLogin: React.FC = () => {
             
             {/* Login Header */}
             <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-malazone-navy tracking-tight">
                 {language === 'en' ? 'Login' : 'ግባ'}
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600">
+              <p className="mt-2 text-xs sm:text-sm text-malazone-navy">
                 {language === 'en' ? 'Secure access to admin management' : 'ለአስተዳደር ቁጥጥር ደህንነቱ የተጠበቀ መግባት'}
               </p>
             </div>
@@ -116,41 +116,41 @@ const AdminLogin: React.FC = () => {
             <form onSubmit={handleLogin} className="space-y-5">
               {/* Username */}
               <div className="space-y-1.5">
-                <label className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">
+                <label className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-malazone-navy ml-1">
                   {language === 'en' ? 'Username' : 'የተጠቃሚ ስም'}
                 </label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy" />
                   <input 
                     type="text"
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder={language === 'en' ? 'Enter username' : 'የተጠቃሚ ስምን ያስገቡ'}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all text-sm font-semibold"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-malazone-navy placeholder:text-malazone-navy focus:outline-none focus:bg-white focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all text-sm font-semibold"
                   />
                 </div>
               </div>
 
               {/* Password */}
               <div className="space-y-1.5">
-                <label className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">
+                <label className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-malazone-navy ml-1">
                   {language === 'en' ? 'Password' : 'መለያ ቃል'}
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy" />
                   <input 
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={language === 'en' ? 'Enter password' : 'መለያ ቃሉን ያስገቡ'}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-12 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all text-sm font-semibold"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-12 text-malazone-navy placeholder:text-malazone-navy focus:outline-none focus:bg-white focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all text-sm font-semibold"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy hover:text-malazone-navy transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -161,7 +161,7 @@ const AdminLogin: React.FC = () => {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-[0.2em] shadow-xl shadow-[#00A86B]/25 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-malazone-navy font-black text-xs sm:text-sm uppercase tracking-[0.2em] shadow-xl shadow-[#00A86B]/25 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -176,7 +176,7 @@ const AdminLogin: React.FC = () => {
             
             {/* Mobile-Only Copyright */}
             <div className="lg:hidden text-center pt-4">
-              <p className="text-[9px] text-slate-400">
+              <p className="text-[9px] text-malazone-navy">
                 © 2026 Malazone Technologies PLC. All Rights Reserved.
               </p>
             </div>

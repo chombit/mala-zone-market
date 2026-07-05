@@ -23,6 +23,7 @@ import {
   Hotel,
   Navigation,
   Compass,
+  Smartphone,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useMouseParallax } from "@/hooks/useWorldClassAnimations";
@@ -35,7 +36,8 @@ const ICON_MAP: Record<string, any> = {
   "motors": Car,
   "stay": Hotel,
   "ceremony": Music,
-  "heavy": Truck
+  "heavy": Truck,
+  "electronics": Smartphone
 };
 
 /* ────────────────────────────────────────────
@@ -44,7 +46,7 @@ const ICON_MAP: Record<string, any> = {
 interface Stats {
   clients: number;
   listings: number;
-  vehicles: number;
+  electronics: number;
   trade_success_rate: number;
 }
 
@@ -121,7 +123,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
   const [stats, setStats] = useState<Stats>({
     clients: 1003,
     listings: 2547,
-    vehicles: 1412,
+    electronics: 5890,
     trade_success_rate: 100,
   });
   const [slides, setSlides] = useState<Slide[]>([]);
@@ -197,6 +199,16 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             label_am: "ማሽነሪ ዞን",
             display_order: 4,
             is_active: true
+          },
+          {
+            id: 6,
+            image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1600&q=90&fm=webp",
+            pillar_key: "nav.cat6",
+            category_id: "electronics",
+            label_en: "Electronics Zone",
+            label_am: "ኤሌክትሮኒክስ ዞን",
+            display_order: 5,
+            is_active: true
           }
         ];
         setSlides(dedupeSlides(fallbackSlides));
@@ -235,7 +247,13 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
       try {
         const response = await fetch("/api/stats");
         const result = await response.json();
-        if (result.success) setStats(result.data);
+        if (result.success) {
+          // Merge API data with defaults to ensure electronics exists
+          setStats(prev => ({
+            ...prev,
+            ...result.data
+          }));
+        }
       } catch {
         // Silently use static fallback values — network unavailable
       }
@@ -263,26 +281,9 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
     }
   };
 
-  const handlePillClick = (categoryId: string, slideIndex?: number) => {
-    setSelectedCategory(categoryId);
-    if (slideIndex !== undefined) setActiveSlide(slideIndex);
-    onCategoryChange(categoryId);
 
-    const grid = document.getElementById("listings-catalog");
-    if (grid) {
-      grid.scrollIntoView({ behavior: "smooth" });
-    }
-  };
 
-  /* ── Active pill style ─────────────────────────────────────────── */
-  const activePillClass =
-    "bg-malazone-green text-black font-black shadow-[0_0_20px_rgba(0,168,107,0.3)]";
-  const inactivePillClass =
-    "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-400 " +
-    "border border-slate-200 dark:border-white/[0.06] " +
-    "hover:border-malazone-green/40 dark:hover:border-malazone-green/30 " +
-    "hover:text-malazone-navy dark:hover:text-slate-200 " +
-    "hover:bg-slate-50 dark:hover:bg-white/[0.07]";
+
 
   /* ── Select field shared class ─────────────────────────────────── */
   const selectClass =
@@ -375,7 +376,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           >
             <div className="flex items-center gap-3 bg-white/60 dark:bg-black/30 backdrop-blur-md px-6 py-2.5 rounded-full border border-slate-200/50 dark:border-white/10 shadow-lg dark:shadow-none">
               <Sparkles className="w-4 h-4 text-[#00A86B] animate-pulse" />
-              <span className="text-slate-700 dark:text-slate-200 font-bold text-[11px] sm:text-sm uppercase tracking-[0.25em]">
+              <span className="text-malazone-navy dark:text-slate-200 font-bold text-[11px] sm:text-sm uppercase tracking-[0.25em]">
                 {t("hero.tagline")}
               </span>
               <Sparkles className="w-4 h-4 text-[#00A86B] animate-pulse" />
@@ -384,7 +385,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
 
           {/* ── 3. SUB-HEADLINE ── */}
           <p 
-            className="text-sm sm:text-base lg:text-lg font-medium tracking-tight max-w-2xl mx-auto text-center leading-relaxed animate-fade-in-up text-slate-600 dark:text-slate-400 transition-colors duration-500"
+            className="text-sm sm:text-base lg:text-lg font-medium tracking-tight max-w-2xl mx-auto text-center leading-relaxed animate-fade-in-up text-malazone-navy dark:text-slate-400 transition-colors duration-500"
             style={{
               transform: `translate3d(${x * 0.15}px, ${y * 0.15}px, 0)`,
               willChange: 'transform',
@@ -426,7 +427,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                   className="w-full h-full px-6 py-4 flex items-center justify-between text-left group rounded-t-2xl sm:rounded-l-full sm:rounded-tr-none"
                 >
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
+                    <span className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
                       {t("search.zone")}
                     </span>
                     <span className="text-sm font-black text-malazone-navy dark:text-white truncate">
@@ -435,7 +436,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                         : t(slides.find(s => s.category_id === selectedCategory)?.pillar_key as any || "cat.all")}
                     </span>
                   </div>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isZoneOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-4 h-4 text-malazone-navy transition-transform duration-300 ${isZoneOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {isZoneOpen && (
@@ -475,7 +476,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                   className="w-full h-full px-6 py-4 flex items-center justify-between text-left"
                 >
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
+                    <span className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
                       {t("search.location")}
                     </span>
                     <div className="flex items-center gap-2">
@@ -485,7 +486,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                       </span>
                     </div>
                   </div>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isLocOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-4 h-4 text-malazone-navy transition-transform duration-300 ${isLocOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {isLocOpen && (
@@ -521,14 +522,14 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                   className="w-full h-full px-6 py-4 flex items-center justify-between text-left"
                 >
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
+                    <span className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
                       {t("search.intent")}
                     </span>
                     <span className="text-sm font-black text-malazone-navy dark:text-white truncate">
                       {t(searchIntent as any)}
                     </span>
                   </div>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isIntentOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-4 h-4 text-malazone-navy transition-transform duration-300 ${isIntentOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {isIntentOpen && (
@@ -553,7 +554,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                   flex items-center justify-center gap-2.5
                   px-8 py-4 rounded-b-2xl sm:rounded-b-none sm:rounded-r-full
                   bg-malazone-green hover:bg-malazone-green/90
-                  text-black font-black
+                  text-malazone-navy font-black
                   transition-all duration-300 group
                 "
               >
@@ -565,47 +566,6 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             </div>
           </div>
 
-          {/* ── Category Icon Pills ───────────────────────────────── */}
-          <div 
-            className="flex items-center justify-center flex-wrap gap-2.5 sm:gap-3 animate-fade-in-up"
-            style={{
-              transform: `translate3d(${x * 0.08}px, ${y * 0.08}px, 0)`,
-              willChange: 'transform',
-              transition: 'transform 0.1s ease-out'
-            }}
-          >
-            {/* "All" pill */}
-            <button
-              onClick={() => {
-                setSelectedCategory("all");
-                onCategoryChange("all");
-                const grid = document.getElementById("listings-catalog");
-                if (grid) grid.scrollIntoView({ behavior: "smooth" });
-              }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedCategory === "all" ? activePillClass : inactivePillClass
-                }`}
-            >
-              {t("cat.all" as any)}
-            </button>
-
-            {/* Zone category pills */}
-            {slides.map((slide, i) => {
-              const IconComp = ICON_MAP[slide.category_id];
-              return (
-                <button
-                  key={slide.id}
-                  onClick={() => handlePillClick(slide.category_id, i)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedCategory === slide.category_id
-                    ? activePillClass
-                    : inactivePillClass
-                    }`}
-                >
-                  {IconComp && <IconComp className="w-3 h-3 shrink-0" />}
-                  <span className="whitespace-nowrap">{t(slide.pillar_key as any)}</span>
-                </button>
-              );
-            })}
-          </div>
 
           {/* ── Stats Strip ─────────────────────────────────────────── */}
           <div 
@@ -619,22 +579,22 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             {[
               {
                 label: t("stats.clients"),
-                val: `${stats.clients.toLocaleString()}+`,
+                val: `${(stats.clients || 1003).toLocaleString()}+`,
                 icon: <Users className="w-4 h-4" />,
               },
               {
                 label: t("stats.listings"),
-                val: `${stats.listings.toLocaleString()}+`,
+                val: `${(stats.listings || 2547).toLocaleString()}+`,
                 icon: <ListChecks className="w-4 h-4" />,
               },
               {
-                label: t("stats.vehicles"),
-                val: `${stats.vehicles.toLocaleString()}+`,
-                icon: <Car className="w-4 h-4" />,
+                label: t("stats.electronics"),
+                val: `${(stats.electronics || 5890).toLocaleString()}+`,
+                icon: <Smartphone className="w-4 h-4" />,
               },
               {
                 label: t("stats.trade"),
-                val: `${stats.trade_success_rate}%`,
+                val: `${stats.trade_success_rate || 100}%`,
                 icon: <TrendingUp className="w-4 h-4" />,
               },
             ].map((stat, i) => (
@@ -665,7 +625,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                 <span className="text-xl sm:text-2xl lg:text-3xl font-black leading-none tracking-tighter text-malazone-navy dark:text-white group-hover:text-[#00A86B] group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-500">
                   {stat.val}
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-bold leading-relaxed tracking-wider uppercase text-center px-1 text-slate-500 dark:text-slate-400 group-hover:text-[#00A86B] group-hover:tracking-[0.2em] transition-all duration-500 font-sans antialiased">
+                <span className="text-[10px] sm:text-[11px] font-bold leading-relaxed tracking-wider uppercase text-center px-1 text-malazone-navy dark:text-slate-400 group-hover:text-[#00A86B] group-hover:tracking-[0.2em] transition-all duration-500 font-sans antialiased">
                   {stat.label}
                 </span>
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#00A86B]/60 rounded-full group-hover:w-8 transition-all duration-500" />

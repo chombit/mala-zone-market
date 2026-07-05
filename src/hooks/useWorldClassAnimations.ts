@@ -204,7 +204,7 @@ export const useStaggerAnimation = (itemCount: number, baseDelay: number = 0.1) 
 // ============================================
 export const use3DTilt = (maxTilt: number = 15, perspective: number = 1000) => {
   const ref = useRef<HTMLElement>(null);
-  const [transform, setTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 });
+  const [transform, setTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1, translateY: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
@@ -215,24 +215,23 @@ export const use3DTilt = (maxTilt: number = 15, perspective: number = 1000) => {
       const rect = element.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      
+
       const percentX = (e.clientX - centerX) / (rect.width / 2);
       const percentY = (e.clientY - centerY) / (rect.height / 2);
-      
+
       setTransform({
         rotateX: -percentY * maxTilt,
         rotateY: percentX * maxTilt,
-        scale: 1.02
+        scale: 1.05,
+        translateY: -20,
       });
     };
 
-    const handleMouseEnter = () => {
-      setIsHovered(true);
-    };
+    const handleMouseEnter = () => setIsHovered(true);
 
     const handleMouseLeave = () => {
       setIsHovered(false);
-      setTransform({ rotateX: 0, rotateY: 0, scale: 1 });
+      setTransform({ rotateX: 0, rotateY: 0, scale: 1, translateY: 0 });
     };
 
     element.addEventListener('mousemove', handleMouseMove, { passive: true });
@@ -247,10 +246,15 @@ export const use3DTilt = (maxTilt: number = 15, perspective: number = 1000) => {
   }, [maxTilt]);
 
   const style = {
-    transform: `perspective(${perspective}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) scale3d(${transform.scale}, ${transform.scale}, 1)`,
-    transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.5s ease-out',
+    transform: `perspective(${perspective}px) translateY(${transform.translateY}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) scale3d(${transform.scale}, ${transform.scale}, 1)`,
+    transition: isHovered
+      ? 'transform 0.12s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease-out'
+      : 'transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease-out',
     transformStyle: 'preserve-3d' as const,
     willChange: 'transform',
+    boxShadow: isHovered
+      ? '0 28px 56px rgba(0,168,107,0.22), 0 8px 24px rgba(0,0,0,0.12)'
+      : '0 4px 16px rgba(0,0,0,0.07)',
   };
 
   return { ref, style, isHovered, transform };

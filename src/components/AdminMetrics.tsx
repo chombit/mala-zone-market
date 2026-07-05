@@ -102,10 +102,10 @@ const AdminMetrics: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+              <p className="text-[11px] font-black text-malazone-navy uppercase tracking-widest">
                 {m.label}
               </p>
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              <h3 className="text-3xl font-black text-malazone-navy tracking-tight">
                 {m.value}
               </h3>
             </div>

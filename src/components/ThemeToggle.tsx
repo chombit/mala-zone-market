@@ -53,7 +53,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = "" }) => {
           ${!isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}
         `}
       >
-        <Moon className="w-4 h-4 text-slate-500" />
+        <Moon className="w-4 h-4 text-malazone-navy" />
       </span>
 
       {/* Ripple glow on hover */}

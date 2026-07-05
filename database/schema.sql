@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS listings (
   title_en VARCHAR(255) NOT NULL,
   description_am TEXT,
   description_en TEXT,
-  category ENUM('property', 'motors', 'stay', 'ceremony', 'heavy') NOT NULL,
+  category ENUM('property', 'motors', 'stay', 'ceremony', 'heavy', 'electronics') NOT NULL,
   sub_category VARCHAR(50),
   
   -- Location (Municipal Geography)

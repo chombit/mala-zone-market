@@ -149,11 +149,11 @@ const BannerManager: React.FC = () => {
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
         <div className="space-y-1">
-          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h2 className="text-xl font-black text-malazone-navy tracking-tight flex items-center gap-3">
             <Image className="w-6 h-6 text-[#00A86B]" />
             Promo Banners
           </h2>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Manage promotional banners</p>
+          <p className="text-xs font-bold text-malazone-navy uppercase tracking-widest">Manage promotional banners</p>
         </div>
         <button
           onClick={handleAdd}
@@ -176,13 +176,13 @@ const BannerManager: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <img src={banner.image_url} alt={banner.title_en} className="w-20 h-16 object-cover rounded-lg" />
                   <div className="space-y-1">
-                    <p className="font-bold text-slate-900">{banner.title_en}</p>
-                    <p className="text-xs text-slate-500">{banner.title_am}</p>
-                    {banner.subtitle_en && <p className="text-xs text-slate-400">{banner.subtitle_en}</p>}
+                    <p className="font-bold text-malazone-navy">{banner.title_en}</p>
+                    <p className="text-xs text-malazone-navy">{banner.title_am}</p>
+                    {banner.subtitle_en && <p className="text-xs text-malazone-navy">{banner.subtitle_en}</p>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handleEdit(banner)} className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100 transition-all">
+                  <button onClick={() => handleEdit(banner)} className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-malazone-navy hover:bg-slate-100 transition-all">
                     <Edit3 className="w-4 h-4" />
                   </button>
                   <button onClick={() => handleDelete(banner.id!)} className="p-2 bg-red-50 border border-red-200 rounded-lg text-red-600 hover:bg-red-100 transition-all">
@@ -200,85 +200,85 @@ const BannerManager: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-slate-900">{editingBanner ? "Edit Banner" : "Add Banner"}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700">
+              <h3 className="text-xl font-bold text-malazone-navy">{editingBanner ? "Edit Banner" : "Add Banner"}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-full hover:bg-slate-100 text-malazone-navy hover:text-malazone-navy">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Image URL</label>
+                <label className="text-sm font-bold text-malazone-navy">Image URL</label>
                 <input
                   type="text"
                   value={formData.image_url}
                   onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Title (EN)</label>
+                  <label className="text-sm font-bold text-malazone-navy">Title (EN)</label>
                   <input
                     type="text"
                     value={formData.title_en}
                     onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Title (AM)</label>
+                  <label className="text-sm font-bold text-malazone-navy">Title (AM)</label>
                   <input
                     type="text"
                     value={formData.title_am}
                     onChange={(e) => setFormData({ ...formData, title_am: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Subtitle (EN)</label>
+                  <label className="text-sm font-bold text-malazone-navy">Subtitle (EN)</label>
                   <textarea
                     value={formData.subtitle_en}
                     onChange={(e) => setFormData({ ...formData, subtitle_en: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Subtitle (AM)</label>
+                  <label className="text-sm font-bold text-malazone-navy">Subtitle (AM)</label>
                   <textarea
                     value={formData.subtitle_am}
                     onChange={(e) => setFormData({ ...formData, subtitle_am: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Link URL</label>
+                <label className="text-sm font-bold text-malazone-navy">Link URL</label>
                 <input
                   type="text"
                   value={formData.link_url}
                   onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Display Order</label>
+                  <label className="text-sm font-bold text-malazone-navy">Display Order</label>
                   <input
                     type="number"
                     value={formData.display_order}
                     onChange={(e) => setFormData({ ...formData, display_order: Number(e.target.value) })}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Status</label>
+                  <label className="text-sm font-bold text-malazone-navy">Status</label>
                   <select
                     value={formData.is_active ? "true" : "false"}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.value === "true" })}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                   >
                     <option value="true">Active</option>
                     <option value="false">Inactive</option>
@@ -289,7 +289,7 @@ const BannerManager: React.FC = () => {
             <div className="p-6 border-t border-slate-200 flex justify-end gap-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-5 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-all"
+                className="px-5 py-3 rounded-xl font-bold text-malazone-navy hover:bg-slate-100 transition-all"
               >
                 Cancel
               </button>

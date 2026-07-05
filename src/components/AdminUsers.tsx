@@ -6,17 +6,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Plus, Edit3, Trash2, Save, X, ShieldCheck, User } from "lucide-react";
-import { useAdminAuth } from "../contexts/AdminAuthContext";
-
-interface AdminUser {
-  id: number;
-  username: string;
-  full_name: string;
-  role: "super_admin" | "admin";
-  is_active?: boolean;
-  last_login?: string | null;
-  created_at?: string;
-}
+import { useAdminAuth, AdminUser } from "../contexts/AdminAuthContext";
 
 interface AdminUserModalProps {
   isOpen: boolean;
@@ -29,7 +19,7 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
   const [formData, setFormData] = useState({
     username: user?.username || "",
     full_name: user?.full_name || "",
-    role: (user?.role || "admin") as "super_admin" | "admin",
+    role: (user?.role || "admin") as any,
     password: ""
   });
   const [loading, setLoading] = useState(false);
@@ -82,50 +72,50 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
       <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200">
         <div className="p-6 border-b border-slate-200 flex items-center justify-between">
-          <h3 className="text-xl font-bold text-slate-900">{user ? "Edit Admin" : "Add New Admin"}</h3>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700">
+          <h3 className="text-xl font-bold text-malazone-navy">{user ? "Edit Admin" : "Add New Admin"}</h3>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 text-malazone-navy hover:text-malazone-navy">
             <X className="w-5 h-5" />
           </button>
         </div>
         <div className="p-6 space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Username</label>
+            <label className="text-sm font-semibold text-malazone-navy">Username</label>
             <input
               type="text"
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
               placeholder="Enter username"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Full Name</label>
+            <label className="text-sm font-semibold text-malazone-navy">Full Name</label>
             <input
               type="text"
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
               placeholder="Enter full name"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Role</label>
+            <label className="text-sm font-semibold text-malazone-navy">Role</label>
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value as "super_admin" | "admin" })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
             >
               <option value="admin">Admin</option>
               <option value="super_admin">Super Admin</option>
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Password {user ? "(optional)" : ""}</label>
+            <label className="text-sm font-semibold text-malazone-navy">Password {user ? "(optional)" : ""}</label>
             <input
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
               placeholder={user ? "Enter new password (leave blank to keep current)" : "Enter password"}
             />
           </div>
@@ -133,7 +123,7 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
         <div className="p-6 border-t border-slate-200 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-all"
+            className="px-6 py-3 rounded-xl font-bold text-malazone-navy hover:bg-slate-100 transition-all"
           >
             Cancel
           </button>
@@ -220,11 +210,11 @@ const AdminUsers: React.FC = () => {
       {/* Header */}
       <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
         <div className="space-y-1">
-          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h2 className="text-xl font-black text-malazone-navy tracking-tight flex items-center gap-3">
             <User className="w-6 h-6 text-[#00A86B]" />
             Admin Users
           </h2>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Manage administrator accounts</p>
+          <p className="text-xs font-bold text-malazone-navy uppercase tracking-widest">Manage administrator accounts</p>
         </div>
         <button
           onClick={handleAdd}
@@ -245,10 +235,10 @@ const AdminUsers: React.FC = () => {
           <table className="w-full">
             <thead className="bg-slate-50/50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">User</th>
-                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">Role</th>
-                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">Status</th>
-                <th className="px-6 py-4 text-right text-xs font-black uppercase tracking-wider text-slate-500">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">User</th>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">Role</th>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">Status</th>
+                <th className="px-6 py-4 text-right text-xs font-black uppercase tracking-wider text-malazone-navy">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -260,8 +250,8 @@ const AdminUsers: React.FC = () => {
                         {adminUser.full_name.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900">{adminUser.full_name}</p>
-                        <p className="text-xs text-slate-500 font-mono">{adminUser.username}</p>
+                        <p className="text-sm font-bold text-malazone-navy">{adminUser.full_name}</p>
+                        <p className="text-xs text-malazone-navy font-mono">{adminUser.username}</p>
                       </div>
                     </div>
                   </td>
@@ -285,7 +275,7 @@ const AdminUsers: React.FC = () => {
                   <td className="px-6 py-5 flex items-center justify-end gap-2">
                     <button
                       onClick={() => handleEdit(adminUser)}
-                      className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all"
+                      className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-malazone-navy hover:bg-slate-100 hover:text-malazone-navy transition-all"
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>

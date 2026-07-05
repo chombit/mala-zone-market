@@ -13,7 +13,7 @@ module.exports = {
         },
         malazone: {
           green: '#00A86B',
-          navy: '#0A1128',
+          navy: '#0B132B',
           card: '#0D152B',
         },
         mala: {
@@ -32,6 +32,7 @@ module.exports = {
       animation: {
         'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both',
         'fade-in': 'fadeIn 0.4s ease-out both',
+        'marquee': 'marquee 25s linear infinite',
       },
       keyframes: {
         fadeInUp: {
@@ -41,6 +42,10 @@ module.exports = {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(-100%)' },
         }
       }
     },

@@ -179,7 +179,7 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#00A86B]/40 hover:text-[#00A86B] transition-all duration-300 text-xs font-bold uppercase tracking-widest group"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-malazone-navy dark:text-slate-300 hover:border-[#00A86B]/40 hover:text-[#00A86B] transition-all duration-300 text-xs font-bold uppercase tracking-widest group"
           >
             <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
             {d.backBtn}
@@ -195,10 +195,10 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
             <Headphones className="w-3.5 h-3.5" />
             {d.badge}
           </span>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tighter">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-malazone-navy dark:text-white tracking-tighter">
             {d.title}
           </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
+          <p className="text-lg text-malazone-navy dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
             {d.subtitle}
           </p>
         </section>
@@ -207,7 +207,7 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
         <section className="grid lg:grid-cols-5 gap-8">
           {/* Left: Contact Info Cards */}
           <div className="lg:col-span-2 space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 dark:text-white flex items-center gap-3 mb-6">
+            <h3 className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy dark:text-white flex items-center gap-3 mb-6">
               <div className="w-1 h-6 bg-[#00A86B] rounded-full" />
               {d.infoTitle}
             </h3>
@@ -220,9 +220,9 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                   <c.icon className="w-4.5 h-4.5" />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{c.label}</p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white whitespace-pre-line">{c.value}</p>
-                  {c.sub && <p className="text-[11px] text-slate-500 font-medium">{c.sub}</p>}
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{c.label}</p>
+                  <p className="text-sm font-bold text-malazone-navy dark:text-white whitespace-pre-line">{c.value}</p>
+                  {c.sub && <p className="text-[11px] text-malazone-navy font-medium">{c.sub}</p>}
                 </div>
               </div>
             ))}
@@ -231,7 +231,7 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
           {/* Right: Contact Form */}
           <div className="lg:col-span-3">
             <div className="bg-white dark:bg-white/[0.03] rounded-3xl border border-slate-200 dark:border-white/[0.06] p-8 sm:p-10 space-y-8">
-              <h3 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 dark:text-white flex items-center gap-3">
+              <h3 className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy dark:text-white flex items-center gap-3">
                 <div className="w-1 h-6 bg-[#00A86B] rounded-full" />
                 {d.formTitle}
               </h3>
@@ -241,61 +241,61 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                   <div className="w-16 h-16 rounded-full bg-[#00A86B]/10 flex items-center justify-center">
                     <CheckCircle className="w-8 h-8 text-[#00A86B]" />
                   </div>
-                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300 text-center max-w-sm">{d.formSuccess}</p>
+                  <p className="text-sm font-bold text-malazone-navy dark:text-slate-300 text-center max-w-sm">{d.formSuccess}</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid sm:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{d.formName}</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formName}</label>
                       <input
                         type="text"
                         required
                         placeholder={d.formNamePlaceholder}
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{d.formEmail}</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formEmail}</label>
                       <input
                         type="email"
                         required
                         placeholder={d.formEmailPlaceholder}
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
                       />
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{d.formPhone}</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formPhone}</label>
                       <input
                         type="tel"
                         placeholder={d.formPhonePlaceholder}
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{d.formSubject}</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formSubject}</label>
                       <input
                         type="text"
                         required
                         placeholder={d.formSubjectPlaceholder}
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{d.formMessage}</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formMessage}</label>
                     <textarea
                       required
                       rows={5}
                       placeholder={d.formMessagePlaceholder}
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all resize-none"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all resize-none"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-black font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98] group"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-malazone-navy font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98] group"
                   >
                     <Send className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     {d.formSubmit}
@@ -308,7 +308,7 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
 
         {/* ── Support Channels Grid ── */}
         <section className="space-y-8">
-          <h3 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 dark:text-white flex items-center gap-3">
+          <h3 className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy dark:text-white flex items-center gap-3">
             <div className="w-1 h-6 bg-[#00A86B] rounded-full" />
             {d.supportChannels}
           </h3>
@@ -321,8 +321,8 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                 <div className="w-10 h-10 rounded-xl bg-[#00A86B]/10 flex items-center justify-center text-[#00A86B] group-hover:scale-110 transition-transform">
                   <ch.icon className="w-5 h-5" />
                 </div>
-                <h4 className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{ch.title}</h4>
-                <p className="text-sm leading-[1.8] text-slate-600 dark:text-slate-400 font-medium">{ch.desc}</p>
+                <h4 className="text-sm font-black text-malazone-navy dark:text-white tracking-tight">{ch.title}</h4>
+                <p className="text-sm leading-[1.8] text-malazone-navy dark:text-slate-400 font-medium">{ch.desc}</p>
               </div>
             ))}
           </div>
@@ -330,7 +330,7 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
 
         {/* ── Regional Offices ── */}
         <section className="space-y-8">
-          <h3 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 dark:text-white flex items-center gap-3">
+          <h3 className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy dark:text-white flex items-center gap-3">
             <div className="w-1 h-6 bg-[#00A86B] rounded-full" />
             {d.officesTitle}
           </h3>
@@ -344,8 +344,8 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                   <MapPin className="w-4.5 h-4.5" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-black text-slate-900 dark:text-white">{o.name}</p>
-                  <p className="text-xs text-slate-500 font-medium">{o.addr}</p>
+                  <p className="text-sm font-black text-malazone-navy dark:text-white">{o.name}</p>
+                  <p className="text-xs text-malazone-navy font-medium">{o.addr}</p>
                 </div>
               </div>
             ))}
@@ -354,7 +354,7 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
 
         {/* ── Bottom Copyright ── */}
         <div className="pt-12 border-t border-slate-200 dark:border-white/5 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-600">{d.copyright}</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-malazone-navy dark:text-slate-600">{d.copyright}</p>
         </div>
       </div>
     </div>

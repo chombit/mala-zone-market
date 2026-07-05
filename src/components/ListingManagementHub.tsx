@@ -73,22 +73,22 @@ const ListingManagementHub: React.FC = () => {
       {/* Hub Header */}
       <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
         <div className="space-y-1">
-          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h2 className="text-xl font-black text-malazone-navy tracking-tight flex items-center gap-3">
             <Package className="w-6 h-6 text-[#00A86B]" />
             {t("admin.hub.listings.title")}
           </h2>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Global Asset Lifecycle & Inventory Control</p>
+          <p className="text-xs font-bold text-malazone-navy uppercase tracking-widest">Global Asset Lifecycle & Inventory Control</p>
         </div>
         
         <div className="flex items-center gap-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy" />
             <input 
               type="text" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="Filter by title or category..." 
-              className="bg-white border border-slate-200 rounded-xl py-2.5 pl-12 pr-5 text-sm text-slate-700 focus:outline-none focus:border-[#00A86B]/50 transition-all w-64"
+              className="bg-white border border-slate-200 rounded-xl py-2.5 pl-12 pr-5 text-sm text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 transition-all w-64"
             />
           </div>
           <button 
@@ -113,25 +113,25 @@ const ListingManagementHub: React.FC = () => {
         ) : filteredListings.length === 0 ? (
           <div className="p-20 text-center">
             <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600 font-bold">No listings found</p>
+            <p className="text-malazone-navy font-bold">No listings found</p>
           </div>
         ) : (
           <table className="w-full">
             <thead className="bg-slate-50/50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">
                   Asset
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">
                   Category
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">
                   Price
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500">
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">
                   Actions
                 </th>
               </tr>
@@ -141,27 +141,27 @@ const ListingManagementHub: React.FC = () => {
                 <tr key={listing.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">
+                      <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-malazone-navy">
                         <Package className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900">
+                        <p className="text-sm font-bold text-malazone-navy">
                           {isAm ? listing.title_am : listing.title_en}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-malazone-navy">
                           ID: #{listing.id}
                         </p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-malazone-navy text-xs font-bold rounded-full">
                       <Tag className="w-3 h-3" />
                       {listing.category}
                     </span>
                   </td>
                   <td className="px-6 py-5">
-                    <p className="text-sm font-bold text-slate-900">
+                    <p className="text-sm font-bold text-malazone-navy">
                       {(listing.price || 0).toLocaleString()} ETB
                     </p>
                   </td>
@@ -185,7 +185,7 @@ const ListingManagementHub: React.FC = () => {
                           setEditingListing(listing);
                           setIsModalOpen(true);
                         }}
-                        className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all"
+                        className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-malazone-navy hover:bg-slate-100 hover:text-malazone-navy transition-all"
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
@@ -196,7 +196,7 @@ const ListingManagementHub: React.FC = () => {
                         <Trash2 className="w-4 h-4" />
                       </button>
                       <button 
-                        className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all"
+                        className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-malazone-navy hover:bg-slate-100 hover:text-malazone-navy transition-all"
                       >
                         <EyeOff className="w-4 h-4" />
                       </button>

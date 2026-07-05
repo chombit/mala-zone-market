@@ -193,7 +193,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#00A86B]/40 hover:text-[#00A86B] transition-all duration-300 text-xs font-bold uppercase tracking-widest group"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-malazone-navy dark:text-slate-300 hover:border-[#00A86B]/40 hover:text-[#00A86B] transition-all duration-300 text-xs font-bold uppercase tracking-widest group"
           >
             <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
             {d.backBtn}
@@ -211,9 +211,9 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
           </span>
           <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.85]">
             <span className="text-[#00A86B]">{d.title1}</span>
-            <span className="text-slate-900 dark:text-white transition-colors duration-300">{d.title2}</span>
+            <span className="text-malazone-navy dark:text-white transition-colors duration-300">{d.title2}</span>
           </h1>
-          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-medium">
+          <p className="text-lg sm:text-xl text-malazone-navy dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-medium">
             {d.subtitle}
           </p>
         </section>
@@ -228,8 +228,8 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
               <div className="w-10 h-10 rounded-xl bg-[#00A86B]/10 flex items-center justify-center text-[#00A86B] group-hover:scale-110 transition-transform">
                 <s.icon className="w-5 h-5" />
               </div>
-              <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{s.value}</span>
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">{s.label}</span>
+              <span className="text-3xl font-black text-malazone-navy dark:text-white tracking-tight">{s.value}</span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-malazone-navy">{s.label}</span>
             </div>
           ))}
         </section>
@@ -238,7 +238,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
         <section className="space-y-8">
           <div className="flex items-center gap-3">
             <div className="w-1 h-8 bg-[#00A86B] rounded-full" />
-            <h2 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 dark:text-white">{d.founderSection}</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.25em] text-malazone-navy dark:text-white">{d.founderSection}</h2>
           </div>
           <div className="bg-white dark:bg-white/[0.03] rounded-3xl border border-slate-200 dark:border-white/[0.06] p-8 sm:p-12 space-y-6 hover:border-[#00A86B]/20 transition-colors duration-500">
             <div className="flex flex-col sm:flex-row items-start gap-6">
@@ -246,12 +246,12 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
                 L
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{d.founderName}</h3>
+                <h3 className="text-2xl font-black text-malazone-navy dark:text-white tracking-tight">{d.founderName}</h3>
                 <p className="text-sm font-bold text-[#00A86B] uppercase tracking-[0.15em]">{d.founderRole}</p>
               </div>
             </div>
             <div className="h-px bg-slate-100 dark:bg-white/5" />
-            <p className="text-[15px] leading-[1.85] text-slate-600 dark:text-slate-400 font-medium">{d.founderBio}</p>
+            <p className="text-[15px] leading-[1.85] text-malazone-navy dark:text-slate-400 font-medium">{d.founderBio}</p>
           </div>
         </section>
 
@@ -261,23 +261,23 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
             <div className="w-10 h-10 rounded-xl bg-[#00A86B]/10 flex items-center justify-center">
               <Target className="w-5 h-5 text-[#00A86B]" />
             </div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{d.missionTitle}</h3>
-            <p className="text-sm leading-[1.9] text-slate-600 dark:text-slate-400 font-medium">{d.missionText}</p>
+            <h3 className="text-lg font-black text-malazone-navy dark:text-white tracking-tight">{d.missionTitle}</h3>
+            <p className="text-sm leading-[1.9] text-malazone-navy dark:text-slate-400 font-medium">{d.missionText}</p>
           </div>
           <div className="bg-white dark:bg-white/[0.03] rounded-3xl border border-slate-200 dark:border-white/[0.06] p-8 sm:p-10 space-y-5 hover:border-[#00A86B]/20 transition-colors duration-500">
             <div className="w-10 h-10 rounded-xl bg-[#00A86B]/10 flex items-center justify-center">
               <Globe className="w-5 h-5 text-[#00A86B]" />
             </div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{d.visionTitle}</h3>
-            <p className="text-sm leading-[1.9] text-slate-600 dark:text-slate-400 font-medium">{d.visionText}</p>
+            <h3 className="text-lg font-black text-malazone-navy dark:text-white tracking-tight">{d.visionTitle}</h3>
+            <p className="text-sm leading-[1.9] text-malazone-navy dark:text-slate-400 font-medium">{d.visionText}</p>
           </div>
         </section>
 
         {/* ── Five Core Asset Zones ── */}
         <section className="space-y-10">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">{d.zonesTitle}</h2>
-            <p className="text-sm text-slate-500 font-medium max-w-xl mx-auto">{d.zonesSubtitle}</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-malazone-navy dark:text-white tracking-tight">{d.zonesTitle}</h2>
+            <p className="text-sm text-malazone-navy font-medium max-w-xl mx-auto">{d.zonesSubtitle}</p>
           </div>
           <div className="grid gap-5">
             {zones.map((z, i) => (
@@ -289,8 +289,8 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
                   <z.icon className="w-5 h-5" />
                 </div>
                 <div className="space-y-2">
-                  <h4 className="text-base font-black text-slate-900 dark:text-white tracking-tight">{z.title}</h4>
-                  <p className="text-sm leading-[1.85] text-slate-600 dark:text-slate-400 font-medium">{z.desc}</p>
+                  <h4 className="text-base font-black text-malazone-navy dark:text-white tracking-tight">{z.title}</h4>
+                  <p className="text-sm leading-[1.85] text-malazone-navy dark:text-slate-400 font-medium">{z.desc}</p>
                 </div>
               </div>
             ))}
@@ -300,8 +300,8 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
         {/* ── Expansion Roadmap ── */}
         <section className="space-y-10">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">{d.expansionTitle}</h2>
-            <p className="text-sm text-slate-500 font-medium max-w-xl mx-auto">{d.expansionSubtitle}</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-malazone-navy dark:text-white tracking-tight">{d.expansionTitle}</h2>
+            <p className="text-sm text-malazone-navy font-medium max-w-xl mx-auto">{d.expansionSubtitle}</p>
           </div>
           <div className="relative space-y-0">
             {/* Timeline line */}
@@ -312,13 +312,13 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
                 <div className={`hidden sm:flex absolute left-[18px] w-4 h-4 rounded-full border-2 ${p.status === "active" ? "bg-[#00A86B] border-[#00A86B] shadow-lg shadow-emerald-500/30" : "bg-white dark:bg-slate-900 border-slate-300 dark:border-white/20"} transition-all z-10`} />
                 <div className="bg-white dark:bg-white/[0.03] rounded-2xl border border-slate-200 dark:border-white/[0.06] p-6 sm:p-8 flex-1 space-y-3 hover:border-[#00A86B]/20 transition-colors duration-500">
                   <div className="flex items-center gap-3">
-                    <p.icon className={`w-4 h-4 ${p.status === "active" ? "text-[#00A86B]" : "text-slate-400"}`} />
-                    <h4 className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{p.label}</h4>
+                    <p.icon className={`w-4 h-4 ${p.status === "active" ? "text-[#00A86B]" : "text-malazone-navy"}`} />
+                    <h4 className="text-sm font-black text-malazone-navy dark:text-white tracking-tight">{p.label}</h4>
                     {p.status === "active" && (
                       <span className="px-2 py-0.5 rounded-full bg-[#00A86B]/10 text-[#00A86B] text-[8px] font-black uppercase tracking-widest">Live</span>
                     )}
                   </div>
-                  <p className="text-sm leading-[1.8] text-slate-600 dark:text-slate-400 font-medium">{p.desc}</p>
+                  <p className="text-sm leading-[1.8] text-malazone-navy dark:text-slate-400 font-medium">{p.desc}</p>
                 </div>
               </div>
             ))}
@@ -327,7 +327,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
 
         {/* ── Bottom Copyright ── */}
         <div className="pt-12 border-t border-slate-200 dark:border-white/5 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-600">{d.copyright}</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-malazone-navy dark:text-slate-600">{d.copyright}</p>
         </div>
       </div>
     </div>

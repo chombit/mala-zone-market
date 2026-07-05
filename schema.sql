@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS listings (
   description TEXT COMMENT 'Full listing description',
   price DECIMAL(15, 2) NOT NULL COMMENT 'Price in ETB (Birr)',
   price_suffix ENUM('fixed', 'per_day', 'per_hour', 'per_month') DEFAULT 'fixed' COMMENT 'Price unit',
-  category ENUM('property', 'motors', 'stay', 'ceremony', 'heavy') NOT NULL COMMENT '5 main business zones',
+  category ENUM('property', 'motors', 'stay', 'ceremony', 'heavy', 'electronics') NOT NULL COMMENT '6 main business zones',
   sub_category VARCHAR(100) COMMENT 'Nested category (apartment, suv, guesthouse, etc.)',
   location_key VARCHAR(50) NOT NULL COMMENT 'Standardized location ID (hawassa_tabor, etc.)',
   location_label_am VARCHAR(200) COMMENT 'Location in Amharic (ሐዋሳ — ታቦር)',
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS listings (
   KEY idx_composite (category, location_key, is_active, created_at) COMMENT 'Main search query'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-  COMMENT='Core marketplace listings: property, motors, stay, ceremony, machinery';
+  COMMENT='Core marketplace listings: property, motors, stay, ceremony, machinery, electronics';
 
 -- ─────────────────────────────────────────────────────────────
 -- AGENTS TABLE
@@ -246,6 +246,23 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   COMMENT='Audit trail for compliance and debugging';
 
 -- ─────────────────────────────────────────────────────────────
+-- TRANSLATIONS TABLE
+-- Dynamic content management for UI texts
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS translations (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'Translation ID',
+  text_key VARCHAR(100) NOT NULL UNIQUE COMMENT 'Unique key (e.g., nav.home, footer.about)',
+  en_value TEXT NOT NULL COMMENT 'English translation',
+  am_value TEXT NOT NULL COMMENT 'Amharic translation',
+  section VARCHAR(50) DEFAULT 'general' COMMENT 'Logical grouping (e.g., footer, nav, hero)',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update',
+
+  KEY idx_section (section) COMMENT 'Filter by section'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+  COMMENT='Dynamic content and localization texts';
+
+-- ─────────────────────────────────────────────────────────────
 -- SAMPLE DATA (for testing)
 -- ─────────────────────────────────────────────────────────────
 INSERT INTO users (full_name, phone_number, account_type, preferred_language, is_verified)
@@ -330,7 +347,7 @@ ORDER BY a.earnings_total_etb DESC;
 /*
 SCHEMA SUMMARY:
 - users: 5 core user accounts
-- listings: 5 sample listings (property, motors, stay, ceremony, heavy)
+- listings: 6 sample listings (property, motors, stay, ceremony, heavy, electronics)
 - agents: 4 Mala-Agents workers in different Hawassa sub-cities
 - agent_earnings: commission tracking
 - favorites: user wishlist feature

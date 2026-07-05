@@ -7,15 +7,48 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { Globe, Menu, Sun, Moon, X, ChevronRight } from "lucide-react";
+import { Globe, Menu, Sun, Moon, X, ChevronRight, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import LogoImg from "../images/Logo.png";
+import { useFavorites } from "@/contexts/FavoritesContext";
 
 interface HeaderProps {
   activeCategory?: string;
   onCategoryChange?: (cat: string) => void;
 }
+
+// ─── Promo Ticker ─────────────────────────────────────────────────────────────
+interface PromoText {
+  en_value: string;
+  am_value: string;
+}
+
+const PROMO_PREFIX = "promo_ticker_";
+
+const usePromoTicker = () => {
+  const [promos, setPromos] = useState<PromoText[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/translations")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) {
+          const items: PromoText[] = data.data
+            .filter((t: any) => t.text_key.startsWith(PROMO_PREFIX))
+            .sort((a: any, b: any) => {
+              const na = parseInt(a.text_key.replace(PROMO_PREFIX, ""), 10);
+              const nb = parseInt(b.text_key.replace(PROMO_PREFIX, ""), 10);
+              return na - nb;
+            });
+          if (items.length > 0) setPromos(items);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  return promos;
+};
 
 const highlightTicker = (text: string) => {
   const green = '<span class="text-[#00A86B] underline decoration-[#00A86B] decoration-2 underline-offset-4">$&</span>';
@@ -26,9 +59,69 @@ const highlightTicker = (text: string) => {
   };
 };
 
+const SlidingTicker: React.FC<{ language: string; fallbackText: string }> = ({
+  language,
+  fallbackText,
+}) => {
+  const promos = usePromoTicker();
+  const [current, setCurrent] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  // If we have real promos, cycle through them
+  useEffect(() => {
+    if (promos.length <= 1) return;
+    const timer = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setCurrent((c) => (c + 1) % promos.length);
+        setVisible(true);
+      }, 450);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [promos.length]);
+
+  const displayText =
+    promos.length > 0
+      ? language === "en"
+        ? promos[current]?.en_value || fallbackText
+        : promos[current]?.am_value || fallbackText
+      : fallbackText;
+
+  return (
+    <div className="relative overflow-hidden h-[42px] flex items-center justify-center px-6">
+      <p
+        dangerouslySetInnerHTML={highlightTicker(displayText)}
+        style={{
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(-8px)",
+        }}
+        className="text-xs sm:text-[13px] font-bold tracking-widest text-white uppercase whitespace-nowrap text-center"
+      />
+      {/* Dot indicators (only if multiple promos) */}
+      {promos.length > 1 && (
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+          {promos.map((_, i) => (
+            <span
+              key={i}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: i === current ? "12px" : "4px",
+                height: "3px",
+                backgroundColor: i === current ? "#34d399" : "rgba(255,255,255,0.25)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => {
   const { language, toggleLanguage, t } = useLanguage();
   const { isDark, toggleTheme } = useTheme();
+  const { favorites, setSidebarOpen } = useFavorites();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const categories = [
@@ -37,6 +130,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
     { key: "nav.cat3", id: "stay" },
     { key: "nav.cat4", id: "ceremony" },
     { key: "nav.cat5", id: "heavy" },
+    { key: "nav.cat6", id: "electronics" },
   ];
 
   const handleNavClick = (id: string) => {
@@ -50,12 +144,9 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
 
   return (
     <div className="fixed top-0 left-0 w-full z-[150]">
-      {/* ── Ticker / Announcement Bar ──────────────────────────────── */}
-      <div className="w-full bg-[#0B132B] border-b border-emerald-600/30 py-4 px-6 overflow-hidden">
-        <p
-          className="text-xs sm:text-[13px] font-bold tracking-widest text-white uppercase whitespace-nowrap animate-marquee text-center"
-          dangerouslySetInnerHTML={highlightTicker(t("ticker"))}
-        />
+      {/* ── Sliding Promo Ticker ───────────────────────────────────────── */}
+      <div className="w-full bg-[#0B132B] border-b border-emerald-600/30 overflow-hidden">
+        <SlidingTicker language={language} fallbackText={t("ticker")} />
       </div>
 
       {/* ── Main Navigation Bar ───────────────────────────────────── */}
@@ -95,8 +186,8 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                 whitespace-nowrap uppercase tracking-wider
                 transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-none
                 ${activeCategory === cat.id
-                  ? "bg-[#00A86B] text-black shadow-lg shadow-emerald-500/20"
-                  : "text-slate-600 dark:text-slate-300 hover:text-[#00A86B] dark:hover:text-white hover:bg-white dark:hover:bg-white/10"}
+                  ? "bg-[#00A86B] text-malazone-navy shadow-lg shadow-emerald-500/20"
+                  : "text-malazone-navy dark:text-slate-300 hover:text-[#00A86B] dark:hover:text-white hover:bg-white dark:hover:bg-white/10"}
               `}
             >
               {t(cat.key as any)}
@@ -106,6 +197,28 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
 
         {/* ── RIGHT: Controls ─────────────── */}
         <div className="flex items-center gap-3 shrink-0">
+
+          {/* Favorites Button */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            aria-label="View Favorites"
+            className="
+              relative flex items-center justify-center
+              w-12 h-10 rounded-full
+              border transition-all duration-300 group
+              border-slate-200 dark:border-white/10
+              bg-white dark:bg-white/5
+              hover:bg-slate-50 dark:hover:bg-white/10
+              shadow-sm dark:shadow-none
+            "
+          >
+            <Heart className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
+            {favorites.length > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 text-[9px] font-black text-white bg-rose-500 rounded-full shadow-sm animate-in zoom-in duration-300">
+                {favorites.length}
+              </span>
+            )}
+          </button>
 
           {/* Theme Toggle Capsule */}
           <button
@@ -125,7 +238,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             {isDark ? (
               <Sun className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
             ) : (
-              <Moon className="w-4 h-4 text-slate-500 group-hover:scale-110 transition-transform" />
+              <Moon className="w-4 h-4 text-malazone-navy group-hover:scale-110 transition-transform" />
             )}
           </button>
 
@@ -157,7 +270,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             className="
               hidden sm:flex items-center justify-center
               bg-gradient-to-r from-[#00A86B] to-emerald-600
-              text-black font-black text-xs px-5 py-2.5
+              text-malazone-navy font-black text-xs px-5 py-2.5
               rounded-xl shadow-md
               hover:scale-[1.02] active:scale-[0.98]
               transition-transform duration-200
@@ -175,7 +288,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               border border-transparent
               hover:border-slate-200 dark:hover:border-white/10
               hover:bg-slate-100 dark:hover:bg-white/5
-              text-slate-700 dark:text-white
+              text-malazone-navy dark:text-white
               transition-all duration-200
             "
           >
@@ -206,12 +319,12 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                     text-sm font-bold tracking-wide uppercase
                     transition-all duration-200
                     ${activeCategory === cat.id
-                      ? "bg-[#00A86B] text-black"
-                      : "text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 hover:bg-emerald dark:hover:bg-emerald-500/10 hover:text-[#00A86B] dark:hover:text-emerald-400"}
+                      ? "bg-[#00A86B] text-malazone-navy"
+                      : "text-malazone-navy dark:text-slate-200 bg-slate-50 dark:bg-white/5 hover:bg-emerald dark:hover:bg-emerald-500/10 hover:text-[#00A86B] dark:hover:text-emerald-400"}
                   `}
                 >
                   {t(cat.key as any)}
-                  <ChevronRight className={`w-4 h-4 ${activeCategory === cat.id ? "text-black" : "opacity-40"}`} />
+                  <ChevronRight className={`w-4 h-4 ${activeCategory === cat.id ? "text-malazone-navy" : "opacity-40"}`} />
                 </button>
               ))}
 
@@ -228,7 +341,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                   flex items-center justify-center gap-3
                   w-full py-4 rounded-2xl
                   bg-gradient-to-r from-[#00A86B] to-emerald-600
-                  text-black font-black text-sm uppercase tracking-widest
+                  text-malazone-navy font-black text-sm uppercase tracking-widest
                   shadow-lg shadow-emerald-500/20
                 "
               >

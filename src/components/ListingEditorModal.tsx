@@ -35,6 +35,7 @@ interface ListingForm {
   bedrooms?: number;
   bathrooms?: number;
   title_deed?: string;
+  imei_serial?: string;
 }
 
 interface ModalProps {
@@ -73,7 +74,8 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
     is_zero_km: false,
     bedrooms: 0,
     bathrooms: 0,
-    title_deed: "carta"
+    title_deed: "carta",
+    imei_serial: ""
   });
 
   useEffect(() => {
@@ -103,7 +105,8 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         is_zero_km: listing.is_zero_km === 1 || listing.is_zero_km === true,
         bedrooms: listing.bedrooms || 0,
         bathrooms: listing.bathrooms || 0,
-        title_deed: listing.title_deed || "carta"
+        title_deed: listing.title_deed || "carta",
+        imei_serial: listing.imei_serial || ""
       });
     } else {
       setFormData({
@@ -130,7 +133,8 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         is_zero_km: false,
         bedrooms: 0,
         bathrooms: 0,
-        title_deed: "carta"
+        title_deed: "carta",
+        imei_serial: ""
       });
     }
   }, [listing, isOpen]);
@@ -178,13 +182,13 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               <Package className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-2xl font-black text-malazone-navy tracking-tight">
                 {listing ? t("admin.hub.listings.edit") : t("admin.hub.listings.add")}
               </h2>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Malazone Asset Lifecycle Management</p>
+              <p className="text-[10px] font-bold text-malazone-navy uppercase tracking-widest">Malazone Asset Lifecycle Management</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors">
+          <button onClick={onClose} className="p-3 rounded-full hover:bg-slate-100 text-malazone-navy hover:text-malazone-navy transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -198,22 +202,22 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               {/* Titles */}
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.title_en")}</label>
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.title_en")}</label>
                   <input 
                     required
                     value={formData.title_en}
                     onChange={e => setFormData({...formData, title_en: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                     placeholder="Luxury Villa..."
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.title_am")}</label>
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.title_am")}</label>
                   <input 
                     required
                     value={formData.title_am}
                     onChange={e => setFormData({...formData, title_am: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                     placeholder="ምርጥ ቪላ..."
                   />
                 </div>
@@ -222,32 +226,33 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               {/* Category & Price */}
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.hub.listings.category")}</label>
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.hub.listings.category")}</label>
                   <select 
                     value={formData.category}
                     onChange={e => setFormData({...formData, category: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
                   >
                     <option value="property">Property</option>
                     <option value="motors">Motors</option>
                     <option value="stay">Stay/Rentals</option>
                     <option value="ceremony">Ceremony</option>
                     <option value="heavy">Heavy Machinery</option>
+                    <option value="electronics">Electronics</option>
                   </select>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.price")}</label>
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.price")}</label>
                   <div className="flex gap-2">
                     <input 
                       type="number"
                       value={formData.price}
                       onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all font-mono"
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all font-mono"
                     />
                     <select
                       value={formData.price_suffix}
                       onChange={e => setFormData({...formData, price_suffix: e.target.value})}
-                      className="w-32 bg-slate-50 border border-slate-200 rounded-xl py-4 px-4 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none text-[10px] font-black uppercase"
+                      className="w-32 bg-slate-50 border border-slate-200 rounded-xl py-4 px-4 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none text-[10px] font-black uppercase"
                     >
                       <option value="fixed">Fixed</option>
                       <option value="per_day">/ Day</option>
@@ -260,13 +265,13 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
 
               {/* Location */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.location")}</label>
+                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.location")}</label>
                 <div className="relative">
-                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy" />
                   <select 
                     value={formData.location_key}
                     onChange={e => setFormData({...formData, location_key: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
                   >
                     <option value="hawassa_piassa">Hawassa - Piassa</option>
                     <option value="hawassa_tabor">Hawassa - Tabor</option>
@@ -281,13 +286,13 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
 
               {/* Images */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Asset Image URL</label>
+                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Asset Image URL</label>
                 <div className="relative">
-                  <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy" />
                   <input 
                     value={formData.images[0]}
                     onChange={e => setFormData({...formData, images: [e.target.value]})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                     placeholder="https://images.unsplash.com/..."
                   />
                 </div>
@@ -306,20 +311,20 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                 {(formData.category === 'motors' || formData.category === 'heavy') && (
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Plate Code</label>
+                      <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Plate Code</label>
                       <input 
                         value={formData.plate_code}
                         onChange={e => setFormData({...formData, plate_code: e.target.value})}
-                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                         placeholder="Code 2..."
                       />
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Fuel Type</label>
+                      <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Fuel Type</label>
                       <select 
                         value={formData.fuel_type}
                         onChange={e => setFormData({...formData, fuel_type: e.target.value})}
-                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
                       >
                         <option value="benzine">Benzine</option>
                         <option value="diesel">Diesel</option>
@@ -328,11 +333,11 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                       </select>
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Condition</label>
+                      <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Condition</label>
                       <select 
                         value={formData.condition_type}
                         onChange={e => setFormData({...formData, condition_type: e.target.value})}
-                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
                       >
                         <option value="new">Brand New</option>
                         <option value="invoiced">Invoiced (Duty Free)</option>
@@ -347,7 +352,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                           onChange={e => setFormData({...formData, is_zero_km: e.target.checked})}
                           className="w-5 h-5 rounded-lg border-slate-300 bg-slate-50 text-[#00A86B] focus:ring-[#00A86B]/50 focus:ring-offset-0 transition-all"
                         />
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Zero KM</span>
+                        <span className="text-[10px] font-bold text-malazone-navy uppercase tracking-widest group-hover:text-malazone-navy transition-colors">Zero KM</span>
                       </label>
                       <label className="flex items-center gap-3 cursor-pointer group">
                         <input 
@@ -356,7 +361,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                           onChange={e => setFormData({...formData, with_operator: e.target.checked})}
                           className="w-5 h-5 rounded-lg border-slate-300 bg-slate-50 text-[#00A86B] focus:ring-[#00A86B]/50 focus:ring-offset-0 transition-all"
                         />
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest group-hover:text-slate-900 transition-colors">With Operator</span>
+                        <span className="text-[10px] font-bold text-malazone-navy uppercase tracking-widest group-hover:text-malazone-navy transition-colors">With Operator</span>
                       </label>
                     </div>
                   </div>
@@ -367,50 +372,50 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                   <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Area (SQM)</label>
+                        <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Area (SQM)</label>
                         <input 
                           type="number"
                           value={formData.area_sqm}
                           onChange={e => setFormData({...formData, area_sqm: Number(e.target.value)})}
-                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Capacity (Pax/Guests)</label>
+                        <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Capacity (Pax/Guests)</label>
                         <input 
                           type="number"
                           value={formData.capacity}
                           onChange={e => setFormData({...formData, capacity: Number(e.target.value)})}
-                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-6">
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Bedrooms</label>
+                        <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Bedrooms</label>
                         <input 
                           type="number"
                           value={formData.bedrooms}
                           onChange={e => setFormData({...formData, bedrooms: Number(e.target.value)})}
-                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Bathrooms</label>
+                        <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Bathrooms</label>
                         <input 
                           type="number"
                           value={formData.bathrooms}
                           onChange={e => setFormData({...formData, bathrooms: Number(e.target.value)})}
-                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Title Deed</label>
+                        <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Title Deed</label>
                         <select 
                           value={formData.title_deed}
                           onChange={e => setFormData({...formData, title_deed: e.target.value})}
-                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
                         >
                           <option value="carta">Verified Carta</option>
                           <option value="village">Village Deed</option>
@@ -424,13 +429,30 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                 {/* Ceremony */}
                 {formData.category === 'ceremony' && (
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Equipment Capacity / Count</label>
+                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Equipment Capacity / Count</label>
                     <input 
                       type="number"
                       value={formData.capacity}
                       onChange={e => setFormData({...formData, capacity: Number(e.target.value)})}
-                      className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                       placeholder="e.g. 500 chairs..."
+                    />
+                  </div>
+                )}
+
+                {/* Electronics */}
+                {formData.category === 'electronics' && (
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest ml-1">
+                      የመሣሪያው IMEI ቁጥር ወይም ሲሪያል (Device IMEI/Serial Number)
+                    </label>
+                    <input 
+                      required
+                      type="text"
+                      placeholder="e.g., IMEI 35492100..."
+                      value={formData.imei_serial || ''}
+                      onChange={e => setFormData({...formData, imei_serial: e.target.value})}
+                      className="w-full bg-slate-50 border border-rose-200/80 rounded-xl py-4 px-6 text-slate-900 font-black tracking-widest focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all placeholder:text-slate-300 normal-case"
                     />
                   </div>
                 )}
@@ -442,21 +464,21 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               {/* Descriptions */}
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.desc_en")}</label>
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.desc_en")}</label>
                   <textarea 
                     rows={3}
                     value={formData.description_en}
                     onChange={e => setFormData({...formData, description_en: e.target.value})}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all resize-none"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all resize-none"
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.desc_am")}</label>
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.desc_am")}</label>
                   <textarea 
                     rows={3}
                     value={formData.description_am}
                     onChange={e => setFormData({...formData, description_am: e.target.value})}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all resize-none"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all resize-none"
                   />
                 </div>
               </div>
@@ -464,19 +486,19 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               {/* Contact Info */}
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.phone")}</label>
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.phone")}</label>
                   <input 
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t("admin.form.whatsapp")}</label>
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.whatsapp")}</label>
                   <input 
                     value={formData.whatsapp}
                     onChange={e => setFormData({...formData, whatsapp: e.target.value})}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-slate-900 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
                   />
                 </div>
               </div>
@@ -495,7 +517,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                     className={`p-4 rounded-2xl border flex flex-col items-center gap-3 transition-all ${
                       formData[toggle.key as keyof ListingForm] 
                         ? 'bg-[#00A86B]/10 border-[#00A86B]/30 text-[#00A86B]' 
-                        : 'bg-slate-50 border-slate-200 text-slate-500'
+                        : 'bg-slate-50 border-slate-200 text-malazone-navy'
                     }`}
                   >
                     {React.cloneElement(toggle.icon as React.ReactElement, { className: "w-5 h-5" })}
@@ -509,7 +531,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
 
         {/* Modal Footer */}
         <div className="p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-4">
-          <button onClick={onClose} className="px-8 py-4 rounded-xl text-slate-600 font-black uppercase tracking-widest text-xs hover:text-slate-900 transition-all">
+          <button onClick={onClose} className="px-8 py-4 rounded-xl text-malazone-navy font-black uppercase tracking-widest text-xs hover:text-malazone-navy transition-all">
             Cancel
           </button>
           <button 

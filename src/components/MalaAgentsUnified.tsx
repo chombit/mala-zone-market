@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, ArrowRight, Sparkles, Play, Building2, Car, Hotel, PartyPopper, Tractor, Wallet, ShieldCheck, PhoneCall, X } from 'lucide-react';
+import { ArrowRight, Sparkles, ShoppingBag, ShieldCheck, Zap, Play, Building2, Car, Hotel, PartyPopper, Tractor, Smartphone, PhoneCall, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
 
 export function MalaAgentsUnified() {
@@ -9,37 +9,41 @@ export function MalaAgentsUnified() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [hoveredLabel, setHoveredLabel] = useState<{ am: string; en: string } | null>(null);
 
-  // 🌐 EXHAUSTIVE DUAL-LANGUAGE INSTITIONAL COPY (COMPACT & PUNCHY VERIFICATION)
+  // 🌐 EXHAUSTIVE DUAL-LANGUAGE DIRECT P2P DICTIONARY
   const t = {
     am: {
-      badgeZone: "💼 Mala-Agents Zone",
-      badgePromo: "⚡ የኢኮኖሚ አቅምዎን የሚቀይር አገር አቀፍ የሥራ መላ!",
-      heading: "የሥራ ዕድል መላ!",
-      subHeading: "Ethiopia’s Premier Decentralized Peer-to-Peer Agent Infrastructure",
-      mainBody: "malazone በአገር አቀፍ ደረጃ የታመነ ዘመናዊ የንግድ ሥነ-ምህዳር ነው። በሐዋሳ፣ በይርጋለም፣ በአሌታ ወንዶ፣ በቤንሳ እና በጩቆ ያሉ ወኪሎች የሾውሩም መኪናዎችን፣ የኮንስትራክሽን ማሽነሪዎችን፣ ሆቴሎችን እና የቤትና ቦታ ይዞታዎችን በሕጋዊ መንገድ በመመዝገብ በየቀኑ ከፍተኛና አስተማማኝ ገቢ ያገኛሉ። መድረካችን ከማዘጋጃ ቤት የይዞታ ማህደሮች እና ከትራንስፖርት ቢሮ የባለቤትነት መዛግብት ጋር በቀጥታ የተቆራኘ በመሆኑ ግብይትዎ ሙሉ በሙሉ አስተማማኝ ነው።",
-      card1: "ፈጣንና አስተማማኝ ክፍያ፦ ያገኙትን የኮሚሽን አበል በዘመናዊ ዲጂታል ባንኮች በቀጥታ መቀበል",
-      card2: "ፍጹም ሕጋዊ አሰራር፦ ከከተማ ማዘጋጃ ቤቶች እና ከክልል ትራንስፖርት ቢሮዎች ጋር የተቆራኘ ሲስተም",
-      card3: "አስተማማኝ አጋርነት፦ በመላው ሀገሪቱ ያሉ ከ500 በላይ ንቁ ወኪሎች በስኬት ስራ ጀምረዋል",
-      btnCTA: "አሁን ይጀምሩ — ወኪል ይሁኑ",
-      socialProof: "ወኪሎች ተቀላቅለዋል",
-      videoTitle: "የማላዞን መግቢያ ቪዲዮ",
-      videoSub: "MALAZONE MASTER VIDEO INTRO",
+      badgeZone: "✨ ቀጥተኛና ደላላ-አልባ ይፋዊ ግብይት",
+      heading: "ያለ ደላላ በቀጥታ ይገበያዩ!",
+      subMotto: "ቤት፣ መኪና፣ ሆቴል፣ የሰርግ ዕቃዎች፣ ከባድ ማሽነሪ እና ኤሌክትሮኒክስዎን ያለምንም የደላላ ጣልቃ-ገብነት በቀጥታ ለገዢዎች የሚያቀርቡበት ታማኝ የዲጂታል ማዕከል",
+      mainBody: "malazone ንብረትዎን (ቤት፣ መኪና፣ ሆቴል፣ የሰርግ ዕቃዎች፣ ከባድ ማሽነሪ ወይም ኤሌክትሮኒክስ) ያለምንም የደላላ ጣልቃ-ገብነት በቀጥታ ለአገር ውስጥና ለውጭ ሀገር (Diaspora) ገዢዎች የሚያቀርቡበት የታመነ ይፋዊ መድረክ ነው። ንብረትዎን በሕጋዊ መንገድ በመመዝገብ በቀጥታ ከባለገንዘብ ገዢዎች ጋር ያለምንም ውዥንብር ይደራደሩ፤ ግብይትዎን በፍጥነት ያጠናቅቁ!",
+      card1Title: "🛒 ለንብረት ባለቤቶች",
+      card1Desc: "ቤት፣ መኪና፣ ሆቴል፣ የሰርግ ዕቃዎች፣ ማሽነሪና ኤሌክትሮኒክስዎን በመመዝገብ በቀጥታ ለአገር ውስጥና ለዲያስፖራ ገዢዎች ማቅረብ",
+      card2Title: "🛡️ ፍጹም ሕጋዊና ታማኝ",
+      card2Desc: "ከከተማ ማዘጋጃ ቤቶች የይዞታ ሰነዶች እና ከትራንስፖርት ቢሮዎች መዛግብት ጋር የተቆራኘ አስተማማኝ አሰራር",
+      card3Title: "⚡ ፈጣንና ቀጥተኛ ግብይት",
+      card3Desc: "ከባለቤቶች ጋር በቀጥታ በመገናኘት ግብይትዎን ያለምንም ውዥንብር በፍጥነት ማጠናቀቅ",
+      btnCTA: "ንብረትዎን አሁኑኑ ይመዝግቡ",
+      socialProof: "ባለቤቶች ንብረታቸውን በስኬት መዝግበዋል",
+      videoTitle: "የአጠቃቀም ማብሪያ ቪዲዮ",
+      videoSub: "MALAZONE USER GUIDE",
       hoverPlaceholder: "በአዶዎቹ ላይ በማሳረፍ ዝርዝሩን ይመልከቱ (HOVER OVER ICONS)",
       modalTitle: "የማላዞን ሙሉ ሲስተም አጠቃቀም ማብራሪያ ቪዲዮ"
     },
     en: {
-      badgeZone: "💼 Mala-Agents Zone",
-      badgePromo: "⚡ Empowering National Commerce Through Trusted Digital Networks",
-      heading: "Earning Opportunity!",
-      subHeading: "Ethiopia’s Premier Decentralized Peer-to-Peer Agent Infrastructure",
-      mainBody: "malazone operates as a highly secure, verified, and completely transparent technological ecosystem in Ethiopia. Our platform connects local agents with regional property archives and transit ledgers. Legally list showroom vehicles, heavy construction machineries, hotels, and real estate titles across Hawassa, Yirgalem, Aleta Wondo, Bensa, and Chuko to earn stable daily income with absolute peace of mind.",
-      card1: "Guaranteed Settlement: Secure automated payouts directly routed into your digital bank account.",
-      card2: "Institutional Audit: Direct frontend platform integration with municipal registries and transit archives.",
-      card3: "Validated Social Proof: Over 500+ active localized brokers and agents have successfully joined.",
-      btnCTA: "Get Started — Become Agent",
-      socialProof: "Active Local Agents Joined",
-      videoTitle: "malazone Master Video Intro",
-      videoSub: "MALAZONE MASTER VIDEO INTRO",
+      badgeZone: "✨ Direct & Broker-Free Official Trade",
+      heading: "Trade Directly Without Brokers!",
+      subMotto: "The trusted digital hub to showcase your houses, cars, hotels, wedding gear, heavy machinery, and electronics directly to verified buyers.",
+      mainBody: "malazone is the trusted platform to list your assets (real estate, vehicles, hotels, wedding gear, heavy equipment, or smart electronics) directly to local and international diaspora buyers with zero middleman friction. Register your property securely, negotiate directly with genuine buyers, and execute your transactions with absolute transparency.",
+      card1Title: "🛒 For Asset Owners",
+      card1Desc: "List your houses, cars, hotels, wedding gear, machinery, and electronics and connect directly with verified global buyers.",
+      card2Title: "🛡️ Institutional Trust",
+      card2Desc: "Fully secure operations synchronized directly with regional transit and municipality registries.",
+      card3Title: "⚡ Rapid Peer-to-Peer Execution",
+      card3Desc: "Connect directly with verified owners and finalize your business transactions with zero confusion.",
+      btnCTA: "Register Your Property Now",
+      socialProof: "Property Owners Registered Successfully",
+      videoTitle: "malazone User Guide",
+      videoSub: "MALAZONE USER GUIDE",
       hoverPlaceholder: "Hover over the outer icons to preview platform features",
       modalTitle: "malazone Official System Walkthrough Video"
     }
@@ -61,63 +65,75 @@ export function MalaAgentsUnified() {
     { id: 3, icon: <Hotel className="w-5 h-5" />, am: 'የጉዞና ማረፊያ ዞን (Stay & Halls) — "ለእንግዶችና ለቱሪስቶች የተዘጋጁ ማረፊያዎች"', en: 'Rooms, Guest Houses & Events — Accommodations curated for guests', pos: 'top-1/2 right-0 translate-x-1/2 -translate-y-1/2' },
     { id: 4, icon: <PartyPopper className="w-5 h-5" />, am: 'የክብረ-በዓላት ዞን (Ceremony Hub) — "የሰርግ ዕቃዎችና የድምፅ ሲስተም ኪራይ"', en: 'Wedding Materials & Audio Systems — Seamless asset rental pathways', pos: 'bottom-[14.64%] right-[14.64%] translate-x-1/2 translate-y-1/2' },
     { id: 5, icon: <Tractor className="w-5 h-5" />, am: 'የከባድ ማሽነሪዎች ዞን (Machinery Zone) — "የኮንስትራክሽን ማሽኖችን በቀላሉ ማከራየት"', en: 'Heavy Machineries — Secure leasing and contracting for heavy equipment', pos: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2' },
-    { id: 6, icon: <Wallet className="w-5 h-5" />, am: 'የወኪል ወጣቶች ክፍያ (Mala-Agents) — "ንብረቶችን በመመዝገብ በየቀኑ ከፍተኛ ገቢ ማግኛ"', en: 'Automated Commission Payout Flow — Earn stable daily income via listings', pos: 'bottom-[14.64%] left-[14.64%] -translate-x-1/2 translate-y-1/2' },
+    { id: 6, icon: <Smartphone className="w-5 h-5" />, am: 'የኤሌክትሮኒክስ ዞን (Electronics Zone) — "ስማርት ኤሌክትሮኒክስ እና ቴክኖሎጂ ምርቶች"', en: 'Smart Electronics & Hardware Hub — Latest gadgets and tech products', pos: 'bottom-[14.64%] left-[14.64%] -translate-x-1/2 translate-y-1/2' },
     { id: 7, icon: <ShieldCheck className="w-5 h-5" />, am: 'የቀጥታ ተጠቃሚዎች ገበያ (P2P Market) — "ሻጭና ገዢን ያለአስገዳጅ በቀጥታ ማገናኛ"', en: 'Direct Peer-to-Peer Customer Link — Bypass middleman friction cleanly', pos: 'top-1/2 left-0 -translate-x-1/2 -translate-y-1/2' },
     { id: 8, icon: <PhoneCall className="w-5 h-5" />, am: 'የቀጥታ ስልክና ጥሪ (Support Matrix) — "የባለቤቱን ስልክና ቴሌግራም በቀጥታ ማግኛ"', en: 'Direct Owner Call & Telegram Support — Immediate gateway to secure support', pos: 'top-[14.64%] left-[14.64%] -translate-x-1/2 -translate-y-1/2' },
   ];
 
   return (
-    <section className="bg-[#FAFAFA] text-slate-900 pt-10 pb-20 px-6 sm:px-12 lg:px-20 w-full text-left font-sans antialiased select-none overflow-hidden">
+    <section className="bg-white text-slate-900 pt-10 pb-20 px-6 sm:px-12 lg:px-20 w-full text-left font-sans antialiased select-none overflow-hidden">
       <div className="max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
         {/* 🟢 LEFT COLUMN: Content & Value Propositions */}
-        <div className="lg:col-span-6 space-y-7">
+        <div className="lg:col-span-6 space-y-6">
 
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-[11px] sm:text-xs font-black bg-emerald-50 text-[#00A86B] border border-emerald-200/50 px-3.5 py-1.5 rounded-full tracking-widest">
-              {t.badgeZone}
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] sm:text-xs font-black bg-emerald-50 text-[#00A86B] border border-emerald-200/40 px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-[#00A86B] animate-pulse" />
+              <span>{t.badgeZone}</span>
             </span>
           </div>
 
-          <div className="space-y-3">
-            <h2 className="text-4xl sm:text-[3.5rem] font-black text-[#00A86B] tracking-tight leading-none">
+          <div className="space-y-2">
+            <h2 className="text-4xl sm:text-5xl font-black text-[#00A86B] tracking-tight leading-none">
               {t.heading}
             </h2>
+            <p className="text-xs sm:text-sm font-black text-slate-900 tracking-wide leading-relaxed">
+              {t.subMotto}
+            </p>
           </div>
 
-          <p className="text-[14px] sm:text-[16px] text-slate-700 font-medium leading-[1.8] sm:leading-[1.9] tracking-[0.01em] max-w-xl font-sans">
-            {formatText(t.mainBody)}
+          <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+            {t.mainBody}
           </p>
 
-          {/* የቅንጦት ማረጋገጫ ካርዶች (Premium Porcelain Value Cards) */}
-          <div className="space-y-3.5 pt-2">
-            <div className="flex items-start space-x-3.5 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-[#00A86B]/30 hover:shadow-md transition-all duration-300">
-              <CheckCircle2 className="w-5 h-5 text-[#00A86B] shrink-0 mt-0.5" />
-              <p className="text-[13px] sm:text-[14px] font-semibold text-slate-700 leading-[1.7] tracking-wide">{t.card1}</p>
+          {/* 3ኛ አምድ የቅንጦት ካርዶች */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <div className="flex flex-col justify-between bg-slate-50 border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white transition-all duration-300 h-full">
+              <ShoppingBag className="size-5 text-[#00A86B] shrink-0 mb-3" />
+              <div className="space-y-1">
+                <h4 className="text-xs font-black text-slate-900 leading-tight">{t.card1Title}</h4>
+                <p className="text-[11px] font-bold text-slate-500 leading-relaxed">{t.card1Desc}</p>
+              </div>
             </div>
-            <div className="flex items-start space-x-3.5 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-[#00A86B]/30 hover:shadow-md transition-all duration-300">
-              <CheckCircle2 className="w-5 h-5 text-[#00A86B] shrink-0 mt-0.5" />
-              <p className="text-[13px] sm:text-[14px] font-semibold text-slate-700 leading-[1.7] tracking-wide">{t.card2}</p>
+            <div className="flex flex-col justify-between bg-slate-50 border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white transition-all duration-300 h-full">
+              <ShieldCheck className="size-5 text-[#00A86B] shrink-0 mb-3" />
+              <div className="space-y-1">
+                <h4 className="text-xs font-black text-slate-900 leading-tight">{t.card2Title}</h4>
+                <p className="text-[11px] font-bold text-slate-500 leading-relaxed">{t.card2Desc}</p>
+              </div>
+            </div>
+            <div className="flex flex-col justify-between bg-slate-50 border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white transition-all duration-300 h-full">
+              <Zap className="size-5 text-[#00A86B] shrink-0 mb-3" />
+              <div className="space-y-1">
+                <h4 className="text-xs font-black text-slate-900 leading-tight">{t.card3Title}</h4>
+                <p className="text-[11px] font-bold text-slate-500 leading-relaxed">{t.card3Desc}</p>
+              </div>
             </div>
           </div>
 
-          {/* CTA & SOCIAL PROOF */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 pt-4">
-            <button className="bg-[#00A86B] hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest px-7 py-4 rounded-full transition-all shadow-[0_8px_20px_rgba(0,168,107,0.25)] flex items-center space-x-2 group cursor-pointer">
+          {/* ⚡ CTA & SOCIAL PROOF */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4 border-t border-slate-100">
+            <button
+              className="bg-[#00A86B] hover:bg-emerald-600 text-black font-black text-xs uppercase tracking-wider px-7 py-4 rounded-2xl transition-all shadow-md shadow-emerald-500/10 flex items-center space-x-2 group cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+            >
               <span>{t.btnCTA}</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" strokeWidth={3} />
+              <ArrowRight className="size-4 group-hover:translate-x-1.5 transition-transform duration-300" />
             </button>
 
-            <div className="bg-white border border-slate-200/80 px-5 py-2.5 rounded-[20px] flex items-center space-x-4 shadow-sm h-[52px]">
-              <div className="flex -space-x-3 overflow-hidden">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center text-sm z-30 shadow-sm">👨‍💼</div>
-                <div className="w-8 h-8 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-sm z-20 shadow-sm">👩‍💼</div>
-                <div className="w-8 h-8 rounded-full bg-orange-100 border-2 border-white flex items-center justify-center text-sm z-10 shadow-sm">👨‍💼</div>
-              </div>
-              <p className="text-xs font-black text-slate-800 tracking-wide flex flex-col justify-center">
-                <span>500+ <span className="text-[#00A86B]">Active Agents</span></span>
-                <span className="text-[10px] text-slate-500 font-bold">{t.socialProof}</span>
-              </p>
+            <div className="bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl shadow-inner flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+              <span className="text-[#00A86B] font-bold">✓</span>
+              <span>{t.socialProof}</span>
             </div>
           </div>
 
@@ -140,11 +156,13 @@ export function MalaAgentsUnified() {
                 onMouseEnter={() => setHoveredLabel({ am: item.am, en: item.en })}
                 onMouseLeave={() => setHoveredLabel(null)}
                 className={`
-                  absolute ${item.pos} w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] rounded-full bg-white 
-                  border border-slate-100 text-[#00A86B] flex items-center justify-center 
-                  shadow-[0_4px_20px_rgba(0,0,0,0.06)] cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
-                  hover:bg-[#00A86B] hover:text-white hover:scale-[1.15] hover:-translate-y-1 hover:border-transparent
-                  hover:shadow-[0_8px_20px_rgba(0,168,107,0.4)] group z-20
+                  absolute ${item.pos} w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] rounded-full bg-white dark:bg-slate-900 
+                  border border-slate-100 dark:border-slate-800 text-[#00A86B] flex items-center justify-center 
+                  shadow-[0_4px_20px_rgba(0,0,0,0.06)] cursor-pointer
+                  transition-[transform,background-color,box-shadow,color,border-color] duration-300 ease-out
+                  hover:bg-[#00A86B] hover:text-white hover:scale-110 hover:border-transparent
+                  hover:shadow-[0_0_24px_rgba(0,168,107,0.45)] group z-20
+                  will-change-transform
                 `}
               >
                 {item.icon}
@@ -178,12 +196,12 @@ export function MalaAgentsUnified() {
                   <Sparkles className="w-3.5 h-3.5 text-[#00A86B]" />
                   <p className="text-sm font-black text-[#00A86B]">{currentGlobalLang === 'am' ? hoveredLabel.am : hoveredLabel.en}</p>
                 </div>
-                <p className="text-xs font-bold text-slate-400">{currentGlobalLang === 'am' ? hoveredLabel.en : hoveredLabel.am}</p>
+                <p className="text-xs font-bold text-malazone-navy dark:text-slate-300">{currentGlobalLang === 'am' ? hoveredLabel.en : hoveredLabel.am}</p>
               </div>
             ) : (
               <div className="text-center flex items-center justify-center gap-2 animate-in fade-in duration-300">
                 <Sparkles className="w-4 h-4 text-[#00A86B]/60" />
-                <p className="text-[13px] font-bold italic text-slate-400">
+                <p className="text-[13px] font-bold italic text-malazone-navy dark:text-slate-400">
                   {t.hoverPlaceholder}
                 </p>
               </div>

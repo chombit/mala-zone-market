@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { LayoutDashboard, Package, Home, Wallet, LogOut, Globe, Bell, Search, Users, Image, Star, MapPin, Tag, Settings, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Package, Home, Wallet, LogOut, Globe, Bell, Search, Users, Image, Star, MapPin, Tag, Settings, ShieldCheck, Megaphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdminLanguageProvider, useAdminLanguage } from "./contexts/AdminLanguageContext";
 import { AdminAuthProvider, useAdminAuth } from "./contexts/AdminAuthContext";
@@ -19,6 +19,7 @@ import BannerManager from "./components/BannerManager";
 import LocationsManager from "./components/LocationsManager";
 import CategoriesManager from "./components/CategoriesManager";
 import GovernmentAuditDashboard from "./components/GovernmentAuditDashboard";
+import PromoTickerManager from "./components/PromoTickerManager";
 
 const AdminDashboard: React.FC = () => {
   const { t, toggleLanguage } = useAdminLanguage();
@@ -50,6 +51,7 @@ const AdminDashboard: React.FC = () => {
     { key: "admin.sidebar.locations", icon: <MapPin className="w-5 h-5" />, id: "locations", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.categories", icon: <Tag className="w-5 h-5" />, id: "categories", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.users", icon: <Users className="w-5 h-5" />, id: "users", allowedRoles: ["super_admin"] },
+    { key: "Promo Ticker", isRawKey: true, icon: <Megaphone className="w-5 h-5" />, id: "promo_ticker", allowedRoles: ["super_admin"] },
   ];
 
   // Filter menu items based on role
@@ -61,14 +63,14 @@ const AdminDashboard: React.FC = () => {
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-end gap-3 px-4 py-4 sm:px-6">
           <button
             onClick={toggleLanguage}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-malazone-navy transition hover:bg-slate-50"
           >
             <Globe className="w-4 h-4 text-[#00A86B]" />
             {t("admin.nav.toggle")}
           </button>
           <button
             onClick={handleSignOut}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-red-200 hover:text-red-600"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-malazone-navy transition hover:border-red-200 hover:text-red-600"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
@@ -90,9 +92,9 @@ const AdminDashboard: React.FC = () => {
         <div className="p-6 pb-8 border-b border-slate-100">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-2xl font-black tracking-tighter text-[#00A86B] uppercase">MALA</span>
-            <span className="text-2xl font-black tracking-tighter text-slate-900 uppercase">ZONE</span>
+            <span className="text-2xl font-black tracking-tighter text-malazone-navy uppercase">ZONE</span>
           </div>
-          <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">Admin Console</p>
+          <p className="text-[11px] font-black text-malazone-navy uppercase tracking-[0.3em]">Admin Console</p>
         </div>
 
         {/* Navigation */}
@@ -103,10 +105,10 @@ const AdminDashboard: React.FC = () => {
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl transition-all duration-200 group ${activeTab === item.id
                 ? 'bg-[#00A86B]/10 text-[#00A86B] shadow-sm border border-[#00A86B]/20'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                : 'text-malazone-navy hover:text-malazone-navy hover:bg-slate-50'
                 }`}
             >
-              <div className={`transition-colors duration-200 ${activeTab === item.id ? 'text-[#00A86B]' : 'text-slate-400 group-hover:text-slate-600'}`}>
+              <div className={`transition-colors duration-200 ${activeTab === item.id ? 'text-[#00A86B]' : 'text-malazone-navy group-hover:text-malazone-navy'}`}>
                 {item.icon}
               </div>
               <span className="text-sm font-bold tracking-tight">
@@ -120,7 +122,7 @@ const AdminDashboard: React.FC = () => {
         <div className="p-6 border-t border-slate-100 space-y-4">
           <button
             onClick={toggleLanguage}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all text-sm font-bold text-slate-700"
+            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all text-sm font-bold text-malazone-navy"
           >
             <Globe className="w-4 h-4 text-[#00A86B]" />
             {t("admin.nav.toggle")}
@@ -128,7 +130,7 @@ const AdminDashboard: React.FC = () => {
 
           <button
             onClick={handleSignOut}
-            className="flex items-center justify-center gap-3 w-full py-3 text-slate-600 hover:text-red-500 transition-colors text-sm font-bold tracking-wide"
+            className="flex items-center justify-center gap-3 w-full py-3 text-malazone-navy hover:text-red-500 transition-colors text-sm font-bold tracking-wide"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
@@ -148,22 +150,22 @@ const AdminDashboard: React.FC = () => {
                   {t("admin.title")}
                 </span>
               </div>
-              <h1 className="text-3xl font-black tracking-tight text-slate-900">
+              <h1 className="text-3xl font-black tracking-tight text-malazone-navy">
                 Welcome Back, <span className="text-[#00A86B]">{user?.full_name || "Admin"}!</span>
               </h1>
             </div>
 
             <div className="flex items-center gap-4">
               <div className="relative hidden sm:block">
-                <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-malazone-navy absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Search listings, agents..."
-                  className="pl-12 pr-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#00A86B]/50 focus:bg-white transition-all w-64"
+                  className="pl-12 pr-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-malazone-navy placeholder:text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:bg-white transition-all w-64"
                 />
               </div>
 
-              <button className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-100 transition-all">
+              <button className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-malazone-navy hover:bg-slate-100 transition-all">
                 <Bell className="w-5 h-5" />
               </button>
 
@@ -172,8 +174,8 @@ const AdminDashboard: React.FC = () => {
                   {(user?.full_name || "A")[0]}
                 </div>
                 <div className="hidden sm:block">
-                  <p className="text-sm font-bold text-slate-900">{user?.full_name || "System Admin"}</p>
-                  <p className="text-xs text-slate-500">{t(`admin.role.${user?.role}` as any)}</p>
+                  <p className="text-sm font-bold text-malazone-navy">{user?.full_name || "System Admin"}</p>
+                  <p className="text-xs text-malazone-navy">{t(`admin.role.${user?.role}` as any)}</p>
                 </div>
               </div>
             </div>
@@ -245,15 +247,21 @@ const AdminDashboard: React.FC = () => {
               <AdminUsers />
             </div>
           )}
+
+          {activeTab === "promo_ticker" && isSuperAdmin && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <PromoTickerManager />
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-malazone-navy">
               Malazone Technologies PLC — Proprietary Admin Interface
             </p>
-            <p className="text-xs text-slate-400 font-bold">
+            <p className="text-xs text-malazone-navy font-bold">
               © 2026 All Rights Reserved
             </p>
           </div>

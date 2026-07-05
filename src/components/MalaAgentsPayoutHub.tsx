@@ -96,14 +96,14 @@ const MalaAgentsPayoutHub: React.FC = () => {
       {/* Hub Header */}
       <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
         <div className="space-y-1">
-          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h2 className="text-xl font-black text-malazone-navy tracking-tight flex items-center gap-3">
             <Wallet className="w-6 h-6 text-[#00A86B]" />
             Mala-Agents Payout Hub
           </h2>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Telebirr Merchant Settlement</p>
+          <p className="text-xs font-bold text-malazone-navy uppercase tracking-widest">Telebirr Merchant Settlement</p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Pending Payout</p>
+          <p className="text-[10px] font-black text-malazone-navy uppercase tracking-widest">Total Pending Payout</p>
           <p className="text-2xl font-black text-[#00A86B]">
             {(agents.filter(a => a.status === 'pending').length * PAY_PER_LISTING).toLocaleString()} ETB
           </p>
@@ -119,7 +119,7 @@ const MalaAgentsPayoutHub: React.FC = () => {
         ) : agents.length === 0 ? (
           <div className="p-10 text-center">
             <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600 font-bold">No agents found</p>
+            <p className="text-malazone-navy font-bold">No agents found</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -130,13 +130,13 @@ const MalaAgentsPayoutHub: React.FC = () => {
                     <div className="w-10 h-10 bg-gradient-to-br from-[#00A86B] to-[#008f5b] rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {agent.name.charAt(0)}
                     </div>
-                    <p className="text-sm font-bold text-slate-900">{agent.name}</p>
+                    <p className="text-sm font-bold text-malazone-navy">{agent.name}</p>
                   </div>
-                  <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                  <p className="text-xs text-malazone-navy flex items-center gap-1.5">
                     <Phone className="w-3 h-3" />
                     {agent.phone}
                   </p>
-                  <p className="text-xs text-slate-600 font-bold flex items-center gap-1.5">
+                  <p className="text-xs text-malazone-navy font-bold flex items-center gap-1.5">
                     <TrendingUp className="w-3 h-3" />
                     {agent.listings} listings • {(agent.listings * PAY_PER_LISTING).toLocaleString()} ETB
                   </p>

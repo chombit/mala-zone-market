@@ -137,7 +137,7 @@ type AdminDictionaryKey = keyof typeof adminDictionary.en;
 
 interface AdminLanguageContextValue {
   language: Language;
-  t: (key: AdminDictionaryKey) => string;
+  t: (key: string) => string;
   toggleLanguage: () => void;
 }
 
@@ -145,10 +145,26 @@ const AdminLanguageContext = createContext<AdminLanguageContextValue | null>(nul
 
 export const AdminLanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>("amharic");
+  const [dynamicDict, setDynamicDict] = useState<Record<string, { en: string; amharic: string }>>({});
 
-  const t = useCallback((key: AdminDictionaryKey) => {
+  React.useEffect(() => {
+    fetch('/api/translations')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setDynamicDict(data.data);
+        }
+      })
+      .catch(err => console.error("Failed to load admin translations:", err));
+  }, []);
+
+  const t = useCallback((key: string) => {
+    if (dynamicDict[key] && dynamicDict[key][language]) {
+      return dynamicDict[key][language];
+    }
+    // @ts-ignore
     return adminDictionary[language][key] || key;
-  }, [language]);
+  }, [language, dynamicDict]);
 
   const toggleLanguage = useCallback(() => {
     setLanguage(prev => prev === "en" ? "amharic" : "en");

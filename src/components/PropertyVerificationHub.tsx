@@ -88,11 +88,11 @@ const PropertyVerificationHub: React.FC = () => {
       {/* Hub Header */}
       <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
         <div className="space-y-1">
-          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h2 className="text-xl font-black text-malazone-navy tracking-tight flex items-center gap-3">
             <ShieldCheck className="w-6 h-6 text-[#00A86B]" />
             Property Verification Hub
           </h2>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Municipal Land Registry Cross-Check Workspace</p>
+          <p className="text-xs font-bold text-malazone-navy uppercase tracking-widest">Municipal Land Registry Cross-Check Workspace</p>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ const PropertyVerificationHub: React.FC = () => {
         ) : listings.length === 0 ? (
           <div className="p-10 text-center">
             <ShieldCheck className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600 font-bold">No properties pending verification</p>
+            <p className="text-malazone-navy font-bold">No properties pending verification</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -115,17 +115,17 @@ const PropertyVerificationHub: React.FC = () => {
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-[#00A86B]" />
-                      <p className="text-sm font-bold text-slate-900">{listing.owner}</p>
+                      <p className="text-sm font-bold text-malazone-navy">{listing.owner}</p>
                     </div>
-                    <p className="text-xs text-slate-500">{listing.location}</p>
-                    <p className="text-xs font-mono text-slate-700 bg-slate-50 w-fit px-3 py-1 rounded-md">
+                    <p className="text-xs text-malazone-navy">{listing.location}</p>
+                    <p className="text-xs font-mono text-malazone-navy bg-slate-50 w-fit px-3 py-1 rounded-md">
                       Carta: {listing.carta_number}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => simulateMunicipalCheck(listing.id)}
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-bold border border-slate-200 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all text-slate-600"
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-bold border border-slate-200 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all text-malazone-navy"
                     >
                       {verifyingId === listing.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -155,7 +155,7 @@ const PropertyVerificationHub: React.FC = () => {
             {listings.filter(l => l.status === 'pending').length === 0 && (
               <div className="p-10 text-center">
                 <ShieldCheck className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-600 font-bold">All properties verified!</p>
+                <p className="text-malazone-navy font-bold">All properties verified!</p>
               </div>
             )}
           </div>

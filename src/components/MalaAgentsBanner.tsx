@@ -38,13 +38,13 @@ const MalaAgentsBanner: React.FC = () => {
               </div>
 
               <div className="space-y-8">
-                <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white leading-[1.05] tracking-tighter uppercase italic transition-colors duration-300">
+                <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black text-malazone-navy dark:text-white leading-[1.05] tracking-tighter uppercase italic transition-colors duration-300">
                   <span className="text-emerald-600 dark:text-green-500 not-italic">
                     {isAm ? "የሥራ ዕድል መላ!" : "Join the Data Engine"}
                   </span>
                 </h2>
 
-                <p className="text-xl sm:text-2xl text-slate-600 dark:text-slate-400 leading-relaxed font-medium max-w-2xl transition-colors duration-300">
+                <p className="text-xl sm:text-2xl text-malazone-navy dark:text-slate-400 leading-relaxed font-medium max-w-2xl transition-colors duration-300">
                   {t("banner.recruitment")}
                 </p>
               </div>
@@ -70,8 +70,8 @@ const MalaAgentsBanner: React.FC = () => {
                     ))}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-slate-900 dark:text-white font-black text-xs tracking-tighter">500+ Active</span>
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                    <span className="text-malazone-navy dark:text-white font-black text-xs tracking-tighter">500+ Active</span>
+                    <span className="text-[9px] font-bold text-malazone-navy uppercase tracking-widest">
                       {isAm ? "ወኪሎች ተቀላቅለዋል" : "Verified Agents"}
                     </span>
                   </div>

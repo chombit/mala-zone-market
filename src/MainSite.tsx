@@ -11,10 +11,13 @@ import Hero from './components/Hero';
 import ZoneFilterSidebar, { ActiveZone, FilterState } from './components/ZoneFilterSidebar';
 import ZoneCatalogGrid from './components/ZoneCatalogGrid';
 import { MalaAgentsUnified } from './components/MalaAgentsUnified';
+import { MalaZoneTestimonials } from './components/MalaZoneTestimonials';
 import Footer from './components/Footer';
 import AboutPage from './components/pages/AboutPage';
 import ContactPage from './components/pages/ContactPage';
 import PrivacyPage from './components/pages/PrivacyPage';
+import { FavoritesProvider } from './contexts/FavoritesContext';
+import { FavoritesSidebar } from './components/FavoritesSidebar';
 
 export type PageView = "home" | "about" | "contact" | "privacy";
 
@@ -40,14 +43,15 @@ const MainSite: React.FC = () => {
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
     const zoneMap: Record<string, ActiveZone> = {
-      all:       "all",
-      property:  "house",
-      motors:    "car",
-      stay:      "ceremony",
-      rooms:     "ceremony",
-      ceremony:  "ceremony",
-      heavy:     "machinery",
+      all: "all",
+      property: "house",
+      motors: "car",
+      stay: "ceremony",
+      rooms: "ceremony",
+      ceremony: "ceremony",
+      heavy: "machinery",
       machinery: "machinery",
+      electronics: "electronics",
     };
     setActiveZone(zoneMap[cat] ?? "all");
   };
@@ -77,20 +81,22 @@ const MainSite: React.FC = () => {
   }
 
   return (
-    <div
-      className="
-        min-h-screen
-        bg-slate-50 dark:bg-slate-950
-        text-slate-900 dark:text-slate-400
-        selection:bg-emerald-500/30
-        selection:text-emerald-900 dark:selection:text-emerald-200
-        transition-colors duration-300
-      "
-    >
-      {/* Fixed navigation header */}
-      <Header 
+    <FavoritesProvider>
+      <div
+        className="
+          min-h-screen
+          bg-slate-50 dark:bg-slate-950
+          text-malazone-navy dark:text-slate-400
+          selection:bg-emerald-500/30
+          selection:text-emerald-900 dark:selection:text-emerald-200
+          transition-colors duration-300
+        "
+      >
+        <FavoritesSidebar />
+        {/* Fixed navigation header */}
+      <Header
         activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange} 
+        onCategoryChange={handleCategoryChange}
       />
 
       <main>
@@ -123,11 +129,17 @@ const MainSite: React.FC = () => {
         <div id="agents">
           <MalaAgentsUnified />
         </div>
+
+        {/* ── Testimonials Section ──────────────────────────────── */}
+        <div id="testimonials">
+          <MalaZoneTestimonials />
+        </div>
       </main>
 
-      {/* ── Global Footer ─────────────────────── */}
-      <Footer onNavigate={navigateTo} />
-    </div>
+        {/* ── Global Footer ─────────────────────── */}
+        <Footer onNavigate={navigateTo} />
+      </div>
+    </FavoritesProvider>
   );
 };
 

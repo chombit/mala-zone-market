@@ -4,7 +4,8 @@
  * © 2026 Malazone Technologies PLC
  */
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Phone,
   Send,
@@ -18,6 +19,7 @@ import {
   Settings,
   Key,
   Building2,
+  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
@@ -28,7 +30,7 @@ import type { FilterState } from "./ZoneFilterSidebar";
 /* ────────────────────────────────────────────
    Listing Data Model
    ──────────────────────────────────────────── */
-interface ListingItem {
+export interface ListingItem {
   id: string;
   titleEn: string;
   titleAm: string;
@@ -36,6 +38,7 @@ interface ListingItem {
   priceSuffixKey: string;
   priceTagKey: string;
   image: string;
+  images?: string[];
   zone: ActiveZone;
   locationKey: string;
   locationTag: string;
@@ -57,6 +60,12 @@ interface ListingItem {
   billingTrack?: string;
   phone: string;
   whatsapp: string;
+  /* Description */
+  descriptionAm?: string;
+  descriptionEn?: string;
+  isNegotiable?: boolean;
+  specLabel?: string;
+  specVal?: string;
 }
 
 /* ────────────────────────────────────────────
@@ -284,6 +293,230 @@ const listings: ListingItem[] = [
     badgeKey: "badge.verified",
     phone: "+251911000011",
     whatsapp: "251911000011",
+  },
+  {
+    id: "car-006",
+    titleEn: "Toyota Corolla 2020 - Locally Used, Well Maintained",
+    titleAm: "ቶዮታ ኮሮላ 2020 - ያገር ውስጥ ደህና ሁኔታ",
+    price: 2800000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=800",
+    zone: "car",
+    locationKey: "loc.hawassa",
+    locationTag: "PIASSA",
+    rating: 4.6,
+    isVerified: true,
+    isPremium: false,
+    badgeKey: "badge.verified",
+    plateCode: "CODE 2",
+    fuelType: "Benzine",
+    fuelTag: "BENZINE",
+    condition: "Locally Used",
+    phone: "+251911000012",
+    whatsapp: "251911000012",
+  },
+  {
+    id: "house-004",
+    titleEn: "Apartment for Sale - 2 Bedrooms, Tabor Area",
+    titleAm: "ለሽያጭ አፓርትመንት - 2 መኝታ ክፍሎች፣ ታቦር አካባቢ",
+    price: 4200000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800",
+    zone: "house",
+    locationKey: "loc.hawassa",
+    locationTag: "TABOR",
+    rating: 4.5,
+    isVerified: true,
+    isPremium: false,
+    badgeKey: "badge.verifiedCarta",
+    titleDeed: "Verified Carta",
+    sqm: 180,
+    bedrooms: 2,
+    phone: "+251911000013",
+    whatsapp: "251911000013",
+  },
+  {
+    id: "car-007",
+    titleEn: "Nissan Patrol 2019 - 4WD, Excellent Condition",
+    titleAm: "ኒሳን ፓትሮል 2019 - 4WD ምርጥ ሁኔታ",
+    price: 7200000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&q=80&w=800",
+    zone: "car",
+    locationKey: "loc.hawassa",
+    locationTag: "LAKEFRONT",
+    rating: 4.9,
+    isVerified: true,
+    isPremium: true,
+    badgeKey: "badge.zeroKm",
+    plateCode: "CODE 2",
+    fuelType: "Diesel",
+    fuelTag: "DIESEL",
+    condition: "Excellent",
+    phone: "+251911000014",
+    whatsapp: "251911000014",
+  },
+  {
+    id: "heavy-002",
+    titleEn: "Crane 50T - Available for Industrial Projects",
+    titleAm: "ክሬን 50 ቶን - ለኢንዱስትሪ ፕሮጀክቶች ዝግጁ",
+    price: 8000,
+    priceSuffixKey: "price.hour",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800",
+    zone: "machinery",
+    locationKey: "loc.hawassa",
+    locationTag: "TABOR",
+    rating: 4.7,
+    isVerified: true,
+    isPremium: true,
+    badgeKey: "badge.withOperator",
+    billingTrack: "ETB / Hour",
+    phone: "+251911000015",
+    whatsapp: "251911000015",
+  },
+  {
+    id: "cer-003",
+    titleEn: "Habesha Cultural Venue - Baptism & Celebrations",
+    titleAm: "የሀበሻ ባህላዊ አዳራሽ - ለጥምቀት እና ለዝግጅቶች",
+    price: 28000,
+    priceSuffixKey: "price.day",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
+    zone: "ceremony",
+    locationKey: "loc.hawassa",
+    locationTag: "PIASSA",
+    rating: 4.6,
+    isVerified: true,
+    isPremium: false,
+    badgeKey: "badge.verified",
+    phone: "+251911000016",
+    whatsapp: "251911000016",
+  },
+  {
+    id: "house-005",
+    titleEn: "Gated Villa - 5 Bedrooms, Private Garden",
+    titleAm: "የጋሬ ቪላ - 5 መኝታ ክፍሎች ከጋሬ አትክልት ጋር",
+    price: 22000000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800",
+    zone: "house",
+    locationKey: "loc.hawassa",
+    locationTag: "LAKEFRONT",
+    rating: 5.0,
+    isVerified: true,
+    isPremium: true,
+    badgeKey: "badge.verifiedCarta",
+    titleDeed: "Verified Carta",
+    sqm: 800,
+    bedrooms: 5,
+    bathrooms: 4,
+    phone: "+251911000017",
+    whatsapp: "251911000017",
+  },
+  {
+    id: "car-008",
+    titleEn: "Honda CR-V 2021 - Hybrid, Family Ready",
+    titleAm: "ሆንዳ ሲአርቪ 2021 - ሃይብሪድ ለቤተሰብ ምቹ",
+    price: 5100000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&q=80&w=800",
+    zone: "car",
+    locationKey: "loc.hawassa",
+    locationTag: "TABOR",
+    rating: 4.7,
+    isVerified: true,
+    isPremium: false,
+    badgeKey: "badge.verified",
+    plateCode: "CODE 2",
+    fuelType: "Hybrid / Electric",
+    fuelTag: "ELECTRIC",
+    condition: "Zero Mileage",
+    phone: "+251911000018",
+    whatsapp: "251911000018",
+  },
+  {
+    id: "heavy-003",
+    titleEn: "Concrete Mixer Truck - Daily or Hourly Rental",
+    titleAm: "ኮንክሪት ሚክሰር ትራክ - በቀን ወይም በሰዓት ኪራይ",
+    price: 4200,
+    priceSuffixKey: "price.hour",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=800",
+    zone: "machinery",
+    locationKey: "loc.yirgalem",
+    locationTag: "YIRGALEM",
+    rating: 4.5,
+    isVerified: false,
+    isPremium: false,
+    badgeKey: "badge.withOperator",
+    billingTrack: "ETB / Hour",
+    phone: "+251911000019",
+    whatsapp: "251911000019",
+  },
+  {
+    id: "cer-004",
+    titleEn: "Photo & Video Studio - Premium Wedding Coverage",
+    titleAm: "ፎቶ እና ቪዲዮ ስቱዲዮ - ለሰርግ ፕሪሚየም ሽፋን",
+    price: 35000,
+    priceSuffixKey: "price.day",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=800",
+    zone: "ceremony",
+    locationKey: "loc.hawassa",
+    locationTag: "LAKEFRONT",
+    rating: 4.9,
+    isVerified: true,
+    isPremium: true,
+    badgeKey: "badge.verified",
+    phone: "+251911000020",
+    whatsapp: "251911000020",
+  },
+  {
+    id: "house-006",
+    titleEn: "Studio Apartment for Rent - Near Hawassa University",
+    titleAm: "ለኪራይ ስቱዲዮ አፓርትመንት - ሀዋሳ ዩኒቨርሲቲ አቅራቢያ",
+    price: 8000,
+    priceSuffixKey: "price.day",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800",
+    zone: "house",
+    locationKey: "loc.hawassa",
+    locationTag: "PIASSA",
+    rating: 4.3,
+    isVerified: false,
+    isPremium: false,
+    badgeKey: "badge.verified",
+    sqm: 55,
+    phone: "+251911000021",
+    whatsapp: "251911000021",
+  },
+  {
+    id: "car-009",
+    titleEn: "Mercedes C-Class 2022 - Brand New, Zero KM",
+    titleAm: "ሜርሴዴስ ሲ ክላስ 2022 - አዲስ ዜሮ ኪሎሜትር",
+    price: 9800000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=800",
+    zone: "car",
+    locationKey: "loc.hawassa",
+    locationTag: "LAKEFRONT",
+    rating: 5.0,
+    isVerified: true,
+    isPremium: true,
+    badgeKey: "badge.zeroKm",
+    plateCode: "CODE 2",
+    fuelType: "Benzine",
+    fuelTag: "BENZINE",
+    condition: "Zero Mileage",
+    phone: "+251911000022",
+    whatsapp: "251911000022",
   },
 ];
 
@@ -530,13 +763,21 @@ const ListingCard: React.FC<{
 /* ────────────────────────────────────────────
    Component
    ──────────────────────────────────────────── */
+const ITEMS_PER_PAGE = 6;
+
 const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   activeZone,
   filters,
 }) => {
   const { language, t } = useLanguage();
-  const [visibleCount, setVisibleCount] = useState(6);
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
   const { ref: gridRef, isVisible: gridVisible } = useScrollReveal({ threshold: 0.1 });
+
+  // ── Reset to page 1 whenever zone or filters change ──
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeZone, filters]);
 
   /* ── Filter Logic ── */
   const filtered = useMemo(() => {
@@ -598,8 +839,17 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
     });
   }, [activeZone, filters]);
 
-  const visibleListings = filtered.slice(0, visibleCount);
-  const hasMore = visibleCount < filtered.length;
+  // Reset to page 1 whenever filters/zone change
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const visibleListings = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    const el = document.getElementById("zone-catalog-section");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   /* ── Heading Key ── */
   const headingKey = `grid.heading.${activeZone}` as any;
@@ -607,11 +857,12 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   const formatPrice = (n: number) => n.toLocaleString();
 
   return (
-    <section 
+    <section
+      id="zone-catalog-section"
       ref={gridRef}
       className={`flex-1 min-w-0 transition-all duration-700 ease-out ${
-        gridVisible 
-          ? 'animate-fade-in-up opacity-100 translate-y-0' 
+        gridVisible
+          ? 'animate-fade-in-up opacity-100 translate-y-0'
           : 'opacity-0 translate-y-8'
       }`}
     >
@@ -634,13 +885,14 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
           {visibleListings.map((item, index) => (
             <article
               key={item.id}
+              onClick={() => navigate(`/listing/${item.id}`)}
               style={{ 
                 animationDelay: `${index * 0.1}s`,
                 opacity: gridVisible ? 1 : 0,
                 transform: gridVisible ? 'translateY(0)' : 'translateY(20px)',
                 transition: `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`
               }}
-              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col relative transition-all duration-500"
+              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col relative transition-all duration-500 cursor-pointer"
             >
               {/* ── Image Container ── */}
               <div className="relative h-52 overflow-hidden">
@@ -827,15 +1079,42 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
         </div>
       )}
 
-      {/* ── Load More Button ── */}
-      {hasMore && (
-        <div className="flex justify-center mt-10">
+      {/* ── Numbered Pagination ── */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-10 flex-wrap">
+          {/* Prev */}
           <button
-            onClick={() => setVisibleCount((p) => p + 6)}
-            className="flex items-center gap-2 px-8 py-3 rounded-full border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 hover:border-[#00A86B] text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:text-[#00A86B] transition-all font-sans"
+            onClick={() => goToPage(safePage - 1)}
+            disabled={safePage === 1}
+            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {t("grid.viewAll")}
-            <ChevronRight className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
+            {language === "amharic" ? "የቀደመ" : "Prev"}
+          </button>
+
+          {/* Page Numbers */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => goToPage(page)}
+              className={`min-w-[42px] h-[42px] px-3 rounded-xl border text-sm font-black transition-all ${
+                page === safePage
+                  ? "bg-[#00A86B] border-[#00A86B] text-white shadow-[0_4px_16px_rgba(0,168,107,0.35)] scale-105"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B]"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+          {/* Next */}
+          <button
+            onClick={() => goToPage(safePage + 1)}
+            disabled={safePage === totalPages}
+            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {language === "amharic" ? "ቀጣዩ" : "Next"}
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       )}

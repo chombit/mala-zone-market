@@ -17,7 +17,7 @@ import { useLanguage } from "@/contexts/ZoneLanguageContext";
 /* ────────────────────────────────────────────
    Types
    ──────────────────────────────────────────── */
-export type ActiveZone = "all" | "car" | "house" | "ceremony" | "machinery";
+export type ActiveZone = "all" | "car" | "house" | "ceremony" | "machinery" | "electronics";
 
 interface FilterState {
   search: string;
@@ -69,16 +69,16 @@ const FilterSelect: React.FC<{
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
-      <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1 font-sans">
+      <label className="block text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1 font-sans">
         {label}
       </label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl px-4 py-3.5 text-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none hover:border-[#00A86B]/40 dark:hover:border-[#00A86B]/30 transition-all duration-200 font-sans tracking-wide leading-relaxed"
+        className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl px-4 py-3.5 text-sm text-malazone-navy dark:text-slate-200 font-bold focus:outline-none hover:border-[#00A86B]/40 dark:hover:border-[#00A86B]/30 transition-all duration-200 font-sans tracking-wide leading-relaxed"
       >
         <span className="truncate">{selectedOption.label}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-4 h-4 text-malazone-navy transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && (
@@ -93,7 +93,7 @@ const FilterSelect: React.FC<{
                 }}
                 className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 font-sans tracking-wide leading-relaxed ${value === opt.value
                   ? "text-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
-                  : "text-slate-700 dark:text-slate-300"
+                  : "text-malazone-navy dark:text-slate-300"
                   }`}
               >
                 {opt.label}
@@ -188,13 +188,13 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-5 h-5 text-green-600 dark:text-green-500" />
-          <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+          <h3 className="text-base font-bold text-malazone-navy dark:text-white tracking-tight">
             {t("sidebar.title")}
           </h3>
         </div>
         <button
           onClick={onReset}
-          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
+          className="flex items-center gap-1.5 text-xs text-malazone-navy hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           {t("sidebar.reset")}
@@ -206,17 +206,17 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
 
       {/* ── Text Search ── */}
       <div className="mb-6">
-        <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1 font-sans">
+        <label className="block text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1 font-sans">
           {language === "amharic" ? "በቁልፍ ቃል ፈልግ" : "Search by Keyword"}
         </label>
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#00A86B] transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy group-focus-within:text-[#00A86B] transition-colors" />
           <input
             type="text"
             value={filters.search}
             onChange={(e) => onFilterChange("search", e.target.value)}
             placeholder={language === "amharic" ? "ለምሳሌ፦ ቪትዝ፣ ቪላ..." : "e.g. Vitz, Villa..."}
-            className="w-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:border-[#00A86B]/40 dark:focus:border-[#00A86B]/30 transition-all duration-200 font-sans tracking-wide leading-relaxed"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-malazone-navy dark:text-slate-200 font-bold focus:outline-none focus:border-[#00A86B]/40 dark:focus:border-[#00A86B]/30 transition-all duration-200 font-sans tracking-wide leading-relaxed"
           />
         </div>
       </div>
