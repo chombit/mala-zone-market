@@ -18,8 +18,17 @@ import ContactPage from './components/pages/ContactPage';
 import PrivacyPage from './components/pages/PrivacyPage';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { FavoritesSidebar } from './components/FavoritesSidebar';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import BottomNavigation from './components/BottomNavigation';
 
-export type PageView = "home" | "about" | "contact" | "privacy";
+import GigHubPage from './components/pages/GigHubPage';
+import AgentOnboardPage from './components/pages/AgentOnboardPage';
+import PayoutsPage from './components/pages/PayoutsPage';
+
+import { MalazoneEnterpriseFaq } from './components/MalazoneEnterpriseFaq';
+import { useLanguage } from '@/contexts/ZoneLanguageContext';
+
+export type PageView = "home" | "about" | "contact" | "privacy" | "gighub" | "agent-onboard" | "payouts" | "faq";
 
 const defaultFilters: FilterState = {
   search: "",
@@ -38,6 +47,7 @@ const MainSite: React.FC = () => {
   const [activeZone, setActiveZone] = useState<ActiveZone>("all");
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [currentPage, setCurrentPage] = useState<PageView>("home");
+  const { language } = useLanguage();
 
   /* Sync header category pills → activeZone for the catalog grid */
   const handleCategoryChange = (cat: string) => {
@@ -70,15 +80,6 @@ const MainSite: React.FC = () => {
   };
 
   /* ── Sub-page views ── */
-  if (currentPage === "about") {
-    return <AboutPage onBack={() => navigateTo("home")} />;
-  }
-  if (currentPage === "contact") {
-    return <ContactPage onBack={() => navigateTo("home")} />;
-  }
-  if (currentPage === "privacy") {
-    return <PrivacyPage onBack={() => navigateTo("home")} />;
-  }
 
   return (
     <FavoritesProvider>
@@ -90,54 +91,74 @@ const MainSite: React.FC = () => {
           selection:bg-emerald-500/30
           selection:text-emerald-900 dark:selection:text-emerald-200
           transition-colors duration-300
+          pb-20 md:pb-0
         "
       >
         <FavoritesSidebar />
+        <PWAInstallPrompt />
         {/* Fixed navigation header */}
-      <Header
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
-      />
-
-      <main>
-        {/* Full-bleed hero carousel + search */}
-        <Hero
+        <Header
+          activeCategory={activeCategory}
           onCategoryChange={handleCategoryChange}
-          onFilterChange={(key, value) => handleFilterChange(key as keyof FilterState, value)}
         />
 
-        {/* ── Split-Screen Catalog Section ──────────────────────── */}
-        <div
-          id="listings-catalog"
-          className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4"
-        >
-          <div className="flex flex-col lg:flex-row gap-8">
-            <ZoneFilterSidebar
-              activeZone={activeZone}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              onReset={handleReset}
-            />
-            <ZoneCatalogGrid
-              activeZone={activeZone}
-              filters={filters}
-            />
+        <div className="pt-[140px]">
+          {currentPage === "about" && <AboutPage onBack={() => navigateTo("home")} />}
+          {currentPage === "contact" && <ContactPage onBack={() => navigateTo("home")} />}
+          {currentPage === "privacy" && <PrivacyPage onBack={() => navigateTo("home")} />}
+          {currentPage === "gighub" && <GigHubPage onBack={() => navigateTo("home")} />}
+          {currentPage === "agent-onboard" && <AgentOnboardPage onBack={() => navigateTo("home")} />}
+          {currentPage === "payouts" && <PayoutsPage onBack={() => navigateTo("home")} />}
+          {currentPage === "faq" && <MalazoneEnterpriseFaq onBackToMain={() => navigateTo("home")} currentGlobalLang={language === 'amharic' ? 'am' : 'en'} />}
+
+          {currentPage === "home" && (
+            <main>
+          {/* Full-bleed hero carousel + search */}
+          <Hero
+            onCategoryChange={handleCategoryChange}
+            onFilterChange={(key, value) => handleFilterChange(key as keyof FilterState, value)}
+          />
+
+          {/* ── Split-Screen Catalog Section ──────────────────────── */}
+          <div
+            id="listings-catalog"
+            className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4"
+          >
+            <div className="flex flex-col lg:flex-row gap-8">
+              <ZoneFilterSidebar
+                activeZone={activeZone}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onReset={handleReset}
+              />
+              <ZoneCatalogGrid
+                activeZone={activeZone}
+                filters={filters}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* ── Mala-Agents Recruitment Banner ───────────────────── */}
-        <div id="agents">
-          <MalaAgentsUnified />
-        </div>
+          {/* ── Mala-Agents Recruitment Banner ───────────────────── */}
+          <div id="agents">
+            <MalaAgentsUnified />
+          </div>
 
-        {/* ── Testimonials Section ──────────────────────────────── */}
-        <div id="testimonials">
-          <MalaZoneTestimonials />
+          {/* ── Testimonials Section ──────────────────────────────── */}
+          <div id="testimonials">
+            <MalaZoneTestimonials />
+          </div>
+        </main>
+        )}
         </div>
-      </main>
 
         {/* ── Global Footer ─────────────────────── */}
         <Footer onNavigate={navigateTo} />
+        
+        {/* ── Bottom Navigation (Mobile Only) ──────────────────────── */}
+        <BottomNavigation 
+          activeCategory={activeCategory} 
+          onCategoryChange={handleCategoryChange} 
+        />
       </div>
     </FavoritesProvider>
   );

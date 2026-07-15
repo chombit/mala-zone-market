@@ -18,11 +18,12 @@ import {
   Check
 } from 'lucide-react';
 import type { ListingItem } from '../ZoneCatalogGrid';
-import { getListingById, getRelatedListings } from '../../data/listings';
+import { FALLBACK_LISTINGS } from '../ZoneCatalogGrid';
+import { useSocketTracker } from '../../hooks/useSocketTracker';
 import { useLanguage } from '../../contexts/ZoneLanguageContext';
 import Header from '../Header';
 import Footer from '../Footer';
-import { FavoritesProvider, useFavorites } from '../../contexts/FavoritesContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 
 // Translation helpers
 const translateCondition = (condition: string | undefined, lang: 'am' | 'en'): string => {
@@ -166,28 +167,28 @@ function SpecsGrid({ listing, currentGlobalLang }: SpecsGridProps) {
   const t = buildSpecs();
 
   return (
-    <div className="w-full bg-white border border-slate-200 p-6 sm:p-8 rounded-[32px] shadow-sm text-left select-none font-sans antialiased">
+    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 p-6 sm:p-8 rounded-[32px] shadow-sm text-left select-none font-sans antialiased">
       <div className="space-y-5">
-        <div className="border-b border-slate-100 pb-3 flex items-center space-x-2">
+        <div className="border-b border-slate-100 dark:border-white/5 pb-3 flex items-center space-x-2">
           <div className="w-1.5 h-4 bg-[#00A86B] rounded-full" />
-          <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider font-sans">
+          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider font-sans">
             {t.sectionTitle}
           </h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs font-bold text-slate-700">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs font-bold text-slate-700 dark:text-slate-300">
           {t.specs.map((item, idx) => (
             <div
               key={idx}
               className="
-                bg-slate-50/80 border border-slate-200/50 p-5 rounded-2xl
+                bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-white/5 p-5 rounded-2xl
                 flex flex-col space-y-1.5 transition-all duration-300
-                hover:border-[#00A86B]/30 hover:bg-white hover:shadow-sm
+                hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm
               "
             >
-              <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider block leading-relaxed">
+              <span className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider block leading-relaxed">
                 {item.label}
               </span>
-              <span className="text-slate-900 font-black text-xs sm:text-[13px] tracking-tight truncate flex items-center gap-1">
+              <span className="text-slate-900 dark:text-white font-black text-xs sm:text-[13px] tracking-tight truncate flex items-center gap-1">
                 {item.label.includes('ደረጃ') || item.label.includes('Rating') ? (
                   <span className="text-amber-500 flex items-center gap-1">
                     <Star className="size-3.5 fill-current" /> {item.val}
@@ -213,21 +214,113 @@ const ListingDetailsContent = () => {
   const [isFavoriteLocal, setIsFavoriteLocal] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-
-  const listing = id ? getListingById(id) : undefined;
-  const relatedListings = id ? getRelatedListings(id, 3) : [];
+  const [listing, setListing] = useState<ListingItem | null>(null);
+  const [relatedListings, setRelatedListings] = useState<ListingItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { trackEvent } = useSocketTracker();
 
   useEffect(() => {
-    if (listing) {
-      setIsFavoriteLocal(isFavorite(listing.id));
-    }
-  }, [listing, isFavorite]);
+    if (!id) return;
+    setLoading(true);
+
+    const tryFallback = () => {
+      const fallbackItem = FALLBACK_LISTINGS.find(item => String(item.id) === id);
+      if (fallbackItem) {
+        setListing(fallbackItem);
+        setIsFavoriteLocal(isFavorite(fallbackItem.id));
+        trackEvent('visit', fallbackItem);
+        setRelatedListings(FALLBACK_LISTINGS.filter(item => item.zone === fallbackItem.zone && String(item.id) !== id).slice(0, 3));
+      } else {
+        setListing(null);
+      }
+      setLoading(false);
+    };
+
+    fetch(`/api/listings/${id}`)
+      .then(res => res.json())
+      .then(async (data) => {
+        if (data.success && data.data) {
+          const item = mapDbListingForPage(data.data);
+          setListing(item);
+          setIsFavoriteLocal(isFavorite(item.id));
+          trackEvent('visit', item);
+          const cat = data.data.category;
+          if (cat) {
+            try {
+              const relRes = await fetch(`/api/listings?category=${cat}&limit=3`);
+              const relData = await relRes.json();
+              if (relData.success && Array.isArray(relData.data)) {
+                setRelatedListings(relData.data.filter((r: any) => String(r.id) !== id).slice(0, 3).map(mapDbListingForPage));
+              }
+            } catch {}
+          }
+          setLoading(false);
+        } else {
+          tryFallback();
+        }
+      })
+      .catch(() => {
+        tryFallback();
+      });
+  }, [id]);
+
+  function mapDbListingForPage(row: any): ListingItem {
+    const images: string[] = (() => {
+      if (!row.images) return [];
+      if (Array.isArray(row.images)) return row.images;
+      try { return JSON.parse(row.images); } catch { return []; }
+    })();
+    const cat = row.category || "property";
+    let zone: "car" | "house" | "machinery" | "ceremony" = "house";
+    if (cat === "motors") zone = "car";
+    else if (cat === "stay" || cat === "ceremony") zone = "ceremony";
+    else if (cat === "heavy") zone = "machinery";
+
+    return {
+      id: String(row.id),
+      titleEn: row.title_en || "",
+      titleAm: row.title_am || "",
+      price: Number(row.price) || 0,
+      priceSuffixKey: row.price_suffix === "per_day" ? "price.day" : row.price_suffix === "per_hour" ? "price.hour" : "price.etb",
+      priceTagKey: row.is_premium ? "price.fixed" : "price.negotiable",
+      image: images[0] || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp",
+      images,
+      zone,
+      locationKey: row.location_key || "",
+      locationTag: (row.location_label_en || "").toUpperCase() || "PIASSA",
+      rating: 4.5,
+      isVerified: !!row.is_verified,
+      isPremium: !!row.is_premium,
+      badgeKey: row.is_verified ? "badge.verifiedCarta" : "badge.verified",
+      plateCode: row.plate_code || undefined,
+      fuelType: row.fuel_type || undefined,
+      fuelTag: row.fuel_type ? row.fuel_type.toUpperCase() : undefined,
+      condition: row.condition_type || undefined,
+      titleDeed: row.title_deed || undefined,
+      sqm: row.area_sqm ? Number(row.area_sqm) : undefined,
+      bedrooms: row.bedrooms ? Number(row.bedrooms) : undefined,
+      bathrooms: row.bathrooms ? Number(row.bathrooms) : undefined,
+      billingTrack: zone === "machinery" ? "ETB / Hour" : undefined,
+      phone: row.phone || "",
+      whatsapp: row.whatsapp || row.phone || "",
+      descriptionAm: row.description_am || undefined,
+      descriptionEn: row.description_en || undefined,
+    };
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#00A86B] border-t-transparent"></div>
+      </div>
+    );
+  }
 
   if (!listing) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">Listing Not Found</h2>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Listing Not Found</h2>
           <button
             onClick={() => navigate('/')}
             className="bg-[#00A86B] text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-600 transition-colors"
@@ -435,6 +528,28 @@ const ListingDetailsContent = () => {
                       </span>
                     )}
                   </div>
+
+                  {/* Action Overlay Buttons */}
+                  <div className="absolute top-5 right-5 z-10 flex flex-col gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleToggleFavorite(); }}
+                      className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer"
+                      aria-label={isFavoriteLocal ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <Heart className={`w-5 h-5 ${isFavoriteLocal ? 'fill-red-500 text-red-500' : 'text-slate-700 dark:text-slate-300'}`} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleShare(); }}
+                      className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer"
+                      aria-label="Share listing"
+                    >
+                      {copySuccess ? (
+                        <Check className="w-5 h-5 text-emerald-500" />
+                      ) : (
+                        <Share2 className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Thumbnail Previews */}
@@ -458,31 +573,38 @@ const ListingDetailsContent = () => {
               </div>
 
               {/* Quick Action Buttons */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button
                   onClick={handleCopyLink}
-                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   {copySuccess ? <Check className="size-4 text-emerald-500" /> : <Copy className="size-4" />}
                   <span className="font-bold text-xs uppercase">{copySuccess ? t.copied : t.copyLink}</span>
                 </button>
                 <button
                   onClick={handleShare}
-                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   <Share2 className="size-4" />
                   <span className="font-bold text-xs uppercase">{t.share}</span>
                 </button>
                 <button
+                  onClick={handleToggleFavorite}
+                  className={`flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer ${isFavoriteLocal ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-800/30' : ''}`}
+                >
+                  <Heart className={`size-4 ${isFavoriteLocal ? 'fill-rose-500 text-rose-500' : 'text-slate-500'}`} />
+                  <span className={`font-bold text-xs uppercase ${isFavoriteLocal ? 'text-rose-600' : ''}`}>{t.btnFavorite}</span>
+                </button>
+                <button
                   onClick={handlePrint}
-                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   <Printer className="size-4" />
                   <span className="font-bold text-xs uppercase">{t.print}</span>
                 </button>
                 <button
                   onClick={handleViewOnMap}
-                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   <MapPin className="size-4" />
                   <span className="font-bold text-xs uppercase">{t.viewOnMap}</span>
@@ -512,16 +634,16 @@ const ListingDetailsContent = () => {
               </div>
 
               {/* Audit Warning Frame */}
-              <div className="bg-emerald-50/60 border border-emerald-200/60 p-5 sm:p-6 rounded-[32px] flex items-start space-x-3">
+              <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/30 p-5 sm:p-6 rounded-[32px] flex items-start space-x-3">
                 <ShieldCheck className="w-6 h-6 text-[#00A86B] shrink-0 mt-0.5" />
                 <div className="space-y-1 text-left">
-                  <h4 className="text-xs font-black text-emerald-900 uppercase tracking-wide">{t.auditTitle}</h4>
-                  <p className="text-[11px] text-emerald-800 font-medium leading-relaxed">{t.auditBody}</p>
+                  <h4 className="text-xs font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-wide">{t.auditTitle}</h4>
+                  <p className="text-[11px] text-emerald-800 dark:text-emerald-500 font-medium leading-relaxed">{t.auditBody}</p>
                 </div>
               </div>
 
-              {/* Related Listings */}
-              {relatedListings.length > 0 && (
+              {/* Related Listings (fetched from same category) */}
+              {relatedListings.length > 0 && listing && (
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 p-6 sm:p-8 rounded-[32px] shadow-sm dark:shadow-slate-900/50 space-y-6">
                   <div className="border-b border-slate-100 dark:border-white/5 pb-3 flex items-center space-x-2">
                     <div className="w-1.5 h-4 bg-[#00A86B] rounded-full" />
@@ -598,6 +720,7 @@ const ListingDetailsContent = () => {
                 <div className="space-y-3">
                   <a
                     href={`tel:${listing.phone}`}
+                    onClick={() => trackEvent('click_call', listing)}
                     className="w-full bg-[#00A86B] hover:bg-emerald-600 text-white py-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer shadow-sm"
                   >
                     <Phone className="size-5" />
@@ -608,6 +731,7 @@ const ListingDetailsContent = () => {
                     href={`https://t.me/${listing.whatsapp}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackEvent('click_telegram', listing)}
                     className="w-full bg-[#24A1DE] hover:bg-[#1c8ec7] text-white py-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer shadow-sm hover:shadow-[0_6px_15px_rgba(36,161,222,0.35)]"
                   >
                     <Send className="size-5 -ml-1 translate-y-[1px]" />
@@ -676,10 +800,4 @@ const ListingDetailsContent = () => {
   );
 };
 
-const ListingDetailsPage = () => (
-  <FavoritesProvider>
-    <ListingDetailsContent />
-  </FavoritesProvider>
-);
-
-export default ListingDetailsPage;
+export default ListingDetailsContent;

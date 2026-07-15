@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { ArrowRight, Sparkles, ShoppingBag, ShieldCheck, Zap, Play, Building2, Car, Hotel, PartyPopper, Tractor, Smartphone, PhoneCall, X } from 'lucide-react';
+import { ArrowRight, Sparkles, ShoppingBag, ShieldCheck, Zap, Play, Building2, Car, Hotel, PartyPopper, Tractor, Smartphone, PhoneCall, CheckCircle2, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
+import AgentRegistrationModal from './AgentRegistrationModal';
 
 export function MalaAgentsUnified() {
   const { language } = useLanguage();
   const currentGlobalLang = language === 'amharic' ? 'am' : 'en';
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showRegistration, setShowRegistration] = useState(false);
   const [hoveredLabel, setHoveredLabel] = useState<{ am: string; en: string } | null>(null);
 
   // 🌐 EXHAUSTIVE DUAL-LANGUAGE DIRECT P2P DICTIONARY
@@ -71,14 +73,14 @@ export function MalaAgentsUnified() {
   ];
 
   return (
-    <section className="bg-white text-slate-900 pt-10 pb-20 px-6 sm:px-12 lg:px-20 w-full text-left font-sans antialiased select-none overflow-hidden">
+    <section className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-10 pb-6 px-6 sm:px-12 lg:px-20 w-full text-left font-sans antialiased select-none overflow-hidden transition-colors duration-300">
       <div className="max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
         {/* 🟢 LEFT COLUMN: Content & Value Propositions */}
         <div className="lg:col-span-6 space-y-6">
 
           <div className="flex items-center space-x-2">
-            <span className="text-[10px] sm:text-xs font-black bg-emerald-50 text-[#00A86B] border border-emerald-200/40 px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-[10px] sm:text-xs font-black bg-emerald-50 dark:bg-emerald-950/30 text-[#00A86B] border border-emerald-200/40 dark:border-emerald-800/30 px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="size-3.5 text-[#00A86B] animate-pulse" />
               <span>{t.badgeZone}</span>
             </span>
@@ -88,51 +90,52 @@ export function MalaAgentsUnified() {
             <h2 className="text-4xl sm:text-5xl font-black text-[#00A86B] tracking-tight leading-none">
               {t.heading}
             </h2>
-            <p className="text-xs sm:text-sm font-black text-slate-900 tracking-wide leading-relaxed">
+            <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 tracking-wide leading-relaxed">
               {t.subMotto}
             </p>
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
             {t.mainBody}
           </p>
 
           {/* 3ኛ አምድ የቅንጦት ካርዶች */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-            <div className="flex flex-col justify-between bg-slate-50 border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white transition-all duration-300 h-full">
+            <div className="flex flex-col justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 h-full group">
               <ShoppingBag className="size-5 text-[#00A86B] shrink-0 mb-3" />
               <div className="space-y-1">
-                <h4 className="text-xs font-black text-slate-900 leading-tight">{t.card1Title}</h4>
-                <p className="text-[11px] font-bold text-slate-500 leading-relaxed">{t.card1Desc}</p>
+                <h4 className="text-xs font-black text-slate-900 dark:text-white leading-tight">{t.card1Title}</h4>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-loose pt-1 pr-1">{t.card1Desc}</p>
               </div>
             </div>
-            <div className="flex flex-col justify-between bg-slate-50 border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white transition-all duration-300 h-full">
+            <div className="flex flex-col justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 h-full group">
               <ShieldCheck className="size-5 text-[#00A86B] shrink-0 mb-3" />
               <div className="space-y-1">
-                <h4 className="text-xs font-black text-slate-900 leading-tight">{t.card2Title}</h4>
-                <p className="text-[11px] font-bold text-slate-500 leading-relaxed">{t.card2Desc}</p>
+                <h4 className="text-xs font-black text-slate-900 dark:text-white leading-tight">{t.card2Title}</h4>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-loose pt-1 pr-1">{t.card2Desc}</p>
               </div>
             </div>
-            <div className="flex flex-col justify-between bg-slate-50 border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white transition-all duration-300 h-full">
+            <div className="flex flex-col justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 h-full group">
               <Zap className="size-5 text-[#00A86B] shrink-0 mb-3" />
               <div className="space-y-1">
-                <h4 className="text-xs font-black text-slate-900 leading-tight">{t.card3Title}</h4>
-                <p className="text-[11px] font-bold text-slate-500 leading-relaxed">{t.card3Desc}</p>
+                <h4 className="text-xs font-black text-slate-900 dark:text-white leading-tight">{t.card3Title}</h4>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-loose pt-1 pr-1">{t.card3Desc}</p>
               </div>
             </div>
           </div>
 
           {/* ⚡ CTA & SOCIAL PROOF */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4 border-t border-slate-100 dark:border-white/5">
             <button
+              onClick={() => setShowRegistration(true)}
               className="bg-[#00A86B] hover:bg-emerald-600 text-black font-black text-xs uppercase tracking-wider px-7 py-4 rounded-2xl transition-all shadow-md shadow-emerald-500/10 flex items-center space-x-2 group cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
               <span>{t.btnCTA}</span>
               <ArrowRight className="size-4 group-hover:translate-x-1.5 transition-transform duration-300" />
             </button>
 
-            <div className="bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl shadow-inner flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
-              <span className="text-[#00A86B] font-bold">✓</span>
+            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-2xl shadow-inner flex items-center gap-2 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+              <CheckCircle2 className="size-4 text-[#00A86B]" />
               <span>{t.socialProof}</span>
             </div>
           </div>
@@ -266,6 +269,8 @@ export function MalaAgentsUnified() {
           </div>
         </div>
       )}
+
+      <AgentRegistrationModal isOpen={showRegistration} onClose={() => setShowRegistration(false)} />
     </section>
   );
 }

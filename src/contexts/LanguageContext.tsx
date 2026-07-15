@@ -119,14 +119,14 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [dynamicDict, setDynamicDict] = useState<Record<string, { en: string; amharic: string }>>({});
 
   useEffect(() => {
-    fetch('/api/translations')
+    fetch('/api/admin/translations')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
           setDynamicDict(data.data);
         }
       })
-      .catch(err => console.error("Failed to load global translations:", err));
+      .catch(() => {});
   }, []);
 
   const t = useCallback((key: string) => {

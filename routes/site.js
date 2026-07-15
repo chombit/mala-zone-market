@@ -330,4 +330,99 @@ router.delete("/categories/:id", async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────────────────────────
+// TESTIMONIALS
+// ──────────────────────────────────────────────────────────────
+router.get("/testimonials", async (req, res) => {
+  try {
+    const [testimonials] = await db.execute(
+      "SELECT * FROM testimonials WHERE is_active = TRUE ORDER BY display_order ASC"
+    );
+    res.json({ success: true, data: testimonials });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.post("/testimonials", async (req, res) => {
+  try {
+    const { reviewer_name_en, reviewer_name_am, text_en, text_am, rating, avatar_emoji, accent_color, display_order } = req.body;
+    const [result] = await db.execute(
+      "INSERT INTO testimonials (reviewer_name_en, reviewer_name_am, text_en, text_am, rating, avatar_emoji, accent_color, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [reviewer_name_en, reviewer_name_am, text_en, text_am, rating || 5, avatar_emoji || '👤', accent_color || '#2563eb', display_order || 0]
+    );
+    res.json({ success: true, id: result.insertId, message: "Testimonial created successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
+// CONTACT FORM
+// ──────────────────────────────────────────────────────────────
+router.post("/contact", async (req, res) => {
+  try {
+    const { full_name, phone, email, subject, message } = req.body;
+
+    if (!full_name || !phone || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, phone and message are required",
+        message_am: "ስም፣ ስልክ እና መልእክት ያስፈልጋሉ"
+      });
+    }
+
+    const [result] = await db.execute(
+      "INSERT INTO contact_messages (full_name, phone, email, subject, message) VALUES (?, ?, ?, ?, ?)",
+      [full_name, phone, email || null, subject || null, message]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Message sent successfully! We will contact you soon.",
+      message_am: "መልእክትዎ በተሳካ ሁኔታ ተልኳል! በቅርቡ እናገኝዎታለን።",
+      id: result.insertId
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
+// SITE CONFIG (Social Links, Contact Info, etc.)
+// ──────────────────────────────────────────────────────────────
+router.get("/config", async (req, res) => {
+  try {
+    const [configs] = await db.execute("SELECT config_key, config_value FROM site_config");
+    const configMap = configs.reduce((acc, row) => {
+      try {
+        acc[row.config_key] = JSON.parse(row.config_value);
+      } catch {
+        acc[row.config_key] = row.config_value;
+      }
+      return acc;
+    }, {});
+    res.json({ success: true, data: configMap });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.post("/config", async (req, res) => {
+  try {
+    const { config_key, config_value } = req.body;
+    if (!config_key || !config_value) {
+      return res.status(400).json({ success: false, message: "config_key and config_value are required" });
+    }
+    const value = typeof config_value === "object" ? JSON.stringify(config_value) : config_value;
+    await db.execute(
+      "INSERT INTO site_config (config_key, config_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE config_value = ?",
+      [config_key, value, value]
+    );
+    res.json({ success: true, message: "Config saved successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;

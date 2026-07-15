@@ -6,7 +6,7 @@
 
 import React from "react";
 import {
-  ArrowLeft,
+  X,
   Building2,
   Car,
   Hotel,
@@ -189,14 +189,14 @@ const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       {/* ── Back Button Bar ── */}
-      <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
+      <div className="relative z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-end">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-malazone-navy dark:text-slate-300 hover:border-[#00A86B]/40 hover:text-[#00A86B] transition-all duration-300 text-xs font-bold uppercase tracking-widest group"
+            className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all duration-300"
+            title={d.backBtn}
           >
-            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-            {d.backBtn}
+            <X className="w-5 h-5" />
           </button>
         </div>
       </div>

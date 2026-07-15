@@ -71,6 +71,35 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [[listing]] = await db.execute(
+      `SELECT l.*, u.full_name as seller_name 
+       FROM listings l 
+       JOIN users u ON l.user_id = u.id 
+       WHERE l.id = ?`,
+      [id]
+    );
+
+    if (!listing) {
+      return res.status(404).json({ success: false, message: "Listing not found" });
+    }
+
+    // Increment view count
+    await db.execute("UPDATE listings SET view_count = view_count + 1 WHERE id = ?", [id]);
+
+    // Parse images JSON
+    if (listing.images && typeof listing.images === "string") {
+      listing.images = JSON.parse(listing.images);
+    }
+
+    res.json({ success: true, data: listing });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 router.post("/", upload.fields([{ name: "images", maxCount: 8 }]), async (req, res) => {
   try {
     const body = req.body;
@@ -101,18 +130,29 @@ router.post("/", upload.fields([{ name: "images", maxCount: 8 }]), async (req, r
         user_id, title_am, title_en, category, price, price_suffix, 
         location_key, location_label_am, location_label_en, 
         phone, whatsapp, images, is_active, is_premium,
-        plate_code, fuel_type, machinery_brand, bedrooms, area_sqm
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)`,
+        plate_code, fuel_type, machinery_brand, bedrooms, bathrooms, area_sqm,
+        title_deed, description_am, description_en, is_negotiable, rating,
+        condition_type, view_count, is_verified
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userId, body.title_am, body.title_en, body.category, 
         Number(body.price), body.price_suffix || "fixed",
         body.location_key, body.location_label_am, body.location_label_en,
         phone, body.whatsapp || phone, JSON.stringify(imageUrls),
-        body.is_premium === "true" ? 1 : 0,
+        body.is_premium === "true" || body.is_premium === 1 ? 1 : 0,
         body.plate_code || null, body.fuel_type || null, 
         body.machinery_brand || null, 
         body.bedrooms ? Number(body.bedrooms) : null,
-        body.area_sqm ? Number(body.area_sqm) : null
+        body.bathrooms ? Number(body.bathrooms) : null,
+        body.area_sqm ? Number(body.area_sqm) : null,
+        body.title_deed || null,
+        body.description_am || null,
+        body.description_en || null,
+        body.is_negotiable === "true" || body.is_negotiable === 1 ? 1 : 0,
+        body.rating ? Number(body.rating) : 0,
+        body.condition_type || null,
+        body.view_count ? Number(body.view_count) : 0,
+        body.is_verified === "true" || body.is_verified === 1 ? 1 : 0
       ]
     );
 

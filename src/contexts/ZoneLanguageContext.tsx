@@ -370,14 +370,14 @@ export const ZoneLanguageProvider: React.FC<{ children: ReactNode }> = ({
 
     useEffect(() => {
         // Fetch dynamic translations on boot
-        fetch('/api/translations')
+        fetch('/api/admin/translations')
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     setDynamicDict(data.data);
                 }
             })
-            .catch(err => console.error("Failed to load dynamic translations:", err));
+            .catch(() => {});
     }, []);
 
     const t = useCallback(
@@ -386,8 +386,7 @@ export const ZoneLanguageProvider: React.FC<{ children: ReactNode }> = ({
             if (dynamicDict[key] && dynamicDict[key][language]) {
                 return dynamicDict[key][language];
             }
-            // @ts-ignore - allow string indexing for static dictionary fallback
-            return dictionary[language][key] ?? key;
+            return (dictionary as Record<string, Record<string, string>>)[language][key] ?? key;
         },
         [language, dynamicDict]
     );

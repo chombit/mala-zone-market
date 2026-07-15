@@ -14,10 +14,14 @@ import {
   ChevronRight,
   Loader2,
   RotateCcw,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Heart,
+  Share2,
+  Check
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useFavorites } from "@/contexts/FavoritesContext";
 import { MalazoneProMaxPagination } from "./MalazoneProMaxPagination";
 
 // Local listing definition matching db structure and custom properties
@@ -347,9 +351,56 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const handleCardClick = (item: Listing) => {
     navigate(`/listing/${item.id}`);
+  };
+
+  const handleToggleFavorite = (listing: Listing) => {
+    const imagesArray = Array.isArray(listing.images)
+      ? listing.images
+      : (() => {
+        try { return JSON.parse(listing.images || "[]"); }
+        catch { return []; }
+      })();
+    const favItem = {
+      id: listing.id,
+      titleEn: listing.title_en,
+      titleAm: listing.title_am,
+      price: listing.price,
+      priceSuffixKey: listing.price_suffix === 'per_day' ? 'price.day' : listing.price_suffix === 'per_hour' ? 'price.hour' : 'price.etb',
+      image: imagesArray[0] || '',
+      zone: listing.category,
+      locationKey: listing.locality || '',
+      locationTag: (listing.locality || '').toUpperCase(),
+      rating: listing.rating || 5,
+      isVerified: !!listing.is_verified,
+      isPremium: !!listing.is_premium,
+      badgeKey: listing.is_verified ? 'badge.verifiedCarta' : 'badge.verified',
+      phone: listing.phone,
+      whatsapp: listing.whatsapp,
+    } as any;
+    toggleFavorite(favItem);
+  };
+
+  const handleShare = async (listing: Listing) => {
+    const url = `${window.location.origin}/listing/${listing.id}`;
+    if (navigator.share) {
+      navigator.share({
+        title: isAm ? listing.title_am : listing.title_en,
+        url,
+      }).catch(() => {});
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopiedId(listing.id);
+        setTimeout(() => setCopiedId(null), 2000);
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+      }
+    }
   };
 
   // Pagination State
@@ -816,14 +867,32 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                         </div>
                       </div>
 
-                      {/* Premium Listing Pulsing Star Badge */}
-                      {listing.is_premium ? (
-                        <div className="absolute top-4 right-4">
+                      {/* Action Buttons: Premium Star, Favorite, Share */}
+                      <div className="absolute top-4 right-4 flex flex-col gap-2">
+                        {listing.is_premium ? (
                           <div className="w-8 h-8 rounded-full bg-emerald-600 dark:bg-green-600 flex items-center justify-center text-white shadow-xl border border-white/20 animate-pulse hover:animate-none hover:scale-110 transition-all duration-300">
                             <Star className="w-4 h-4 fill-current" />
                           </div>
-                        </div>
-                      ) : null}
+                        ) : null}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(listing); }}
+                          className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
+                          aria-label={isFavorite(listing.id) ? "Remove from favorites" : "Add to favorites"}
+                        >
+                          <Heart className={`w-4 h-4 ${isFavorite(listing.id) ? 'fill-red-500 text-red-500' : 'text-slate-600 dark:text-slate-300'}`} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleShare(listing); }}
+                          className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
+                          aria-label="Share listing"
+                        >
+                          {copiedId === listing.id ? (
+                            <Check className="w-4 h-4 text-emerald-500" />
+                          ) : (
+                            <Share2 className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     {/* Card Content details */}

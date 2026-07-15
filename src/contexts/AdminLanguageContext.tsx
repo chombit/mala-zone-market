@@ -22,6 +22,7 @@ const adminDictionary = {
     "admin.sidebar.locations": "Locations",
     "admin.sidebar.categories": "Categories",
     "admin.sidebar.users": "User Management",
+    "admin.sidebar.live_desk": "Live Desk",
     "admin.metrics.revenue": "Total Revenue",
     "admin.metrics.pending": "Pending Listings",
     "admin.metrics.agents": "Verified Agents",
@@ -83,6 +84,7 @@ const adminDictionary = {
     "admin.sidebar.locations": "አድራሻዎች",
     "admin.sidebar.categories": "ምድቦች",
     "admin.sidebar.users": "የተጠቃሚዎች ቁጥጥር",
+    "admin.sidebar.live_desk": "የቀጥታ እንቅስቃሴ ዴስክ",
     "admin.metrics.revenue": "አጠቃላይ ገቢ",
     "admin.metrics.pending": "በጥበቃ ላይ ያሉ",
     "admin.metrics.agents": "የተረጋገጡ ወኪሎች",
@@ -148,14 +150,14 @@ export const AdminLanguageProvider: React.FC<{ children: ReactNode }> = ({ child
   const [dynamicDict, setDynamicDict] = useState<Record<string, { en: string; amharic: string }>>({});
 
   React.useEffect(() => {
-    fetch('/api/translations')
+    fetch('/api/admin/translations')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
           setDynamicDict(data.data);
         }
       })
-      .catch(err => console.error("Failed to load admin translations:", err));
+      .catch(() => {});
   }, []);
 
   const t = useCallback((key: string) => {

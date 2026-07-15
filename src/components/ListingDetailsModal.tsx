@@ -2,21 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, Heart, MapPin, ShieldCheck, Phone, Send, 
   ChevronLeft, ChevronRight, CheckCircle2, Sparkles,
-  BedDouble, Bath, Maximize2, Layers, Calendar, Share2,
-  FileText, Zap, Ruler, Settings, Key, Building2, Gauge
+  BedDouble, Bath, Layers, Calendar, Share2,
+  FileText, Zap, Ruler, Settings, Key, Building2,
+  Check
 } from 'lucide-react';
 import type { ListingItem } from './ZoneCatalogGrid';
+import { useFavorites } from '@/contexts/FavoritesContext';
+import { useLanguage } from '@/contexts/ZoneLanguageContext';
 
 interface ListingDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   listing: ListingItem | null;
-  currentGlobalLang?: 'am' | 'en';
 }
 
-export function ListingDetailsModal({ isOpen, onClose, listing, currentGlobalLang = 'am' }: ListingDetailsModalProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
+export function ListingDetailsModal({ isOpen, onClose, listing }: ListingDetailsModalProps) {
+  const { language } = useLanguage();
+  const currentGlobalLang = language === 'amharic' ? 'am' : 'en';
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const { isFavorite: isFav, toggleFavorite } = useFavorites();
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -92,7 +97,8 @@ export function ListingDetailsModal({ isOpen, onClose, listing, currentGlobalLan
       ownerReviews: `⭐⭐⭐⭐⭐ (${listing.rating})`,
       btnCall: 'ቀጥታ ደውል',
       btnTelegram: 'በቴሌግራም አነጋግር',
-      btnFavorite: isFavorite ? 'ተገልብጧል ✓' : 'ለበኋላ አስቀምጥ',
+      btnFavorite: isFav(listing.id) ? 'ተገልብጧል ✓' : 'ለበኋላ አስቀምጥ',
+      btnShare: copiedId === listing.id ? 'ተገልብጧል ✓' : 'አጋራት',
       specsTitle: 'ስለ ንብረቱ ዝርዝር መረጃ',
       descTitle: 'ተጨማሪ ማብራሪያ',
     },
@@ -106,7 +112,8 @@ export function ListingDetailsModal({ isOpen, onClose, listing, currentGlobalLan
       ownerReviews: `⭐⭐⭐⭐⭐ (${listing.rating} Rating)`,
       btnCall: 'Direct Call',
       btnTelegram: 'Message on Telegram',
-      btnFavorite: isFavorite ? 'Saved ✓' : 'Add to Favorites',
+      btnFavorite: isFav(listing.id) ? 'Saved ✓' : 'Add to Favorites',
+      btnShare: copiedId === listing.id ? 'Copied!' : 'Share',
       specsTitle: 'Comprehensive Specifications',
       descTitle: 'Description',
     }
@@ -335,12 +342,36 @@ export function ListingDetailsModal({ isOpen, onClose, listing, currentGlobalLan
                     </a>
                     
                     <button 
-                      onClick={() => setIsFavorite(!isFavorite)} 
-                      className={`w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 py-3.5 rounded-xl transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.98] ${isFavorite ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-800/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                      onClick={() => toggleFavorite(listing)} 
+                      className={`w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 py-3.5 rounded-xl transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.98] ${isFav(listing.id) ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-800/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     >
-                      <Heart className={`size-5 transition-colors ${isFavorite ? 'fill-rose-500 text-rose-500' : 'text-slate-400 dark:text-slate-500'}`} />
-                      <span className={`font-black tracking-wider uppercase text-xs ${isFavorite ? 'text-rose-600' : 'text-slate-600 dark:text-slate-400'}`}>
+                      <Heart className={`size-5 transition-colors ${isFav(listing.id) ? 'fill-rose-500 text-rose-500' : 'text-slate-400 dark:text-slate-500'}`} />
+                      <span className={`font-black tracking-wider uppercase text-xs ${isFav(listing.id) ? 'text-rose-600' : 'text-slate-600 dark:text-slate-400'}`}>
                         {t.btnFavorite}
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/listing/${listing.id}`;
+                        if (navigator.share) {
+                          navigator.share({ title: listing.titleEn, url }).catch(() => {});
+                        } else {
+                          navigator.clipboard.writeText(url).then(() => {
+                            setCopiedId(listing.id);
+                            setTimeout(() => setCopiedId(null), 2000);
+                          }).catch(() => {});
+                        }
+                      }}
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 py-3.5 rounded-xl transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.98] hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                      {copiedId === listing.id ? (
+                        <Check className="size-5 text-emerald-500" />
+                      ) : (
+                        <Share2 className="size-5 text-slate-400 dark:text-slate-500" />
+                      )}
+                      <span className="font-black tracking-wider uppercase text-xs text-slate-600 dark:text-slate-400">
+                        {t.btnShare}
                       </span>
                     </button>
                   </div>

@@ -4,6 +4,7 @@ import MainSite from './MainSite'
 import AdminPanel from './AdminPanel'
 import AdminLogin from './AdminLogin'
 import ListingDetailsPage from './components/pages/ListingDetailsPage'
+import { FavoritesProvider } from './contexts/FavoritesContext'
 
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
 
@@ -16,6 +17,7 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
 function AppContent() {
   return (
     <Router>
+      <FavoritesProvider>
       <Routes>
         {/* Public Client-Facing Marketplace */}
         <Route path="/" element={<MainSite />} />
@@ -39,6 +41,7 @@ function AppContent() {
         {/* Fallback for any other route */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      </FavoritesProvider>
     </Router>
   )
 }

@@ -229,3 +229,44 @@ INSERT IGNORE INTO site_stats (key_name, value_int, description_en, description_
 ('listings', 2547, 'Total active listings', 'ጠቅላላ ተግባራዊ ዝርዝሮች'),
 ('vehicles', 1412, 'Total vehicles listed', 'ጠቅላላ የተዘረዘሩ መኪናዎች'),
 ('trade_success_rate', 100, 'Trade success rate percentage', 'የንግድ ስኬት መጠነኛያ');
+
+-- ─────────────────────────────────────────────
+-- TESTIMONIALS TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS testimonials (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  reviewer_name_en VARCHAR(100) NOT NULL,
+  reviewer_name_am VARCHAR(100) NOT NULL,
+  text_en TEXT NOT NULL,
+  text_am TEXT NOT NULL,
+  rating INT DEFAULT 5,
+  avatar_emoji VARCHAR(10) DEFAULT '👤',
+  accent_color VARCHAR(7) DEFAULT '#2563eb',
+  is_active BOOLEAN DEFAULT TRUE,
+  display_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- CONTACT MESSAGES TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(100) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  email VARCHAR(100),
+  subject VARCHAR(200),
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- SITE CONFIG TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS site_config (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  config_key VARCHAR(50) NOT NULL UNIQUE,
+  config_value TEXT NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;

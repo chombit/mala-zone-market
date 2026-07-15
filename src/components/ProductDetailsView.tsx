@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Share2, MapPin, ShieldCheck, Sparkles, Phone, Send, BedDouble, Bath, Maximize2, Layers, Calendar, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Heart, Share2, Check, MapPin, ShieldCheck, Sparkles, Phone, Send, BedDouble, Bath, Maximize2, Layers, Calendar, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 
 interface ProductDetailsViewProps {
   currentGlobalLang?: 'am' | 'en';
@@ -7,6 +7,7 @@ interface ProductDetailsViewProps {
 
 export function ProductDetailsView({ currentGlobalLang = 'am' }: ProductDetailsViewProps) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
 
   // MOCK MULTI-IMAGE CAROUSEL ARRAY BASED ON SCREENSHOT INFRASTRUCTURE
@@ -31,6 +32,7 @@ export function ProductDetailsView({ currentGlobalLang = 'am' }: ProductDetailsV
       btnCall: 'ቀጥታ ደውል (Direct Call)',
       btnTelegram: 'በቴሌግራም አነጋግር',
       btnFavorite: 'ለበኋላ አስቀምጥ (Favorite)',
+      btnShare: 'አጋራት',
       specsTitle: 'ስለ ቤቱ ዝርዝር መረጃ',
       locTitle: 'የይዞታው ማዘጋጃ ቤት አድራሻ',
       descTitle: 'ተጨማሪ ማብራሪያ',
@@ -57,6 +59,7 @@ export function ProductDetailsView({ currentGlobalLang = 'am' }: ProductDetailsV
       btnCall: 'Direct Call',
       btnTelegram: 'Message on Telegram',
       btnFavorite: 'Add to Favorites',
+      btnShare: 'Share',
       specsTitle: 'Comprehensive System Specifications',
       locTitle: 'Geographic Municipal Location',
       descTitle: 'Strategic Narrative Overview',
@@ -221,6 +224,30 @@ export function ProductDetailsView({ currentGlobalLang = 'am' }: ProductDetailsV
                 <Heart className={`size-5 transition-colors ${isFavorite ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
                 <span className={`font-black tracking-wider uppercase text-xs ${isFavorite ? 'text-rose-600' : 'text-slate-600'}`}>
                   {t.btnFavorite}
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const url = window.location.href;
+                  if (navigator.share) {
+                    navigator.share({ title: t.title, url }).catch(() => {});
+                  } else {
+                    navigator.clipboard.writeText(url).then(() => {
+                      setCopiedId('share');
+                      setTimeout(() => setCopiedId(null), 2000);
+                    }).catch(() => {});
+                  }
+                }}
+                className="w-full bg-white border border-slate-200 py-3.5 rounded-xl transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.98] hover:bg-slate-50"
+              >
+                {copiedId === 'share' ? (
+                  <Check className="size-5 text-emerald-500" />
+                ) : (
+                  <Share2 className="size-5 text-slate-400" />
+                )}
+                <span className="font-black tracking-wider uppercase text-xs text-slate-600">
+                  {t.btnShare}
                 </span>
               </button>
             </div>

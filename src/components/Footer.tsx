@@ -5,19 +5,13 @@ import {
   DoorOpen,
   Music,
   Tractor,
-  Briefcase,
-  UserPlus,
-  Wallet,
-  Info,
-  Headphones,
-  Shield,
   Facebook,
   Send,
-  Smartphone
+  Smartphone,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 
-type PageView = "home" | "about" | "contact" | "privacy";
+type PageView = "home" | "about" | "contact" | "privacy" | "faq";
 
 const footerTranslations = {
   en: {
@@ -30,24 +24,19 @@ const footerTranslations = {
       { icon: Tractor, label: "Heavy Machinery" },
       { icon: Smartphone, label: "Electronics Zone" }
     ],
-    col2Title: "Mala-Agents",
+    col2Title: "SUPPORT",
     col2: [
-      { icon: Briefcase, label: "Gig-Economy Hub" },
-      { icon: UserPlus, label: "Onboard as Agent" },
-      { icon: Wallet, label: "Secure Digital Payouts" }
-    ],
-    col3Title: "Corporate Info",
+      { label: "About Malazone", page: "about" as PageView },
+      { label: "FAQ", page: "faq" as PageView },
+      { label: "Privacy Policy", page: "privacy" as PageView },
+      { label: "Contact", page: "contact" as PageView }
+    ] as { icon?: any, label: string, page?: PageView }[],
+    col3Title: "CONTACT",
     col3: [
-      { icon: Info, label: "About Malazone", page: "about" as PageView },
-      { icon: Headphones, label: "Contact Support", page: "contact" as PageView },
-      { icon: Shield, label: "Privacy Policy", page: "privacy" as PageView }
-    ],
-    col4Title: "Quick Support",
-    col4: [
-      { icon: Headphones, label: "24/7 Helpline" },
-      { icon: Send, label: "Live Chat" },
-      { icon: Wallet, label: "Payment Support" }
-    ],
+      { label: "+251 911 123 456" },
+      { label: "support@malazone.com" },
+      { label: "Hawassa, Ethiopia" }
+    ] as { icon?: any, label: string }[],
     copyright: "© 2026 Malazone Technologies PLC. All Rights Reserved."
   },
   amharic: {
@@ -60,24 +49,19 @@ const footerTranslations = {
       { icon: Tractor, label: "ከባድ ማሽነሪዎች" },
       { icon: Smartphone, label: "ኤሌክትሮኒክስ ዞን" }
     ],
-    col2Title: "የመላ-ወኪሎች",
+    col2Title: "እርዳታና ድጋፍ",
     col2: [
-      { icon: Briefcase, label: "የስራ ዕድል ማዕከል" },
-      { icon: UserPlus, label: "ወኪል ለመሆን" },
-      { icon: Wallet, label: "አስተማማኝ ክፍያዎች" }
-    ],
-    col3Title: "ስለ ድርጅቱ",
+      { label: "ስለ መላዞን", page: "about" as PageView },
+      { label: "ተደጋጋሚ ጥያቄዎች", page: "faq" as PageView },
+      { label: "የግል ምስጢር ጥበቃ", page: "privacy" as PageView },
+      { label: "ያግኙን", page: "contact" as PageView }
+    ] as { icon?: any, label: string, page?: PageView }[],
+    col3Title: "አድራሻ",
     col3: [
-      { icon: Info, label: "ስለ መላዞን", page: "about" as PageView },
-      { icon: Headphones, label: "ደንበኞች አገልግሎት", page: "contact" as PageView },
-      { icon: Shield, label: "የግል ምስጢር ጥበቃ", page: "privacy" as PageView }
-    ],
-    col4Title: "ፈጣን ድጋፍ",
-    col4: [
-      { icon: Headphones, label: "የ24/7 የስልክ መስመር" },
-      { icon: Send, label: "የቀጥታ ውይይት" },
-      { icon: Wallet, label: "የክፍያ ድጋፍ" }
-    ],
+      { label: "+251 911 123 456" },
+      { label: "support@malazone.com" },
+      { label: "ሐዋሳ, ኢትዮጵያ" }
+    ] as { icon?: any, label: string }[],
     copyright: "© 2026 Malazone Technologies PLC. All Rights Reserved."
   }
 };
@@ -105,43 +89,47 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div className="w-24 h-[1px] bg-[#00A86B]/40" />
         </div>
 
-        {/* 4-column grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          {/* Column 1 */}
+        {/* 3-column grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-12 lg:gap-16">
+
+          {/* Column 1 — Ecosystem Zones */}
           <div className="space-y-6">
             <h4 className="!text-slate-100 dark:!text-white font-black text-xs uppercase tracking-[0.2em] border-l-2 border-[#00A86B] pl-3">
               {f.col1Title}
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-3.5">
               {f.col1.map((item, i) => (
                 <li key={i}>
-                  <a href="#" className="group flex items-center gap-3 text-sm !text-slate-400 dark:!text-slate-400 hover:!text-white transition-colors">
+                  <a href="#" className="group flex items-center gap-3 text-sm !text-slate-400 hover:!text-[#00A86B] transition-colors duration-200">
                     <item.icon className="h-4 w-4 text-[#00A86B] shrink-0" />
-                    <span className="group-hover:translate-x-0.5 transition-transform" style={{ color: 'inherit' }}>{item.label}</span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200" style={{ color: 'inherit' }}>{item.label}</span>
                   </a>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 2 */}
+          {/* Column 2 — Support */}
           <div className="space-y-6">
             <h4 className="!text-slate-100 dark:!text-white font-black text-xs uppercase tracking-[0.2em] border-l-2 border-[#00A86B] pl-3">
               {f.col2Title}
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-3.5">
               {f.col2.map((item, i) => (
                 <li key={i}>
-                  <a href="#" className="group flex items-center gap-3 text-sm !text-slate-400 dark:!text-slate-400 hover:!text-white transition-colors">
-                    <item.icon className="h-4 w-4 text-[#00A86B] shrink-0" />
-                    <span className="group-hover:translate-x-0.5 transition-transform" style={{ color: 'inherit' }}>{item.label}</span>
-                  </a>
+                  <button
+                    onClick={() => item.page && onNavigate?.(item.page)}
+                    className="group flex items-center gap-3 text-sm !text-slate-400 hover:!text-[#00A86B] transition-colors duration-200 text-left w-full"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-[#00A86B]/60 shrink-0" />
+                    <span className="group-hover:translate-x-1 transition-transform duration-200" style={{ color: 'inherit' }}>{item.label}</span>
+                  </button>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 3 */}
+          {/* Column 3 — Contact */}
           <div className="space-y-6">
             <h4 className="!text-slate-100 dark:!text-white font-black text-xs uppercase tracking-[0.2em] border-l-2 border-[#00A86B] pl-3">
               {f.col3Title}
@@ -149,34 +137,15 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <ul className="space-y-4">
               {f.col3.map((item, i) => (
                 <li key={i}>
-                  <button
-                    onClick={() => onNavigate?.(item.page)}
-                    className="group flex items-center gap-3 text-sm !text-slate-400 dark:!text-slate-400 hover:!text-white transition-colors text-left"
-                  >
-                    <item.icon className="h-4 w-4 text-[#00A86B] shrink-0" />
-                    <span className="group-hover:translate-x-0.5 transition-transform" style={{ color: 'inherit' }}>{item.label}</span>
-                  </button>
+                  <div className="flex items-start gap-3 text-sm !text-slate-400">
+                    <span className="w-1 h-1 rounded-full bg-[#00A86B]/60 shrink-0 mt-2" />
+                    <span className="leading-relaxed whitespace-pre-line" style={{ color: 'inherit' }}>{item.label}</span>
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 4 */}
-          <div className="space-y-6">
-            <h4 className="!text-slate-100 dark:!text-white font-black text-xs uppercase tracking-[0.2em] border-l-2 border-[#00A86B] pl-3">
-              {f.col4Title}
-            </h4>
-            <ul className="space-y-4">
-              {f.col4.map((item, i) => (
-                <li key={i}>
-                  <a href="#" className="group flex items-center gap-3 text-sm !text-slate-400 dark:!text-slate-400 hover:!text-white transition-colors">
-                    <item.icon className="h-4 w-4 text-[#00A86B] shrink-0" />
-                    <span className="group-hover:translate-x-0.5 transition-transform" style={{ color: 'inherit' }}>{item.label}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </div>
 

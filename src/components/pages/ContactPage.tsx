@@ -6,7 +6,7 @@
 
 import React, { useState } from "react";
 import {
-  ArrowLeft,
+  X,
   MapPin,
   Phone,
   Mail,
@@ -17,7 +17,8 @@ import {
   Building2,
   Globe,
   CheckCircle,
-  Sparkles,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 
@@ -144,11 +145,40 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
   const { language } = useLanguage();
   const d = t[language as keyof typeof t];
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/site/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message || "Failed to send message");
+      }
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   const contactInfo = [
@@ -175,14 +205,14 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       {/* ── Back Button Bar ── */}
-      <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
+      <div className="relative z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-end">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-malazone-navy dark:text-slate-300 hover:border-[#00A86B]/40 hover:text-[#00A86B] transition-all duration-300 text-xs font-bold uppercase tracking-widest group"
+            className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all duration-300"
+            title={d.backBtn}
           >
-            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-            {d.backBtn}
+            <X className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -250,6 +280,9 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formName}</label>
                       <input
                         type="text"
+                        name="full_name"
+                        value={formData.full_name}
+                        onChange={handleChange}
                         required
                         placeholder={d.formNamePlaceholder}
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
@@ -259,6 +292,9 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formEmail}</label>
                       <input
                         type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
                         required
                         placeholder={d.formEmailPlaceholder}
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
@@ -270,6 +306,10 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formPhone}</label>
                       <input
                         type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
                         placeholder={d.formPhonePlaceholder}
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
                       />
@@ -278,6 +318,9 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formSubject}</label>
                       <input
                         type="text"
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleChange}
                         required
                         placeholder={d.formSubjectPlaceholder}
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all"
@@ -288,17 +331,27 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-malazone-navy">{d.formMessage}</label>
                     <textarea
                       required
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
                       rows={5}
                       placeholder={d.formMessagePlaceholder}
                       className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-malazone-navy dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/10 transition-all resize-none"
                     />
                   </div>
+                  {error && (
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-xs font-bold text-red-600 dark:text-red-400">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      {error}
+                    </div>
+                  )}
                   <button
                     type="submit"
-                    className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-malazone-navy font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98] group"
+                    disabled={sending}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 disabled:opacity-60 text-malazone-navy font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98] group"
                   >
-                    <Send className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    {d.formSubmit}
+                    {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />}
+                    {sending ? (language === "amharic" ? "በመላክ ላይ..." : "Sending...") : d.formSubmit}
                   </button>
                 </form>
               )}

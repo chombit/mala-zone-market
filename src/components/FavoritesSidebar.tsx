@@ -144,7 +144,6 @@ export const FavoritesSidebar: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         listing={selectedListing}
-        currentGlobalLang={language === 'amharic' ? 'am' : 'en'}
       />
     </>
   );

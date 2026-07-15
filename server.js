@@ -26,8 +26,11 @@ const adminRouter = require("./routes/admin");
 const siteRouter = require("./routes/site");
 const g2bRouter = require("./routes/g2b");
 
-// ── App init
+// ── App init (HTTP + Socket.io)
 const app = express();
+const http = require("http");
+const { Server } = require("socket.io");
+const server = http.createServer(app);
 const compression = require("compression");
 
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -90,6 +93,50 @@ app.use(
     },
   })
 );
+
+// ── Socket.io — admin real-time feed + user interaction relay
+const io = new Server(server, {
+  cors: {
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false); // silently reject
+      }
+    },
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+  transports: ["websocket"],
+});
+
+const adminSockets = new Set();
+
+io.on("connection", (socket) => {
+  // Admin authentication
+  socket.on("authenticate_admin", (data) => {
+    if (data && data.token) {
+      adminSockets.add(socket);
+      socket.isAdmin = true;
+      socket.emit("authenticated", { success: true });
+    }
+  });
+
+  // Relay user interactions to all admin sockets
+  socket.on("user_interaction_trigger", (payload) => {
+    for (const adminSocket of adminSockets) {
+      if (adminSocket.connected) {
+        adminSocket.emit("broadcast_admin_notification", payload);
+      }
+    }
+  });
+
+  socket.on("disconnect", () => {
+    if (socket.isAdmin) {
+      adminSockets.delete(socket);
+    }
+  });
+});
 
 // ── Global rate limiter (protect from abuse on 3G/4G mobile clients)
 const apiLimiter = rateLimit({
@@ -213,7 +260,7 @@ app.use("/api/*", (req, res) => {
 // BOOT
 // ─────────────────────────────────────────────
 const PORT = 4003;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════════════╗
 ║  🟢  Malazone API Server                        ║

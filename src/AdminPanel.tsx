@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { LayoutDashboard, Package, Home, Wallet, LogOut, Globe, Bell, Search, Users, Image, Star, MapPin, Tag, Settings, ShieldCheck, Megaphone } from "lucide-react";
+import { LayoutDashboard, Package, Home, Wallet, LogOut, Globe, Bell, Search, Users, Image, Star, MapPin, Tag, Settings, ShieldCheck, Megaphone, Radio } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdminLanguageProvider, useAdminLanguage } from "./contexts/AdminLanguageContext";
 import { AdminAuthProvider, useAdminAuth } from "./contexts/AdminAuthContext";
@@ -20,6 +20,7 @@ import LocationsManager from "./components/LocationsManager";
 import CategoriesManager from "./components/CategoriesManager";
 import GovernmentAuditDashboard from "./components/GovernmentAuditDashboard";
 import PromoTickerManager from "./components/PromoTickerManager";
+import { SuperAdminLiveDesk } from "./components/SuperAdminLiveDesk";
 
 const AdminDashboard: React.FC = () => {
   const { t, toggleLanguage } = useAdminLanguage();
@@ -51,6 +52,7 @@ const AdminDashboard: React.FC = () => {
     { key: "admin.sidebar.locations", icon: <MapPin className="w-5 h-5" />, id: "locations", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.categories", icon: <Tag className="w-5 h-5" />, id: "categories", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.users", icon: <Users className="w-5 h-5" />, id: "users", allowedRoles: ["super_admin"] },
+    { key: "admin.sidebar.live_desk", icon: <Radio className="w-5 h-5" />, id: "live_desk", allowedRoles: ["super_admin", "admin"] },
     { key: "Promo Ticker", isRawKey: true, icon: <Megaphone className="w-5 h-5" />, id: "promo_ticker", allowedRoles: ["super_admin"] },
   ];
 
@@ -245,6 +247,12 @@ const AdminDashboard: React.FC = () => {
           {activeTab === "users" && isSuperAdmin && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
               <AdminUsers />
+            </div>
+          )}
+
+          {activeTab === "live_desk" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <SuperAdminLiveDesk />
             </div>
           )}
 

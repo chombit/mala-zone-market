@@ -82,6 +82,27 @@ const seedDatabase = async () => {
     `);
     console.log("✅ Hero slides seeded successfully!");
 
+    // 7. Seed testimonials
+    await db.execute(`
+      INSERT IGNORE INTO testimonials 
+        (reviewer_name_en, reviewer_name_am, text_en, text_am, rating, avatar_emoji, accent_color, display_order, is_active) 
+      VALUES 
+        ("Mihret Negash", "ምሕረት ነጋሽ", "My commission payouts arrive directly into my bank account every day. The most reliable income stream for Ethiopian youth.", "የኮሚሽን ገቢዬ ቀጥታ በባንክ አካውንቴ ይደርሰኛል። ለወጣቶች ፍጹም አስተማማኝ የሥራ ምንጭ ሆኗል።", 5, "👨‍💻", "#00A86B", 0, true),
+        ("Fayisa Gemechu", "ፈይሳ ገመቹ", "I leased my construction machinery directly to clients without broker fees. The system guarantees absolute security.", "ማሽነሪዎቼን ያለምንም ደላላ ጣልቃ-ገብነት ለሥራ ፈላጊዎች አከራይቻለሁ። ሲስተሙ ደህንነቱ የተረጋገጠ ነው።", 5, "🏗️", "#0284c7", 1, true),
+        ("Barkot Kidane", "በርኮት ኪዳኔ", "After reviewing verified legal deed records on malazone, I completed my property purchase with zero friction.", "malazone ላይ የተረጋገጡ ህጋዊ ካርታ ማህደሮችን ካየሁ በኋላ ያለምንም ፍርሃት ቤት ገዛሁ።", 5, "🌐", "#7c3aed", 2, true),
+        ("Selam Tefera", "ሰላም ተፈራ", "I listed my vehicle inventory on malazone and sold within three days. The platform is simply unmatched in reach and speed.", "ተሽከርካሪ ዝርዝሬን malazone ላይ ምዝገባ አድርጌ በሶስት ቀን ሸጣለሁ!", 5, "🚗", "#d97706", 3, true),
+        ("Dawit Sisay", "ዳዊት ሲሳይ", "I posted my hotel rates on malazone and tourists now contact me directly. Zero middlemen, pure profit.", "የሆቴሌን ታሪፍ malazone ላይ ለጥፌ ቱሪስቶች ቀጥታ ያወራሉ። ምንም ደላላ የለም!", 5, "🏨", "#0891b2", 4, true)
+    `);
+    console.log("✅ Testimonials seeded successfully!");
+
+    // 8. Seed site config (social links, contact info)
+    await db.execute(`
+      INSERT IGNORE INTO site_config (config_key, config_value) VALUES
+        ("social_links", '{"whatsapp":"https://wa.me/251911000000","telegram":"https://t.me/MalazoneSupport","facebook":"https://facebook.com/malazone","instagram":"https://instagram.com/malazone","youtube":"https://youtube.com/@malazone"}'),
+        ("contact_info", '{"phone":"+251462200000","email":"support@malazone.com","address":"Hawassa, Sidama, Ethiopia"}')
+    `);
+    console.log("✅ Site config seeded successfully!");
+
     console.log("\n📝 Credentials:");
     console.log("   - Super Admin: superadmin / superadmin123");
     console.log("   - Admin: admin / admin");

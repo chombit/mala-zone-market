@@ -52,8 +52,11 @@ CREATE TABLE IF NOT EXISTS listings (
   user_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to users (seller)',
   title VARCHAR(500) NOT NULL COMMENT 'Listing title (multilingual stored separately)',
   description TEXT COMMENT 'Full listing description',
+  description_am TEXT COMMENT 'Amharic description',
+  description_en TEXT COMMENT 'English description',
   price DECIMAL(15, 2) NOT NULL COMMENT 'Price in ETB (Birr)',
   price_suffix ENUM('fixed', 'per_day', 'per_hour', 'per_month') DEFAULT 'fixed' COMMENT 'Price unit',
+  is_negotiable TINYINT(1) DEFAULT 0 COMMENT 'If price is negotiable',
   category ENUM('property', 'motors', 'stay', 'ceremony', 'heavy', 'electronics') NOT NULL COMMENT '6 main business zones',
   sub_category VARCHAR(100) COMMENT 'Nested category (apartment, suv, guesthouse, etc.)',
   location_key VARCHAR(50) NOT NULL COMMENT 'Standardized location ID (hawassa_tabor, etc.)',
@@ -76,6 +79,7 @@ CREATE TABLE IF NOT EXISTS listings (
   area_sqm DECIMAL(8, 2) COMMENT 'Land/building area in square meters',
   is_furnished BOOLEAN DEFAULT FALSE COMMENT 'Is property furnished?',
   cata_registry VARCHAR(100) COMMENT 'CATA Registry Code for Deeds',
+  title_deed VARCHAR(100) COMMENT 'Title deed / Carta type',
   legal_document_url VARCHAR(500) COMMENT 'Admin uploaded Deed/Libre document URL',
 
   -- Motors-specific
@@ -106,6 +110,7 @@ CREATE TABLE IF NOT EXISTS listings (
   view_count INT UNSIGNED DEFAULT 0 COMMENT 'Number of views',
   share_count INT UNSIGNED DEFAULT 0 COMMENT 'Number of shares',
   favorite_count INT UNSIGNED DEFAULT 0 COMMENT 'Favorited by X users',
+  rating DECIMAL(3,1) DEFAULT 0.0 COMMENT 'Listing rating',
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Listing creation timestamp',
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last edit timestamp',

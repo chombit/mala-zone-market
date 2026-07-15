@@ -6,7 +6,7 @@
  * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Globe, Menu, Sun, Moon, X, ChevronRight, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -155,10 +155,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
            w-full px-4 sm:px-6 py-1.5
            flex items-center justify-between gap-4
            transition-all duration-300
-           bg-white dark:bg-slate-950
+           bg-white
            backdrop-blur-3xl
-           border-b border-slate-200/80 dark:border-white/5
-           shadow-sm dark:shadow-none
+           border-b border-slate-200/80
+           shadow-sm
         "
       >
         {/* ── LEFT: Brand Logo ───────── */}
@@ -171,12 +171,12 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
           <img
             src={LogoImg}
             alt="Malazone Logo"
-            className="h-12 sm:h-16 w-auto object-contain dark:brightness-110"
+            className="h-12 sm:h-16 w-auto object-contain"
           />
         </div>
 
         {/* ── CENTER: Nav Category Pills (desktop) ────── */}
-        <nav className="hidden xl:flex items-center gap-2 bg-slate-100 dark:bg-white/5 rounded-full p-1.5 border border-slate-200 dark:border-white/10 shrink min-w-0">
+        <nav className="hidden xl:flex items-center gap-2 bg-slate-100 rounded-full p-1.5 border border-slate-200 shrink min-w-0">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -184,10 +184,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               className={`
                 px-5 py-2.5 rounded-full text-xs font-bold
                 whitespace-nowrap uppercase tracking-wider
-                transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-none
+                transition-all duration-200 shadow-sm hover:shadow-md
                 ${activeCategory === cat.id
                   ? "bg-[#00A86B] text-malazone-navy shadow-lg shadow-emerald-500/20"
-                  : "text-malazone-navy dark:text-slate-300 hover:text-[#00A86B] dark:hover:text-white hover:bg-white dark:hover:bg-white/10"}
+                  : "text-malazone-navy hover:text-[#00A86B] hover:bg-white"}
               `}
             >
               {t(cat.key as any)}
@@ -206,10 +206,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               relative flex items-center justify-center
               w-12 h-10 rounded-full
               border transition-all duration-300 group
-              border-slate-200 dark:border-white/10
-              bg-white dark:bg-white/5
-              hover:bg-slate-50 dark:hover:bg-white/10
-              shadow-sm dark:shadow-none
+              border-slate-200
+              bg-white
+              hover:bg-slate-50
+              shadow-sm
             "
           >
             <Heart className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
@@ -229,10 +229,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               relative flex items-center justify-center
               w-12 h-10 rounded-full
               border transition-all duration-300 group
-              border-slate-200 dark:border-white/10
-              bg-white dark:bg-white/5
-              hover:bg-slate-50 dark:hover:bg-white/10
-              shadow-sm dark:shadow-none
+              border-slate-200
+              bg-white
+              hover:bg-slate-50
+              shadow-sm
             "
           >
             {isDark ? (
@@ -248,15 +248,15 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             className="
               flex items-center gap-2 px-4 py-2 rounded-full
               border transition-all duration-300 group
-              border-slate-200 dark:border-white/10
-              bg-white dark:bg-white/5
-              hover:bg-slate-50 dark:hover:bg-white/10
-              hover:border-[#00A86B]/40 dark:hover:border-[#00A86B]/30
-              shadow-sm dark:shadow-none h-10
+              border-slate-200
+              bg-white
+              hover:bg-slate-50
+              hover:border-[#00A86B]/40
+              shadow-sm h-10
             "
           >
             <Globe className="w-4 h-4 text-[#00A86B] group-hover:rotate-[30deg] transition-transform duration-500" />
-            <span className="text-[10px] font-black tracking-widest text-malazone-navy dark:text-white uppercase">
+            <span className="text-[10px] font-black tracking-widest text-malazone-navy uppercase">
               {language === "en" ? "አማርኛ" : "EN"}
             </span>
           </button>
@@ -286,9 +286,9 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             className="
               xl:hidden p-2.5 rounded-xl
               border border-transparent
-              hover:border-slate-200 dark:hover:border-white/10
-              hover:bg-slate-100 dark:hover:bg-white/5
-              text-malazone-navy dark:text-white
+              hover:border-slate-200
+              hover:bg-slate-100
+              text-malazone-navy
               transition-all duration-200
             "
           >
@@ -307,7 +307,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
           />
 
           {/* Menu Panel */}
-          <nav className="absolute top-0 left-0 right-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-white/10 shadow-2xl animate-in slide-in-from-top duration-300">
+          <nav className="absolute top-0 left-0 right-0 bg-white border-b border-slate-200 shadow-2xl animate-in slide-in-from-top duration-300">
             <div className="flex flex-col p-4 gap-2">
               {categories.map((cat) => (
                 <button
@@ -320,7 +320,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                     transition-all duration-200
                     ${activeCategory === cat.id
                       ? "bg-[#00A86B] text-malazone-navy"
-                      : "text-malazone-navy dark:text-slate-200 bg-slate-50 dark:bg-white/5 hover:bg-emerald dark:hover:bg-emerald-500/10 hover:text-[#00A86B] dark:hover:text-emerald-400"}
+                      : "text-malazone-navy bg-slate-50 hover:bg-slate-100 hover:text-[#00A86B]"}
                   `}
                 >
                   {t(cat.key as any)}
@@ -328,7 +328,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                 </button>
               ))}
 
-              <div className="h-px bg-slate-100 dark:bg-white/5 my-2" />
+              <div className="h-px bg-slate-100 my-2" />
 
               {/* Mobile Agent Hub CTA */}
               <button

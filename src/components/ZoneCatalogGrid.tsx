@@ -6,6 +6,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSocketTracker } from "../hooks/useSocketTracker";
 import {
   Phone,
   Send,
@@ -21,9 +22,13 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  Heart,
+  Share2,
+  Check,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useScrollReveal, use3DTilt } from "@/hooks/useWorldClassAnimations";
+import { useFavorites } from "@/contexts/FavoritesContext";
 import type { ActiveZone } from "./ZoneFilterSidebar";
 import type { FilterState } from "./ZoneFilterSidebar";
 
@@ -69,9 +74,9 @@ export interface ListingItem {
 }
 
 /* ────────────────────────────────────────────
-   Mock Inventory Data
+   Mock Inventory Data (Fallback)
    ──────────────────────────────────────────── */
-const listings: ListingItem[] = [
+export const FALLBACK_LISTINGS: ListingItem[] = [
   {
     id: "car-001",
     titleEn: "Toyota Vitz 2018 - Excellent Condition",
@@ -115,67 +120,6 @@ const listings: ListingItem[] = [
     whatsapp: "251911000002",
   },
   {
-    id: "car-002",
-    titleEn: "Excavator for Rent - Per Hour",
-    titleAm: "ኤክስካቫተር ለኪራይ - በሰዓት",
-    price: 2500,
-    priceSuffixKey: "price.hour",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1541888081628-91219b12e3e5?auto=format&fit=crop&q=80&w=800",
-    zone: "machinery",
-    locationKey: "loc.bensa",
-    locationTag: "PIASSA",
-    rating: 4.8,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.withOperator",
-    billingTrack: "ETB / Hour",
-    phone: "+251911000003",
-    whatsapp: "251911000003",
-  },
-  {
-    id: "house-002",
-    titleEn: "Commercial Plot with Carta - Piassa",
-    titleAm: "ቆንጆ የቢተሰብ ቪላ በሐዋሳ ፒያሳ",
-    price: 12500000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
-    zone: "house",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.4,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.verifiedCarta",
-    titleDeed: "Verified Carta",
-    sqm: 300,
-    phone: "+251911000004",
-    whatsapp: "251911000004",
-  },
-  {
-    id: "car-003",
-    titleEn: "Toyota RAV4 2022 Hybrid - Brand New",
-    titleAm: "ቶዮታ RAV4 2022 ሃይብሪድ - አዲስ ዜሮ",
-    price: 6400000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1633477189729-9290b3261d0a?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.9,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.zeroKm",
-    plateCode: "CODE 2",
-    fuelType: "Hybrid / Electric",
-    fuelTag: "ELECTRIC",
-    condition: "Zero Mileage",
-    phone: "+251911000005",
-    whatsapp: "251911000005",
-  },
-  {
     id: "cer-001",
     titleEn: "Luxury Wedding Hall (1000 Pax)",
     titleAm: "ዘመናዊ የሰርግ አዳራሽ (1000 ሰው)",
@@ -192,48 +136,6 @@ const listings: ListingItem[] = [
     badgeKey: "badge.verified",
     phone: "+251911000006",
     whatsapp: "251911000006",
-  },
-  {
-    id: "house-003",
-    titleEn: "Lake View Land - 500 Sqm with Carta",
-    titleAm: "ሰፊ መሬት በሐዋሳ ታቦር - ለንግድም ሆነ ለኑሮ የሚሆን",
-    price: 8500000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=800",
-    zone: "house",
-    locationKey: "loc.hawassa",
-    locationTag: "TABOR",
-    rating: 4.8,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verifiedCarta",
-    titleDeed: "Verified Carta",
-    sqm: 500,
-    phone: "+251911000007",
-    whatsapp: "251911000007",
-  },
-  {
-    id: "car-004",
-    titleEn: "Suzuki Dzire 2021 - Locally Used, Fuel Efficient",
-    titleAm: "ሱዙኪ ድዛየር 2021 - ያገር ውስጥ ነዳጅ ቆጣቢ",
-    price: 2100000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.chuko",
-    locationTag: "CHUKO",
-    rating: 4.5,
-    isVerified: false,
-    isPremium: false,
-    badgeKey: "badge.verified",
-    plateCode: "CODE 3",
-    fuelType: "Benzine",
-    fuelTag: "BENZINE",
-    condition: "Locally Used",
-    phone: "+251911000008",
-    whatsapp: "251911000008",
   },
   {
     id: "car-005",
@@ -277,126 +179,6 @@ const listings: ListingItem[] = [
     whatsapp: "251911000010",
   },
   {
-    id: "cer-002",
-    titleEn: "Full DJ Gear & Sound System for Weddings",
-    titleAm: "የዲጄ እቃዎች እና የድምፅ ሲስተም ለሰርግ",
-    price: 15000,
-    priceSuffixKey: "price.day",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800",
-    zone: "ceremony",
-    locationKey: "loc.hawassa",
-    locationTag: "LAKEFRONT",
-    rating: 4.8,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verified",
-    phone: "+251911000011",
-    whatsapp: "251911000011",
-  },
-  {
-    id: "car-006",
-    titleEn: "Toyota Corolla 2020 - Locally Used, Well Maintained",
-    titleAm: "ቶዮታ ኮሮላ 2020 - ያገር ውስጥ ደህና ሁኔታ",
-    price: 2800000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.6,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verified",
-    plateCode: "CODE 2",
-    fuelType: "Benzine",
-    fuelTag: "BENZINE",
-    condition: "Locally Used",
-    phone: "+251911000012",
-    whatsapp: "251911000012",
-  },
-  {
-    id: "house-004",
-    titleEn: "Apartment for Sale - 2 Bedrooms, Tabor Area",
-    titleAm: "ለሽያጭ አፓርትመንት - 2 መኝታ ክፍሎች፣ ታቦር አካባቢ",
-    price: 4200000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800",
-    zone: "house",
-    locationKey: "loc.hawassa",
-    locationTag: "TABOR",
-    rating: 4.5,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verifiedCarta",
-    titleDeed: "Verified Carta",
-    sqm: 180,
-    bedrooms: 2,
-    phone: "+251911000013",
-    whatsapp: "251911000013",
-  },
-  {
-    id: "car-007",
-    titleEn: "Nissan Patrol 2019 - 4WD, Excellent Condition",
-    titleAm: "ኒሳን ፓትሮል 2019 - 4WD ምርጥ ሁኔታ",
-    price: 7200000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.hawassa",
-    locationTag: "LAKEFRONT",
-    rating: 4.9,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.zeroKm",
-    plateCode: "CODE 2",
-    fuelType: "Diesel",
-    fuelTag: "DIESEL",
-    condition: "Excellent",
-    phone: "+251911000014",
-    whatsapp: "251911000014",
-  },
-  {
-    id: "heavy-002",
-    titleEn: "Crane 50T - Available for Industrial Projects",
-    titleAm: "ክሬን 50 ቶን - ለኢንዱስትሪ ፕሮጀክቶች ዝግጁ",
-    price: 8000,
-    priceSuffixKey: "price.hour",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800",
-    zone: "machinery",
-    locationKey: "loc.hawassa",
-    locationTag: "TABOR",
-    rating: 4.7,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.withOperator",
-    billingTrack: "ETB / Hour",
-    phone: "+251911000015",
-    whatsapp: "251911000015",
-  },
-  {
-    id: "cer-003",
-    titleEn: "Habesha Cultural Venue - Baptism & Celebrations",
-    titleAm: "የሀበሻ ባህላዊ አዳራሽ - ለጥምቀት እና ለዝግጅቶች",
-    price: 28000,
-    priceSuffixKey: "price.day",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
-    zone: "ceremony",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.6,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verified",
-    phone: "+251911000016",
-    whatsapp: "251911000016",
-  },
-  {
     id: "house-005",
     titleEn: "Gated Villa - 5 Bedrooms, Private Garden",
     titleAm: "የጋሬ ቪላ - 5 መኝታ ክፍሎች ከጋሬ አትክልት ጋር",
@@ -419,47 +201,6 @@ const listings: ListingItem[] = [
     whatsapp: "251911000017",
   },
   {
-    id: "car-008",
-    titleEn: "Honda CR-V 2021 - Hybrid, Family Ready",
-    titleAm: "ሆንዳ ሲአርቪ 2021 - ሃይብሪድ ለቤተሰብ ምቹ",
-    price: 5100000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.hawassa",
-    locationTag: "TABOR",
-    rating: 4.7,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verified",
-    plateCode: "CODE 2",
-    fuelType: "Hybrid / Electric",
-    fuelTag: "ELECTRIC",
-    condition: "Zero Mileage",
-    phone: "+251911000018",
-    whatsapp: "251911000018",
-  },
-  {
-    id: "heavy-003",
-    titleEn: "Concrete Mixer Truck - Daily or Hourly Rental",
-    titleAm: "ኮንክሪት ሚክሰር ትራክ - በቀን ወይም በሰዓት ኪራይ",
-    price: 4200,
-    priceSuffixKey: "price.hour",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=800",
-    zone: "machinery",
-    locationKey: "loc.yirgalem",
-    locationTag: "YIRGALEM",
-    rating: 4.5,
-    isVerified: false,
-    isPremium: false,
-    badgeKey: "badge.withOperator",
-    billingTrack: "ETB / Hour",
-    phone: "+251911000019",
-    whatsapp: "251911000019",
-  },
-  {
     id: "cer-004",
     titleEn: "Photo & Video Studio - Premium Wedding Coverage",
     titleAm: "ፎቶ እና ቪዲዮ ስቱዲዮ - ለሰርግ ፕሪሚየም ሽፋን",
@@ -477,48 +218,84 @@ const listings: ListingItem[] = [
     phone: "+251911000020",
     whatsapp: "251911000020",
   },
-  {
-    id: "house-006",
-    titleEn: "Studio Apartment for Rent - Near Hawassa University",
-    titleAm: "ለኪራይ ስቱዲዮ አፓርትመንት - ሀዋሳ ዩኒቨርሲቲ አቅራቢያ",
-    price: 8000,
-    priceSuffixKey: "price.day",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800",
-    zone: "house",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.3,
-    isVerified: false,
-    isPremium: false,
-    badgeKey: "badge.verified",
-    sqm: 55,
-    phone: "+251911000021",
-    whatsapp: "251911000021",
-  },
-  {
-    id: "car-009",
-    titleEn: "Mercedes C-Class 2022 - Brand New, Zero KM",
-    titleAm: "ሜርሴዴስ ሲ ክላስ 2022 - አዲስ ዜሮ ኪሎሜትር",
-    price: 9800000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.hawassa",
-    locationTag: "LAKEFRONT",
-    rating: 5.0,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.zeroKm",
-    plateCode: "CODE 2",
-    fuelType: "Benzine",
-    fuelTag: "BENZINE",
-    condition: "Zero Mileage",
-    phone: "+251911000022",
-    whatsapp: "251911000022",
-  },
 ];
+
+/* ── Map DB listing shape to ListingItem ── */
+function mapDbListingToItem(row: any): ListingItem {
+  const cat = row.category || "property";
+  let zone: ActiveZone = "house";
+  if (cat === "motors") zone = "car";
+  else if (cat === "stay" || cat === "ceremony") zone = "ceremony";
+  else if (cat === "heavy") zone = "machinery";
+  else if (cat === "electronics") zone = "car";
+
+  const images: string[] = (() => {
+    if (!row.images) return [];
+    if (Array.isArray(row.images)) return row.images;
+    try { return JSON.parse(row.images); } catch { return []; }
+  })();
+
+  return {
+    id: String(row.id),
+    titleEn: row.title_en || "",
+    titleAm: row.title_am || "",
+    price: Number(row.price) || 0,
+    priceSuffixKey: row.price_suffix === "per_day" ? "price.day" : row.price_suffix === "per_hour" ? "price.hour" : "price.etb",
+    priceTagKey: row.is_premium ? "price.fixed" : "price.negotiable",
+    image: images[0] || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp",
+    images,
+    zone,
+    locationKey: row.location_key || "",
+    locationTag: (row.location_label_en || "").toUpperCase() || "PIASSA",
+    rating: 4.5,
+    isVerified: !!row.is_verified,
+    isPremium: !!row.is_premium,
+    badgeKey: row.is_verified ? "badge.verifiedCarta" : "badge.verified",
+    plateCode: row.plate_code || undefined,
+    fuelType: row.fuel_type || undefined,
+    fuelTag: row.fuel_type ? row.fuel_type.toUpperCase() : undefined,
+    condition: row.condition_type || undefined,
+    titleDeed: row.title_deed || undefined,
+    sqm: row.area_sqm ? Number(row.area_sqm) : undefined,
+    bedrooms: row.bedrooms ? Number(row.bedrooms) : undefined,
+    bathrooms: row.bathrooms ? Number(row.bathrooms) : undefined,
+    billingTrack: zone === "machinery" ? "ETB / Hour" : undefined,
+    phone: row.phone || "",
+    whatsapp: row.whatsapp || row.phone || "",
+    descriptionAm: row.description_am || undefined,
+    descriptionEn: row.description_en || undefined,
+  };
+}
+
+/* ── Fetch Listings from API ── */
+function useListings() {
+  const [listings, setListings] = useState<ListingItem[]>(FALLBACK_LISTINGS);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetch("/api/listings")
+      .then(res => res.json())
+      .then(data => {
+        if (cancelled) return;
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setListings(data.data.map(mapDbListingToItem));
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setListings(FALLBACK_LISTINGS);
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  return { listings, loading, error };
+}
 
 /* ────────────────────────────────────────────
    Props
@@ -558,14 +335,14 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
    Listing Card Component
    ──────────────────────────────────────────── */
 const ListingCard: React.FC<{
-  item: any;
+  item: ListingItem;
   index: number;
   gridVisible: boolean;
 }> = ({ item, index, gridVisible }) => {
   const { language, t } = useLanguage();
   const { ref: tiltRef, style: tiltStyle } = use3DTilt(10, 1200);
 
-  const formatPrice = (n: number) => n.toLocaleString();
+  const formatPriceLocal = (n: number) => n.toLocaleString();
 
   return (
     <article
@@ -724,7 +501,7 @@ const ListingCard: React.FC<{
           <div className="flex items-baseline justify-between mb-4">
             <div>
               <span className="text-2xl font-extrabold text-slate-900 dark:text-white group-hover:text-[#00A86B] transition-colors duration-300">
-                {formatPrice(item.price)}
+                {formatPriceLocal(item.price)}
               </span>
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 ml-1.5">
                 {t(item.priceSuffixKey as any)}
@@ -771,8 +548,13 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
 }) => {
   const { language, t } = useLanguage();
   const navigate = useNavigate();
+  const { trackEvent } = useSocketTracker();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [currentPage, setCurrentPage] = useState(1);
   const { ref: gridRef, isVisible: gridVisible } = useScrollReveal({ threshold: 0.1 });
+  const { listings, loading } = useListings();
+  const formatPrice = (n: number) => n.toLocaleString();
 
   // ── Reset to page 1 whenever zone or filters change ──
   useEffect(() => {
@@ -851,10 +633,25 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  /* ── Heading Key ── */
-  const headingKey = `grid.heading.${activeZone}` as any;
+  const handleToggleFavorite = (item: ListingItem) => {
+    toggleFavorite(item);
+  };
 
-  const formatPrice = (n: number) => n.toLocaleString();
+  const handleShare = async (item: ListingItem) => {
+    const url = `${window.location.origin}/listing/${item.id}`;
+    const title = language === 'amharic' ? item.titleAm : item.titleEn;
+    if (navigator.share) {
+      navigator.share({ title, url }).catch(() => {});
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopiedId(item.id);
+        setTimeout(() => setCopiedId(null), 2000);
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+      }
+    }
+  };
 
   return (
     <section
@@ -885,7 +682,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
           {visibleListings.map((item, index) => (
             <article
               key={item.id}
-              onClick={() => navigate(`/listing/${item.id}`)}
+              onClick={() => { trackEvent('visit', item); navigate(`/listing/${item.id}`); }}
               style={{ 
                 animationDelay: `${index * 0.1}s`,
                 opacity: gridVisible ? 1 : 0,
@@ -914,12 +711,32 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   </span>
                 </div>
 
-                {/* Premium Star */}
-                {item.isPremium && (
-                  <div className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-4 h-4 text-white" />
-                  </div>
-                )}
+                                {/* Action Buttons: Premium Star, Favorite, Share */}
+                                <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+                                  {item.isPremium && (
+                                    <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg">
+                                      <Sparkles className="w-4 h-4 text-white" />
+                                    </div>
+                                  )}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleToggleFavorite(item); }}
+                                    className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
+                                    aria-label={isFavorite(item.id) ? "Remove from favorites" : "Add to favorites"}
+                                  >
+                                    <Heart className={`w-4 h-4 ${isFavorite(item.id) ? 'fill-red-500 text-red-500' : 'text-slate-600 dark:text-slate-300'}`} />
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleShare(item); }}
+                                    className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
+                                    aria-label="Share listing"
+                                  >
+                                    {copiedId === item.id ? (
+                                      <Check className="w-4 h-4 text-emerald-500" />
+                                    ) : (
+                                      <Share2 className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                                    )}
+                                  </button>
+                                </div>
               </div>
 
               {/* ── Card Body ── */}
