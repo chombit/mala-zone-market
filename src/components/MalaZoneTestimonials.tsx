@@ -202,45 +202,16 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
             key={si}
             className="w-3.5 h-3.5 fill-amber-400 text-amber-400"
             style={{
-              transition: `transform 300ms cubic-bezier(0.16,1,0.3,1) ${si * 40}ms`,
-              transform: isHovered ? 'scale(1.2)' : 'scale(1)',
+              transition: `transform 300ms`,
             }}
           />
         ))}
       </div>
-
-      {/* ── Review text ── */}
-      <p
-        className="relative z-10 mt-4 mb-7 text-[13px] font-semibold leading-relaxed tracking-wide text-center px-1 text-[#0B132B] dark:text-slate-300"
-      >
-        {lang === 'am' ? card.textAm : card.textEn}
-      </p>
-
-      {/* ── FLUID EDGE ANCHOR LINE (bottom accent strip) ── */}
-      {/* Neutral resting state → full glowing color track on hover */}
-      <div className="absolute bottom-0 left-0 right-0 h-[4px] overflow-hidden rounded-b-[28px]">
-        {/* Neutral resting bar */}
-        <div
-          className="absolute inset-0 bg-slate-200 dark:bg-slate-800 rounded-full transition-opacity duration-500"
-          style={{ opacity: isHovered ? 0 : 1 }}
-        />
-        {/* Glowing colored track on hover */}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `linear-gradient(to right, ${card.accentHex}66, ${card.accentHex}, ${card.accentHex}AA)`,
-            boxShadow: `0 0 12px 2px ${card.accentHex}88`,
-            opacity: isHovered ? 1 : 0,
-            transition: 'opacity 500ms cubic-bezier(0.16,1,0.3,1)',
-          }}
-        />
-      </div>
     </article>
   );
 };
-
 /* ─────────────────────────────────────────────────────────────
-   Main Component
+   Main Component — Continuous Auto-Sliding Infinite Loop Carousel
    ───────────────────────────────────────────────────────────── */
 export function MalaZoneTestimonials() {
   const { language } = useLanguage();
@@ -248,9 +219,10 @@ export function MalaZoneTestimonials() {
 
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [progressKey, setProgressKey] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(true);
   const [reviews, setReviews] = useState(FALLBACK_REVIEWS);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/site/testimonials')
@@ -278,45 +250,83 @@ export function MalaZoneTestimonials() {
       .catch(() => {});
   }, []);
 
-  /* ── Responsive: 3 cards/slide on md+, 1 on mobile ── */
-  const [perSlide, setPerSlide] = useState(3);
+  /* ── Responsive: 3 cards on lg, 2 on md, 1 on mobile ── */
+  const [perView, setPerView] = useState(3);
   useEffect(() => {
-    const update = () => setPerSlide(window.innerWidth >= 768 ? 3 : 1);
+    const update = () => {
+      if (window.innerWidth >= 1024) setPerView(3);
+      else if (window.innerWidth >= 640) setPerView(2);
+      else setPerView(1);
+    };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const totalSlides = Math.ceil(reviews.length / perSlide);
+  const totalCards = reviews.length;
+  /* Clone cards at both ends for seamless infinite looping */
+  const extendedCards = [...reviews.slice(-perView), ...reviews, ...reviews.slice(0, perView)];
+  const cardWidthPercent = 100 / perView;
+  const gapPx = 20;
 
-  const goTo = useCallback((idx: number) => {
+  /* The "real" index 0 in extended array starts at position perView */
+  const getTranslateX = (idx: number) => {
+    return `calc(-${(idx + perView) * cardWidthPercent}% - ${(idx + perView) * gapPx}px)`;
+  };
+
+  const goTo = useCallback((idx: number, animate = true) => {
+    setIsTransitioning(animate);
     setCurrent(idx);
-    setProgressKey(k => k + 1);
   }, []);
 
-  const goNext = useCallback(() => goTo((current + 1) % totalSlides), [current, totalSlides, goTo]);
-  const goPrev = useCallback(() => goTo((current - 1 + totalSlides) % totalSlides), [current, totalSlides, goTo]);
+  const goNext = useCallback(() => {
+    setIsTransitioning(true);
+    setCurrent(prev => prev + 1);
+  }, []);
 
-  /* ── Auto-slide every 4.5 s ── */
+  const goPrev = useCallback(() => {
+    setIsTransitioning(true);
+    setCurrent(prev => prev - 1);
+  }, []);
+
+  /* ── Handle seamless infinite loop jump ── */
   useEffect(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (!isPaused) {
-      timerRef.current = setInterval(goNext, 4500);
+    if (!isTransitioning) return;
+    const handleTransitionEnd = () => {
+      if (current >= totalCards) {
+        setIsTransitioning(false);
+        setCurrent(0);
+      } else if (current < 0) {
+        setIsTransitioning(false);
+        setCurrent(totalCards - 1);
+      }
+    };
+    const track = trackRef.current;
+    if (track) {
+      track.addEventListener('transitionend', handleTransitionEnd);
+      return () => track.removeEventListener('transitionend', handleTransitionEnd);
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [isPaused, goNext]);
+  }, [current, totalCards, isTransitioning]);
 
-  const visibleCards = reviews.slice(current * perSlide, current * perSlide + perSlide);
+  /* ── Auto-slide every 4s, loops continuously ── */
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (!isPaused) {
+      timerRef.current = setTimeout(goNext, 4000);
+    }
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [isPaused, current, goNext]);
+
+  /* Normalize current for dot indicators */
+  const normalizedCurrent = ((current % totalCards) + totalCards) % totalCards;
 
   const t = {
     am: {
-      badge: '✨ የተጠቃሚዎች ምስክርነት',
       titlePart1: 'የማላዞን',
       titlePart2: 'እውነተኛ ድምፆች',
       subText: 'ወኪሎች፣ ሻጮች፣ እና ዓለምአቀፍ ባለሀብቶች ምስክርነት።',
     },
     en: {
-      badge: '✨ TRUSTED REVIEWS',
       titlePart1: 'Voices of',
       titlePart2: 'malazone',
       subText: 'Real feedback from certified agents, asset owners, and diaspora investors.',
@@ -334,7 +344,7 @@ export function MalaZoneTestimonials() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* ── Soft ambient background blobs (light theme) ── */}
+      {/* ── Soft ambient background blobs ── */}
       <div
         className="absolute -top-16 -left-20 w-72 h-72 rounded-full blur-3xl pointer-events-none hidden md:block"
         style={{ background: 'radial-gradient(circle, rgba(0,168,107,0.08) 0%, transparent 70%)' }}
@@ -351,17 +361,9 @@ export function MalaZoneTestimonials() {
       <div className="max-w-6xl mx-auto relative z-10">
 
         {/* ══════════════════════════════════════════════
-            Section Header — Polished
+            Section Header
         ══════════════════════════════════════════════ */}
         <div className="flex flex-col items-center text-center space-y-2.5 mb-10">
-
-          {/* Badge pill */}
-          <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-[#00A86B] border border-emerald-200/40 px-3 py-1 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider">
-            <Sparkles className="size-3.5 animate-pulse text-[#00A86B]" />
-            <span>{t.badge}</span>
-          </div>
-
-          {/* Main heading — "Voices of malazone" with brand lock */}
           <h2 className="text-2xl sm:text-3.5xl font-black tracking-tight leading-none flex items-center justify-center text-[#0B132B] dark:text-white">
             {lang === 'en' ? (
               <>
@@ -377,18 +379,14 @@ export function MalaZoneTestimonials() {
               </>
             )}
           </h2>
-
-          {/* Sub-text with leading-relaxed for Ge'ez safety */}
           <p className="text-xs sm:text-sm text-slate-400 font-bold leading-relaxed max-w-xl mx-auto pt-0.5">
             {t.subText}
           </p>
-
-          {/* Emerald brand accent line */}
           <div className="w-12 h-[3px] bg-[#00A86B] rounded-full mx-auto mt-2" />
         </div>
 
         {/* ══════════════════════════════════════════════
-            Carousel Wrapper
+            Continuous Sliding Carousel
         ══════════════════════════════════════════════ */}
         <div className="relative">
 
@@ -401,21 +399,31 @@ export function MalaZoneTestimonials() {
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          {/* Cards viewport */}
-          <div className="overflow-visible">
+          {/* Cards sliding track */}
+          <div className="overflow-hidden">
             <div
-              className="grid gap-5"
+              ref={trackRef}
+              className="flex"
               style={{
-                gridTemplateColumns: `repeat(${perSlide}, 1fr)`,
+                gap: `${gapPx}px`,
+                transform: getTranslateX(current),
+                transition: isTransitioning
+                  ? 'transform 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                  : 'none',
               }}
             >
-              {visibleCards.map((card, i) => (
-                <TestimonialCard
-                  key={`${current}-${card.id}`}
-                  card={card}
-                  lang={lang}
-                  animationDelay={i * 90}
-                />
+              {extendedCards.map((card, i) => (
+                <div
+                  key={`ext-${i}-${card.id}`}
+                  className="shrink-0"
+                  style={{ width: `calc(${cardWidthPercent}% - ${gapPx * (perView - 1) / perView}px)` }}
+                >
+                  <TestimonialCard
+                    card={card}
+                    lang={lang}
+                    animationDelay={0}
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -434,17 +442,17 @@ export function MalaZoneTestimonials() {
             Dot Indicators
         ══════════════════════════════════════════════ */}
         <div className="flex items-center justify-center gap-2.5 mt-10">
-          {Array.from({ length: totalSlides }).map((_, i) => (
+          {Array.from({ length: totalCards }).map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
               aria-label={`Go to slide ${i + 1}`}
               className="rounded-full transition-all duration-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A86B]/50"
               style={{
-                width: i === current ? '32px' : '10px',
+                width: i === normalizedCurrent ? '32px' : '10px',
                 height: '10px',
-                background: i === current ? '#00A86B' : '#cbd5e1',
-                boxShadow: i === current ? '0 0 10px rgba(0,168,107,0.55)' : 'none',
+                background: i === normalizedCurrent ? '#00A86B' : '#cbd5e1',
+                boxShadow: i === normalizedCurrent ? '0 0 10px rgba(0,168,107,0.55)' : 'none',
                 transition: 'all 400ms cubic-bezier(0.16,1,0.3,1)',
               }}
             />
@@ -456,11 +464,11 @@ export function MalaZoneTestimonials() {
         ══════════════════════════════════════════════ */}
         <div className="mt-5 max-w-[180px] mx-auto h-[2px] bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
           <div
-            key={progressKey}
+            key={current}
             className="h-full rounded-full"
             style={{
               background: 'linear-gradient(to right, #00A86B88, #00A86B)',
-              animation: isPaused ? 'none' : 'testimonialsProgress 4.5s linear forwards',
+              animation: isPaused ? 'none' : 'testimonialsProgress 4s linear forwards',
             }}
           />
         </div>
@@ -484,7 +492,8 @@ export function MalaZoneTestimonials() {
             transform: translateY(0px) scale(1);
           }
         }
-      `}</style>
+      `}
+      </style>
     </section>
   );
 }
