@@ -28,11 +28,7 @@ const footerTranslations = {
     col2: [
       { label: "About Malazone", page: "about" as PageView },
       { label: "FAQ", page: "faq" as PageView },
-      { label: "Privacy Policy", page: "privacy" as PageView },
-      { label: "Gig Hub", page: "gighub" as PageView },
-      { label: "Agent Onboarding", page: "agent-onboard" as PageView },
-      { label: "Payouts", page: "payouts" as PageView },
-      { label: "Contact", page: "contact" as PageView }
+      { label: "Privacy Policy", page: "privacy" as PageView }
     ] as { icon?: any, label: string, page?: PageView }[],
     col3Title: "CONTACT",
     col3: [
@@ -56,11 +52,7 @@ const footerTranslations = {
     col2: [
       { label: "ስለ መላዞን", page: "about" as PageView },
       { label: "ተደጋጋሚ ጥያቄዎች", page: "faq" as PageView },
-      { label: "የግል ምስጢር ጥበቃ", page: "privacy" as PageView },
-      { label: "ጊግ ሀብ", page: "gighub" as PageView },
-      { label: "ወኪል መመዝገቢያ", page: "agent-onboard" as PageView },
-      { label: "ክፍያዎች", page: "payouts" as PageView },
-      { label: "ያግኙን", page: "contact" as PageView }
+      { label: "የግል ምስጢር ጥበቃ", page: "privacy" as PageView }
     ] as { icon?: any, label: string, page?: PageView }[],
     col3Title: "አድራሻ",
     col3: [
