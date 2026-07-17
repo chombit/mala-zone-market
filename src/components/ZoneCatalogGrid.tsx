@@ -4,9 +4,7 @@
  * © 2026 Malazone Technologies PLC
  */
 
-import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSocketTracker } from "../hooks/useSocketTracker";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Phone,
   Send,
@@ -20,22 +18,19 @@ import {
   Settings,
   Key,
   Building2,
-  ChevronLeft,
   ChevronRight,
-  Heart,
-  Share2,
-  Check,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { useScrollReveal, use3DTilt } from "@/hooks/useWorldClassAnimations";
-import { useFavorites } from "@/contexts/FavoritesContext";
 import type { ActiveZone } from "./ZoneFilterSidebar";
 import type { FilterState } from "./ZoneFilterSidebar";
 
 /* ────────────────────────────────────────────
    Listing Data Model
    ──────────────────────────────────────────── */
-export interface ListingItem {
+interface ListingItem {
   id: string;
   titleEn: string;
   titleAm: string;
@@ -43,7 +38,6 @@ export interface ListingItem {
   priceSuffixKey: string;
   priceTagKey: string;
   image: string;
-  images?: string[];
   zone: ActiveZone;
   locationKey: string;
   locationTag: string;
@@ -65,18 +59,12 @@ export interface ListingItem {
   billingTrack?: string;
   phone: string;
   whatsapp: string;
-  /* Description */
-  descriptionAm?: string;
-  descriptionEn?: string;
-  isNegotiable?: boolean;
-  specLabel?: string;
-  specVal?: string;
 }
 
 /* ────────────────────────────────────────────
-   Mock Inventory Data (Fallback)
+   Mock Inventory Data
    ──────────────────────────────────────────── */
-export const FALLBACK_LISTINGS: ListingItem[] = [
+const listings: ListingItem[] = [
   {
     id: "car-001",
     titleEn: "Toyota Vitz 2018 - Excellent Condition",
@@ -120,6 +108,67 @@ export const FALLBACK_LISTINGS: ListingItem[] = [
     whatsapp: "251911000002",
   },
   {
+    id: "car-002",
+    titleEn: "Excavator for Rent - Per Hour",
+    titleAm: "ኤክስካቫተር ለኪራይ - በሰዓት",
+    price: 2500,
+    priceSuffixKey: "price.hour",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1579412691522-861f6540960d?q=80&w=800&auto=format&fit=crop",
+    zone: "machinery",
+    locationKey: "loc.bensa",
+    locationTag: "PIASSA",
+    rating: 4.8,
+    isVerified: true,
+    isPremium: false,
+    badgeKey: "badge.withOperator",
+    billingTrack: "ETB / Hour",
+    phone: "+251911000003",
+    whatsapp: "251911000003",
+  },
+  {
+    id: "house-002",
+    titleEn: "Commercial Plot with Carta - Piassa",
+    titleAm: "ቆንጆ የቢተሰብ ቪላ በሐዋሳ ፒያሳ",
+    price: 12500000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
+    zone: "house",
+    locationKey: "loc.hawassa",
+    locationTag: "PIASSA",
+    rating: 4.4,
+    isVerified: true,
+    isPremium: true,
+    badgeKey: "badge.verifiedCarta",
+    titleDeed: "Verified Carta",
+    sqm: 300,
+    phone: "+251911000004",
+    whatsapp: "251911000004",
+  },
+  {
+    id: "car-003",
+    titleEn: "Toyota RAV4 2022 Hybrid - Brand New",
+    titleAm: "ቶዮታ RAV4 2022 ሃይብሪድ - አዲስ ዜሮ",
+    price: 6400000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1633477189729-9290b3261d0a?auto=format&fit=crop&q=80&w=800",
+    zone: "car",
+    locationKey: "loc.hawassa",
+    locationTag: "PIASSA",
+    rating: 4.9,
+    isVerified: true,
+    isPremium: true,
+    badgeKey: "badge.zeroKm",
+    plateCode: "CODE 2",
+    fuelType: "Hybrid / Electric",
+    fuelTag: "ELECTRIC",
+    condition: "Zero Mileage",
+    phone: "+251911000005",
+    whatsapp: "251911000005",
+  },
+  {
     id: "cer-001",
     titleEn: "Luxury Wedding Hall (1000 Pax)",
     titleAm: "ዘመናዊ የሰርግ አዳራሽ (1000 ሰው)",
@@ -136,6 +185,48 @@ export const FALLBACK_LISTINGS: ListingItem[] = [
     badgeKey: "badge.verified",
     phone: "+251911000006",
     whatsapp: "251911000006",
+  },
+  {
+    id: "house-003",
+    titleEn: "Lake View Land - 500 Sqm with Carta",
+    titleAm: "ሰፊ መሬት በሐዋሳ ታቦር - ለንግድም ሆነ ለኑሮ የሚሆን",
+    price: 8500000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=800",
+    zone: "house",
+    locationKey: "loc.hawassa",
+    locationTag: "TABOR",
+    rating: 4.8,
+    isVerified: true,
+    isPremium: false,
+    badgeKey: "badge.verifiedCarta",
+    titleDeed: "Verified Carta",
+    sqm: 500,
+    phone: "+251911000007",
+    whatsapp: "251911000007",
+  },
+  {
+    id: "car-004",
+    titleEn: "Suzuki Dzire 2021 - Locally Used, Fuel Efficient",
+    titleAm: "ሱዙኪ ድዛየር 2021 - ያገር ውስጥ ነዳጅ ቆጣቢ",
+    price: 2100000,
+    priceSuffixKey: "price.etb",
+    priceTagKey: "price.fixed",
+    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800",
+    zone: "car",
+    locationKey: "loc.chuko",
+    locationTag: "CHUKO",
+    rating: 4.5,
+    isVerified: false,
+    isPremium: false,
+    badgeKey: "badge.verified",
+    plateCode: "CODE 3",
+    fuelType: "Benzine",
+    fuelTag: "BENZINE",
+    condition: "Locally Used",
+    phone: "+251911000008",
+    whatsapp: "251911000008",
   },
   {
     id: "car-005",
@@ -179,123 +270,24 @@ export const FALLBACK_LISTINGS: ListingItem[] = [
     whatsapp: "251911000010",
   },
   {
-    id: "house-005",
-    titleEn: "Gated Villa - 5 Bedrooms, Private Garden",
-    titleAm: "የጋሬ ቪላ - 5 መኝታ ክፍሎች ከጋሬ አትክልት ጋር",
-    price: 22000000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800",
-    zone: "house",
-    locationKey: "loc.hawassa",
-    locationTag: "LAKEFRONT",
-    rating: 5.0,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.verifiedCarta",
-    titleDeed: "Verified Carta",
-    sqm: 800,
-    bedrooms: 5,
-    bathrooms: 4,
-    phone: "+251911000017",
-    whatsapp: "251911000017",
-  },
-  {
-    id: "cer-004",
-    titleEn: "Photo & Video Studio - Premium Wedding Coverage",
-    titleAm: "ፎቶ እና ቪዲዮ ስቱዲዮ - ለሰርግ ፕሪሚየም ሽፋን",
-    price: 35000,
+    id: "cer-002",
+    titleEn: "Full DJ Gear & Sound System for Weddings",
+    titleAm: "የዲጄ እቃዎች እና የድምፅ ሲስተም ለሰርግ",
+    price: 15000,
     priceSuffixKey: "price.day",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=800",
+    priceTagKey: "price.negotiable",
+    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800",
     zone: "ceremony",
     locationKey: "loc.hawassa",
     locationTag: "LAKEFRONT",
-    rating: 4.9,
+    rating: 4.8,
     isVerified: true,
-    isPremium: true,
+    isPremium: false,
     badgeKey: "badge.verified",
-    phone: "+251911000020",
-    whatsapp: "251911000020",
+    phone: "+251911000011",
+    whatsapp: "251911000011",
   },
 ];
-
-/* ── Map DB listing shape to ListingItem ── */
-function mapDbListingToItem(row: any): ListingItem {
-  const cat = row.category || "property";
-  let zone: ActiveZone = "house";
-  if (cat === "motors") zone = "car";
-  else if (cat === "stay" || cat === "ceremony") zone = "ceremony";
-  else if (cat === "heavy") zone = "machinery";
-  else if (cat === "electronics") zone = "car";
-
-  const images: string[] = (() => {
-    if (!row.images) return [];
-    if (Array.isArray(row.images)) return row.images;
-    try { return JSON.parse(row.images); } catch { return []; }
-  })();
-
-  return {
-    id: String(row.id),
-    titleEn: row.title_en || "",
-    titleAm: row.title_am || "",
-    price: Number(row.price) || 0,
-    priceSuffixKey: row.price_suffix === "per_day" ? "price.day" : row.price_suffix === "per_hour" ? "price.hour" : "price.etb",
-    priceTagKey: row.is_premium ? "price.fixed" : "price.negotiable",
-    image: images[0] || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp",
-    images,
-    zone,
-    locationKey: row.location_key || "",
-    locationTag: (row.location_label_en || "").toUpperCase() || "PIASSA",
-    rating: 4.5,
-    isVerified: !!row.is_verified,
-    isPremium: !!row.is_premium,
-    badgeKey: row.is_verified ? "badge.verifiedCarta" : "badge.verified",
-    plateCode: row.plate_code || undefined,
-    fuelType: row.fuel_type || undefined,
-    fuelTag: row.fuel_type ? row.fuel_type.toUpperCase() : undefined,
-    condition: row.condition_type || undefined,
-    titleDeed: row.title_deed || undefined,
-    sqm: row.area_sqm ? Number(row.area_sqm) : undefined,
-    bedrooms: row.bedrooms ? Number(row.bedrooms) : undefined,
-    bathrooms: row.bathrooms ? Number(row.bathrooms) : undefined,
-    billingTrack: zone === "machinery" ? "ETB / Hour" : undefined,
-    phone: row.phone || "",
-    whatsapp: row.whatsapp || row.phone || "",
-    descriptionAm: row.description_am || undefined,
-    descriptionEn: row.description_en || undefined,
-  };
-}
-
-/* ── Fetch Listings from API ── */
-function useListings() {
-  const [listings, setListings] = useState<ListingItem[]>(FALLBACK_LISTINGS);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    fetch("/api/listings")
-      .then(res => res.json())
-      .then(data => {
-        if (cancelled) return;
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-          setListings(data.data.map(mapDbListingToItem));
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setListings(FALLBACK_LISTINGS);
-          setLoading(false);
-        }
-      });
-    return () => { cancelled = true; };
-  }, []);
-
-  return { listings, loading, error };
-}
 
 /* ────────────────────────────────────────────
    Props
@@ -335,14 +327,14 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
    Listing Card Component
    ──────────────────────────────────────────── */
 const ListingCard: React.FC<{
-  item: ListingItem;
+  item: any;
   index: number;
   gridVisible: boolean;
 }> = ({ item, index, gridVisible }) => {
   const { language, t } = useLanguage();
   const { ref: tiltRef, style: tiltStyle } = use3DTilt(10, 1200);
 
-  const formatPriceLocal = (n: number) => n.toLocaleString();
+  const formatPrice = (n: number) => n.toLocaleString();
 
   return (
     <article
@@ -501,7 +493,7 @@ const ListingCard: React.FC<{
           <div className="flex items-baseline justify-between mb-4">
             <div>
               <span className="text-2xl font-extrabold text-slate-900 dark:text-white group-hover:text-[#00A86B] transition-colors duration-300">
-                {formatPriceLocal(item.price)}
+                {formatPrice(item.price)}
               </span>
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 ml-1.5">
                 {t(item.priceSuffixKey as any)}
@@ -514,22 +506,20 @@ const ListingCard: React.FC<{
 
           {/* ── Delala Eliminator Buttons ── */}
           <div className="flex gap-2.5">
-            <a
-              href={`tel:${item.phone}`}
+            <button
+              onClick={() => requireAuth(() => { window.location.href = `tel:${item.phone}`; })}
               className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 hover:bg-gradient-to-r hover:from-[#00A86B] hover:to-emerald-600 hover:border-[#00A86B] hover:text-white backdrop-blur-md text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all duration-400 hover:scale-[1.03] active:scale-[0.97] shadow-sm hover:shadow-xl hover:shadow-emerald-500/30 dark:shadow-none font-sans"
             >
               <Phone className="w-4.5 h-4.5 text-slate-500 dark:text-slate-400 group-hover:text-white transition-colors" />
               {t("cta.call")}
-            </a>
-            <a
-              href={`https://wa.me/${item.whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            </button>
+            <button
+              onClick={() => requireAuth(() => { window.open(`https://wa.me/${item.whatsapp}`, "_blank"); })}
               className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-[#00A86B] to-emerald-600 text-white text-xs sm:text-sm font-extrabold uppercase tracking-wider hover:from-emerald-600 hover:to-emerald-700 transition-all duration-400 hover:scale-[1.03] active:scale-[0.97] shadow-lg hover:shadow-2xl hover:shadow-emerald-500/40"
             >
               <Send className="w-4.5 h-4.5" />
               {t("cta.whatsapp")}
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -540,26 +530,23 @@ const ListingCard: React.FC<{
 /* ────────────────────────────────────────────
    Component
    ──────────────────────────────────────────── */
-const ITEMS_PER_PAGE = 6;
-
 const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   activeZone,
   filters,
 }) => {
   const { language, t } = useLanguage();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { trackEvent } = useSocketTracker();
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const [currentPage, setCurrentPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(6);
   const { ref: gridRef, isVisible: gridVisible } = useScrollReveal({ threshold: 0.1 });
-  const { listings, loading } = useListings();
-  const formatPrice = (n: number) => n.toLocaleString();
 
-  // ── Reset to page 1 whenever zone or filters change ──
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeZone, filters]);
+  const requireAuth = useCallback((action: () => void) => {
+    if (!isAuthenticated) {
+      navigate("/signin");
+      return;
+    }
+    action();
+  }, [isAuthenticated, navigate]);
 
   /* ── Filter Logic ── */
   const filtered = useMemo(() => {
@@ -621,45 +608,20 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
     });
   }, [activeZone, filters]);
 
-  // Reset to page 1 whenever filters/zone change
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const safePage = Math.min(currentPage, totalPages);
-  const visibleListings = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+  const visibleListings = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
-  const goToPage = (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    setCurrentPage(page);
-    const el = document.getElementById("zone-catalog-section");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  /* ── Heading Key ── */
+  const headingKey = `grid.heading.${activeZone}` as any;
 
-  const handleToggleFavorite = (item: ListingItem) => {
-    toggleFavorite(item);
-  };
-
-  const handleShare = async (item: ListingItem) => {
-    const url = `${window.location.origin}/listing/${item.id}`;
-    const title = language === 'amharic' ? item.titleAm : item.titleEn;
-    if (navigator.share) {
-      navigator.share({ title, url }).catch(() => {});
-    } else {
-      try {
-        await navigator.clipboard.writeText(url);
-        setCopiedId(item.id);
-        setTimeout(() => setCopiedId(null), 2000);
-      } catch (err) {
-        console.error('Failed to copy link:', err);
-      }
-    }
-  };
+  const formatPrice = (n: number) => n.toLocaleString();
 
   return (
-    <section
-      id="zone-catalog-section"
+    <section 
       ref={gridRef}
       className={`flex-1 min-w-0 transition-all duration-700 ease-out ${
-        gridVisible
-          ? 'animate-fade-in-up opacity-100 translate-y-0'
+        gridVisible 
+          ? 'animate-fade-in-up opacity-100 translate-y-0' 
           : 'opacity-0 translate-y-8'
       }`}
     >
@@ -682,14 +644,13 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
           {visibleListings.map((item, index) => (
             <article
               key={item.id}
-              onClick={() => { trackEvent('visit', item); navigate(`/listing/${item.id}`); }}
               style={{ 
                 animationDelay: `${index * 0.1}s`,
                 opacity: gridVisible ? 1 : 0,
                 transform: gridVisible ? 'translateY(0)' : 'translateY(20px)',
                 transition: `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`
               }}
-              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col relative transition-all duration-500 cursor-pointer"
+              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col relative transition-all duration-500"
             >
               {/* ── Image Container ── */}
               <div className="relative h-52 overflow-hidden">
@@ -711,32 +672,12 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   </span>
                 </div>
 
-                                {/* Action Buttons: Premium Star, Favorite, Share */}
-                                <div className="absolute top-3 right-3 flex flex-col gap-1.5">
-                                  {item.isPremium && (
-                                    <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg">
-                                      <Sparkles className="w-4 h-4 text-white" />
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); handleToggleFavorite(item); }}
-                                    className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
-                                    aria-label={isFavorite(item.id) ? "Remove from favorites" : "Add to favorites"}
-                                  >
-                                    <Heart className={`w-4 h-4 ${isFavorite(item.id) ? 'fill-red-500 text-red-500' : 'text-slate-600 dark:text-slate-300'}`} />
-                                  </button>
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); handleShare(item); }}
-                                    className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
-                                    aria-label="Share listing"
-                                  >
-                                    {copiedId === item.id ? (
-                                      <Check className="w-4 h-4 text-emerald-500" />
-                                    ) : (
-                                      <Share2 className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                                    )}
-                                  </button>
-                                </div>
+                {/* Premium Star */}
+                {item.isPremium && (
+                  <div className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                )}
               </div>
 
               {/* ── Card Body ── */}
@@ -867,22 +808,20 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
 
                   {/* ── Delala Eliminator Buttons ── */}
                   <div className="flex gap-2.5">
-                    <a
-                      href={`tel:${item.phone}`}
+                    <button
+                      onClick={() => requireAuth(() => { window.location.href = `tel:${item.phone}`; })}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 hover:bg-slate-100 dark:bg-slate-900/50 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md dark:shadow-none font-sans"
                     >
                       <Phone className="w-4 h-4 text-slate-500 dark:text-slate-400 transition-colors" />
                       {t("cta.call")}
-                    </a>
-                    <a
-                      href={`https://t.me/+${item.whatsapp.replace("+", "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    </button>
+                    <button
+                      onClick={() => requireAuth(() => { window.open(`https://t.me/+${item.whatsapp.replace("+", "")}`, "_blank"); })}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-[0_6px_15px_rgba(36,161,222,0.3)] group/tg font-sans"
                     >
                       <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       {t("cta.whatsapp")}
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -896,42 +835,15 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
         </div>
       )}
 
-      {/* ── Numbered Pagination ── */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-10 flex-wrap">
-          {/* Prev */}
+      {/* ── Load More Button ── */}
+      {hasMore && (
+        <div className="flex justify-center mt-10">
           <button
-            onClick={() => goToPage(safePage - 1)}
-            disabled={safePage === 1}
-            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => setVisibleCount((p) => p + 6)}
+            className="flex items-center gap-2 px-8 py-3 rounded-full border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 hover:border-[#00A86B] text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:text-[#00A86B] transition-all font-sans"
           >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            {language === "amharic" ? "የቀደመ" : "Prev"}
-          </button>
-
-          {/* Page Numbers */}
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => goToPage(page)}
-              className={`min-w-[42px] h-[42px] px-3 rounded-xl border text-sm font-black transition-all ${
-                page === safePage
-                  ? "bg-[#00A86B] border-[#00A86B] text-white shadow-[0_4px_16px_rgba(0,168,107,0.35)] scale-105"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B]"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-
-          {/* Next */}
-          <button
-            onClick={() => goToPage(safePage + 1)}
-            disabled={safePage === totalPages}
-            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            {language === "amharic" ? "ቀጣዩ" : "Next"}
-            <ChevronRight className="w-3.5 h-3.5" />
+            {t("grid.viewAll")}
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}

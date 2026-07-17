@@ -53,7 +53,26 @@ const dictionary = {
     "price.suffix.day": "ETB / Day",
     "price.suffix.hour": "ETB / Hour",
     "banner.recruitment": "A great work opportunity for brokers, agents, and youth! Onboard vehicle showrooms, heavy machinery, hotels, guest houses, wedding gear, and land holdings in Hawassa, Yirgalem, Aleta Wondo, Bensa/Daye, Chuko, and other local zones into Malazone's legal sales zone. Earn high income paid out directly via Telebirr every day! (Mala-Agents Zone)",
-    "banner.cta": "Apply as Mala-Agent"
+    "banner.cta": "Apply as Mala-Agent",
+    // --- Auth ---
+    "auth.signin": "Sign In",
+    "auth.signup": "Sign Up",
+    "auth.signout": "Sign Out",
+    "auth.signoutConfirm": "Are you sure you want to sign out?",
+    "auth.email": "Email",
+    "auth.password": "Password",
+    "auth.fullName": "Full Name",
+    "auth.phone": "Phone Number",
+    "auth.accountType": "Account Type",
+    "auth.loginBtn": "Sign In",
+    "auth.registerBtn": "Sign Up",
+    "auth.orContinueWith": "Or continue with",
+    "auth.google": "Google",
+    "auth.dontHaveAccount": "Don't have an account?",
+    "auth.alreadyHaveAccount": "Already have an account?",
+    "auth.secureAccess": "Secure access to Malazone",
+    "auth.loading": "Loading...",
+    "auth.welcomeBack": "Welcome Back!"
   },
   amharic: {
     "ticker": "✨ መላዞን፡ በሐዋሳና በሲዳማ ክልል ያለምንም ደላላ ንብረትና የሰርግ ዕቃዎችን በቀጥታ የሚገበያዩበት ትክክለኛው መላዎ!",
@@ -99,7 +118,26 @@ const dictionary = {
     "price.suffix.day": "ብር / ቀን",
     "price.suffix.hour": "ብር / ሰዓት",
     "banner.recruitment": "ለደላላዎች፣ ለወኪሎችና ለወጣቶች የቀረበ ታላቅ የስራ መላ! በሐዋሳ፣ በይርጋለም፣ በአሌታ ወንዶ፣ በቤንሳ/ዳዬ፣ በጩቆ እና በሌሎችም የአካባቢው ዞኖች ያሉ የመኪና ማሳያዎችን፣ ከባድ ማሽነሪዎችን፣ ሆቴሎችን፣ ጌስት ሃውሶችን፣ የሰርግ ዕቃዎችን እና የመሬት ይዞታዎችን በመላዞን ህጋዊ የሽያጭ ዞን ላይ በመመዝገብ በየቀኑ ከፍተኛ ገቢ በቴሌብር በቀጥታ ያግኙ! (Mala-Agents Zone)",
-    "banner.cta": "የመላ-ወኪል ሁን"
+    "banner.cta": "የመላ-ወኪል ሁን",
+    // --- Auth ---
+    "auth.signin": "ግባ",
+    "auth.signup": "መመዝገብ",
+    "auth.signout": "ወጣ",
+    "auth.signoutConfirm": "መውጣት መፈለግዎ እርግጠኛ ነዎት?",
+    "auth.email": "ኢሜይል",
+    "auth.password": "መለያ ቃል",
+    "auth.fullName": "ሙሉ ስም",
+    "auth.phone": "ስልክ ቁጥር",
+    "auth.accountType": "የመለያ አይነት",
+    "auth.loginBtn": "ግባ",
+    "auth.registerBtn": "መመዝገብ",
+    "auth.orContinueWith": "ወይም በዚህ መንገድ ይቀጥሉ",
+    "auth.google": "ጉግል",
+    "auth.dontHaveAccount": "መለያ የለዎትም?",
+    "auth.alreadyHaveAccount": "መለያ አለዎት?",
+    "auth.secureAccess": "ለመላዞን ደህንነቱ የተጠበቀ መግባት",
+    "auth.loading": "በመጫን ላይ...",
+    "auth.welcomeBack": "እንኳን ደህና መጡ!"
   }
 };
 

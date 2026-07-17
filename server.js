@@ -16,6 +16,9 @@ const morgan = require("morgan");
 const path = require("path");
 const net = require("net");
 const rateLimit = require("express-rate-limit");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+const passport = require("passport");
 require("dotenv").config();
 
 // ── Route imports
@@ -25,6 +28,7 @@ const statsRouter = require("./routes/stats");
 const adminRouter = require("./routes/admin");
 const siteRouter = require("./routes/site");
 const g2bRouter = require("./routes/g2b");
+const authRouter = require("./routes/auth");
 
 // ── App init (HTTP + Socket.io)
 const app = express();
@@ -48,6 +52,27 @@ app.use(
     crossOriginResourcePolicy: { policy: "cross-origin" }, // allow image serving
   })
 );
+
+// Cookie parser
+app.use(cookieParser());
+
+// Session middleware
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "malazone-session-secret-key-change-in-production",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    }
+  })
+);
+
+// Passport initialization
+app.use(passport.initialize());
+app.use(passport.session());
 
 // CORS — allow React dev server + production domain
 const allowedOrigins = [
@@ -161,6 +186,7 @@ app.use("/api/stats", statsRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/site", siteRouter);
 app.use("/api/g2b", g2bRouter);
+app.use("/api/auth", authRouter);
 
 // ── Root route (Welcome message)
 app.get("/", (req, res) => {

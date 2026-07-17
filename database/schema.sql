@@ -36,12 +36,24 @@ CREATE TABLE IF NOT EXISTS admin_users (
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   full_name VARCHAR(100) NOT NULL,
-  phone_number VARCHAR(20) UNIQUE NOT NULL,
+  phone_number VARCHAR(20) UNIQUE,
+  email VARCHAR(255) UNIQUE,
+  password_hash VARCHAR(255),
   account_type ENUM('Individual', 'Business', 'Agent') DEFAULT 'Individual',
   preferred_language ENUM('am', 'en') DEFAULT 'am',
   is_verified BOOLEAN DEFAULT FALSE,
+  -- OAuth provider fields
+  provider ENUM('local', 'google', 'facebook') DEFAULT 'local',
+  provider_id VARCHAR(255),
+  provider_profile JSON,
+  -- Password reset fields
+  reset_password_token VARCHAR(255),
+  reset_password_expires DATETIME,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_user_phone (phone_number)
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_user_phone (phone_number),
+  INDEX idx_user_email (email),
+  INDEX idx_user_provider (provider, provider_id)
 ) ENGINE=InnoDB;
 
 -- ─────────────────────────────────────────────

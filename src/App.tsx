@@ -4,6 +4,7 @@ import MainSite from './MainSite'
 import AdminPanel from './AdminPanel'
 import AdminLogin from './AdminLogin'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import ListingDetailsPage from './components/pages/ListingDetailsPage'
 import { FavoritesProvider } from './contexts/FavoritesContext'
 =======
@@ -11,6 +12,11 @@ import SignIn from './components/SignIn'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
 >>>>>>> 06971f4a37eaa4e9350894baa5697702adcb0db6
+=======
+import SignIn from './components/SignIn'
+import ForgotPassword from './components/ForgotPassword'
+import ResetPassword from './components/ResetPassword'
+>>>>>>> 7b042ad (Updates after resolving conflicts)
 
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
 import { AuthProvider } from './contexts/AuthContext'
@@ -25,6 +31,7 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
 function AppContent() {
   return (
     <Router>
+<<<<<<< HEAD
       <FavoritesProvider>
         <Routes>
           {/* Public Client-Facing Marketplace */}
@@ -34,16 +41,26 @@ function AppContent() {
   {/* Listing Details Page */ }
   <Route path="/listing/:id" element={<ListingDetailsPage />} />
 =======
+=======
+      <Routes>
+        {/* Public Client-Facing Marketplace */}
+        <Route path="/" element={<MainSite />} />
+
+>>>>>>> 7b042ad (Updates after resolving conflicts)
         {/* Sign In/Sign Up */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignIn />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+<<<<<<< HEAD
 >>>>>>> 06971f4a37eaa4e9350894baa5697702adcb0db6
+=======
+>>>>>>> 7b042ad (Updates after resolving conflicts)
 
   {/* Admin Login Portal */ }
   <Route path="/admin/login" element={<AdminLogin />} />
 
+<<<<<<< HEAD
   {/* Admin Dashboard - Protected */ }
   <Route
     path="/admin/*"
@@ -59,6 +76,22 @@ function AppContent() {
       </Routes >
       </FavoritesProvider >
     </Router >
+=======
+        {/* Admin Dashboard - Protected */}
+        <Route 
+          path="/admin/*" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminPanel />
+            </ProtectedAdminRoute>
+          } 
+        />
+
+        {/* Fallback for any other route */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+>>>>>>> 7b042ad (Updates after resolving conflicts)
   )
 }
 
