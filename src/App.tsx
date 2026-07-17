@@ -5,7 +5,11 @@ import AdminPanel from './AdminPanel';
 import AdminLogin from './AdminLogin';
 import ListingDetailsPage from './components/pages/ListingDetailsPage';
 import { FavoritesProvider } from './contexts/FavoritesContext';
+import SignIn from './components/SignIn';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 
 // Auth Guard using the auth context
@@ -26,6 +30,10 @@ function AppContent() {
           <Route path="/listing/:id" element={<ListingDetailsPage />} />
 
           {/* Auth Routes */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignIn />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Admin Login Portal */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -51,9 +59,11 @@ function AppContent() {
 function App() {
   return (
     <LanguageProvider>
-      <AdminAuthProvider>
-        <AppContent />
-      </AdminAuthProvider>
+      <AuthProvider>
+        <AdminAuthProvider>
+          <AppContent />
+        </AdminAuthProvider>
+      </AuthProvider>
     </LanguageProvider>
   );
 }

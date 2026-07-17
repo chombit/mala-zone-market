@@ -40,6 +40,22 @@ const initDatabase = async () => {
       }
     }
 
+    // ── Ensure password-reset columns exist on users table ──
+    const alterCols = [
+      "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255)",
+      "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_expires DATETIME",
+    ];
+    for (const sql of alterCols) {
+      try {
+        await db.execute(sql);
+      } catch (err) {
+        // "Duplicate column" is fine — column already present
+        if (!err.message.includes("Duplicate")) {
+          console.warn("⚠️ Migration:", err.message);
+        }
+      }
+    }
+
     console.log("✅ Database schema created/updated successfully!");
 
   } catch (err) {

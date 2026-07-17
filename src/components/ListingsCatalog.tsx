@@ -5,7 +5,6 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Phone,
   Send,
@@ -14,15 +13,12 @@ import {
   ChevronRight,
   Loader2,
   RotateCcw,
-  SlidersHorizontal,
-  Heart,
-  Share2,
-  Check
+  SlidersHorizontal
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useFavorites } from "@/contexts/FavoritesContext";
-import { MalazoneProMaxPagination } from "./MalazoneProMaxPagination";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 // Local listing definition matching db structure and custom properties
 interface Listing {
@@ -318,94 +314,32 @@ const fallbackListings: Listing[] = [
     region: "sidama",
     locality: "lakefront",
     intent: "rent"
-  },
-  {
-    id: "elec-001",
-    category: "electronics",
-    title_en: "iPhone 15 Pro Max (256GB) - Pristine",
-    title_am: "አይፎን 15 ፕሮ ማክስ (256GB) — ንጹህ ስልክ",
-    price: 85000,
-    price_suffix: "fixed",
-    images: ["https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80&fm=webp"],
-    phone: "0911001122",
-    whatsapp: "251911001122",
-    is_premium: 1,
-    is_verified: 1,
-    rating: 4.9,
-    region: "addis_ababa",
-    locality: "piassa",
-    intent: "buy",
-    condition: "new"
   }
 ];
 
 const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory = "all" }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const t = catalogTranslations[language as "en" | "amharic"] || catalogTranslations.en;
   const isAm = language === "amharic";
+
+  const requireAuth = useCallback((action: () => void) => {
+    if (!isAuthenticated) {
+      navigate("/signin");
+      return;
+    }
+    action();
+  }, [isAuthenticated, navigate]);
 
   // Data Pipeline States
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate();
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const { isFavorite, toggleFavorite } = useFavorites();
-
-  const handleCardClick = (item: Listing) => {
-    navigate(`/listing/${item.id}`);
-  };
-
-  const handleToggleFavorite = (listing: Listing) => {
-    const imagesArray = Array.isArray(listing.images)
-      ? listing.images
-      : (() => {
-        try { return JSON.parse(listing.images || "[]"); }
-        catch { return []; }
-      })();
-    const favItem = {
-      id: listing.id,
-      titleEn: listing.title_en,
-      titleAm: listing.title_am,
-      price: listing.price,
-      priceSuffixKey: listing.price_suffix === 'per_day' ? 'price.day' : listing.price_suffix === 'per_hour' ? 'price.hour' : 'price.etb',
-      image: imagesArray[0] || '',
-      zone: listing.category,
-      locationKey: listing.locality || '',
-      locationTag: (listing.locality || '').toUpperCase(),
-      rating: listing.rating || 5,
-      isVerified: !!listing.is_verified,
-      isPremium: !!listing.is_premium,
-      badgeKey: listing.is_verified ? 'badge.verifiedCarta' : 'badge.verified',
-      phone: listing.phone,
-      whatsapp: listing.whatsapp,
-    } as any;
-    toggleFavorite(favItem);
-  };
-
-  const handleShare = async (listing: Listing) => {
-    const url = `${window.location.origin}/listing/${listing.id}`;
-    if (navigator.share) {
-      navigator.share({
-        title: isAm ? listing.title_am : listing.title_en,
-        url,
-      }).catch(() => {});
-    } else {
-      try {
-        await navigator.clipboard.writeText(url);
-        setCopiedId(listing.id);
-        setTimeout(() => setCopiedId(null), 2000);
-      } catch (err) {
-        console.error('Failed to copy link:', err);
-      }
-    }
-  };
-
-  // Pagination State
-  const ITEMS_PER_PAGE = 6;
-  const [currentPage, setCurrentPage] = useState(1);
+  // Lazy loading pagination count
+  const [visibleLimit, setVisibleLimit] = useState(6);
 
   // Filter Dropdown Values
   const [region, setRegion] = useState("all");
@@ -431,7 +365,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
     setCondition("all");
     setRentalInterval("all");
     setMachineryScope("all");
-    setCurrentPage(1);
+    setVisibleLimit(6);
   };
 
   // Fetch API Listings
@@ -516,11 +450,6 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
     fetchListings();
   }, [activeCategory]);
 
-  // Reset to page 1 on filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory, region, locality, intent, landType, plateCode, fuelType, condition, rentalInterval, machineryScope]);
-
   // Apply search filtering in UI stream
   const filteredListings = listings.filter((item) => {
     // 1. Category Filter
@@ -554,14 +483,19 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
     return true;
   });
 
-  const visibleCards = filteredListings.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  // Load more function
+  const handleLoadMore = () => {
+    setVisibleLimit(prev => prev + 6);
+  };
+
+  const visibleCards = filteredListings.slice(0, visibleLimit);
 
   return (
     <section id="listings-catalog" className="bg-slate-50 dark:bg-slate-950 py-16 transition-colors duration-300">
 
       {/* Upper Title Banner block */}
       <div className="max-w-7xl mx-auto px-4 mb-10">
-        <h2 className="text-3xl sm:text-4xl font-sans font-black text-malazone-navy dark:text-white tracking-tight leading-snug transition-colors duration-300">
+        <h2 className="text-3xl sm:text-4xl font-sans font-black text-slate-900 dark:text-white tracking-tight leading-snug transition-colors duration-300">
           {isAm ? (
             <>የተረጋገጡ የ <span className="text-[#00A86B] lowercase font-bold tracking-normal">malazone</span> ይፋዊ ማህደሮች</>
           ) : (
@@ -578,13 +512,13 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
         {/* 1. THE PREMIUM COMPACT FILTER SIDEBAR */}
         <div className="w-full md:w-64 flex-shrink-0 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 h-fit mb-8 md:mb-0 transition-colors duration-300 shadow-md">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-6">
-            <div className="flex items-center gap-2 text-malazone-navy dark:text-white font-bold text-xs uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-xs uppercase tracking-wider">
               <SlidersHorizontal className="w-4 h-4 text-emerald-600 dark:text-green-500" />
               {t.sidebarTitle}
             </div>
             <button
               onClick={handleResetFilters}
-              className="text-[10px] font-bold text-malazone-navy hover:text-emerald-600 dark:hover:text-green-500 transition-colors flex items-center gap-1.5"
+              className="text-[10px] font-bold text-slate-500 hover:text-emerald-600 dark:hover:text-green-500 transition-colors flex items-center gap-1.5"
             >
               <RotateCcw className="w-3 h-3" />
               {t.resetBtn}
@@ -594,13 +528,13 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
           <div className="space-y-6">
             {/* Regional Administration State */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                 {t.regionLabel}
               </label>
               <select
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950 text-malazone-navy dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
+                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
               >
                 <option value="all">{t.allOption}</option>
                 <option value="sidama">{isAm ? "ሲዳማ" : "Sidama"}</option>
@@ -610,13 +544,13 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
 
             {/* Specific Locality/Sub-City */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                 {t.localityLabel}
               </label>
               <select
                 value={locality}
                 onChange={(e) => setLocality(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950 text-malazone-navy dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
+                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
               >
                 <option value="all">{t.allOption}</option>
                 <option value="tabor">{isAm ? "ታቦር (ሀዋሳ)" : "Tabor (Hawassa)"}</option>
@@ -630,13 +564,13 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
 
             {/* Transaction Intent Selector */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                 {t.intentLabel}
               </label>
               <select
                 value={intent}
                 onChange={(e) => setIntent(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950 text-malazone-navy dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
+                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
               >
                 <option value="all">{t.allOption}</option>
                 <option value="buy">{isAm ? "ለመግዛት" : "To Buy"}</option>
@@ -650,7 +584,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
             {/* If Category is Property or All & property type selected */}
             {(activeCategory === "property" || activeCategory === "all") && (
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                <label className="text-[10px] font-black text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                   {t.filterTitleProperty}
                 </label>
                 <div className="flex flex-col gap-2">
@@ -663,8 +597,8 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       key={btn.key}
                       onClick={() => setLandType(btn.key)}
                       className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border font-sans tracking-wide leading-relaxed ${landType === btn.key
-                        ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
-                        : "bg-slate-50 dark:bg-slate-950/40 text-malazone-navy dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                          ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
+                          : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                         }`}
                     >
                       {isAm ? btn.label_am : btn.label_en}
@@ -679,13 +613,13 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-4">
                 {/* Plate Code */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                     {t.filterTitlePlate}
                   </label>
                   <select
                     value={plateCode}
                     onChange={(e) => setPlateCode(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950 text-malazone-navy dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
+                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
                   >
                     <option value="all">{t.allOption}</option>
                     <option value="Code 2">Code 2</option>
@@ -695,13 +629,13 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
 
                 {/* Fuel Type */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                     {t.filterTitleFuel}
                   </label>
                   <select
                     value={fuelType}
                     onChange={(e) => setFuelType(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950 text-malazone-navy dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
+                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#00A86B] dark:focus:border-[#00A86B] transition-colors font-sans tracking-wide leading-relaxed"
                   >
                     <option value="all">{t.allOption}</option>
                     <option value="benzine">{isAm ? "በንዚን" : "Benzine"}</option>
@@ -712,7 +646,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
 
                 {/* Condition */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                     {t.filterTitleCondition}
                   </label>
                   <div className="flex gap-2">
@@ -724,9 +658,9 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       <button
                         key={btn.key}
                         onClick={() => setCondition(btn.key)}
-                        className={`flex-1 py-2 rounded-lg text-center text-[10px] font-bold transition-all border font-sans tracking-wide leading-relaxed ${condition === btn.key
+                      className={`flex-1 py-2 rounded-lg text-center text-[10px] font-bold transition-all border font-sans tracking-wide leading-relaxed ${condition === btn.key
                           ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
-                          : "bg-slate-50 dark:bg-slate-950/40 text-malazone-navy dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                          : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                           }`}
                       >
                         {isAm ? btn.label_am : btn.label_en}
@@ -740,7 +674,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
             {/* If Category is Ceremony */}
             {(activeCategory === "ceremony" || activeCategory === "all") && (
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                <label className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                   {t.filterTitleRental}
                 </label>
                 <div className="flex flex-col gap-2">
@@ -753,8 +687,8 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       key={btn.key}
                       onClick={() => setRentalInterval(btn.key)}
                       className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border font-sans tracking-wide leading-relaxed ${rentalInterval === btn.key
-                        ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
-                        : "bg-slate-50 dark:bg-slate-950/40 text-malazone-navy dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                          ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
+                          : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                         }`}
                     >
                       {isAm ? btn.label_am : btn.label_en}
@@ -767,7 +701,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
             {/* If Category is Heavy Machinery */}
             {(activeCategory === "heavy" || activeCategory === "all") && (
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                <label className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest block">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                   {t.filterTitleHeavy}
                 </label>
                 <div className="flex flex-col gap-2">
@@ -780,8 +714,8 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       key={btn.key}
                       onClick={() => setMachineryScope(btn.key)}
                       className={`w-full py-2 px-3 rounded-lg text-left text-xs font-bold transition-all border font-sans tracking-wide leading-relaxed ${machineryScope === btn.key
-                        ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
-                        : "bg-slate-50 dark:bg-slate-950/40 text-malazone-navy dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                          ? "text-[#00A86B] border-[#00A86B] bg-[#00A86B]/5 dark:bg-[#00A86B]/10"
+                          : "bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                         }`}
                     >
                       {isAm ? btn.label_am : btn.label_en}
@@ -798,14 +732,14 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32 gap-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-white/5 transition-colors">
               <Loader2 className="w-10 h-10 text-emerald-600 dark:text-green-500 animate-spin" />
-              <span className="text-malazone-navy dark:text-slate-600 font-bold uppercase tracking-[0.3em] text-[10px]">
+              <span className="text-slate-400 dark:text-slate-600 font-bold uppercase tracking-[0.3em] text-[10px]">
                 {t.loadingText}
               </span>
             </div>
           ) : filteredListings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 px-6 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-white/5 transition-colors">
-              <SlidersHorizontal className="w-12 h-12 text-slate-300 dark:text-malazone-navy mb-4" />
-              <p className="text-malazone-navy dark:text-slate-400 font-semibold uppercase tracking-wider text-xs">
+              <SlidersHorizontal className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-4" />
+              <p className="text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-xs">
                 {t.emptyText}
               </p>
             </div>
@@ -841,8 +775,7 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                 return (
                   <div
                     key={listing.id}
-                    onClick={() => handleCardClick(listing)}
-                    className="cursor-pointer group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-3xl hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col h-full relative transition-all duration-500"
+                    className="group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-3xl hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col h-full relative transition-all duration-500"
                   >
                     {/* Glowing Accent Border Line */}
                     <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-emerald-500/0 via-emerald-500/0 to-emerald-500/0 group-hover:via-emerald-500 dark:group-hover:via-green-500 transition-all duration-700" />
@@ -861,38 +794,20 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg">
                           <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-green-500 animate-pulse" />
                           <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-green-500" />
-                          <span className="text-[9px] font-black uppercase tracking-[0.1em] text-malazone-navy dark:text-white">
+                          <span className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-800 dark:text-white">
                             {badgeLabel}
                           </span>
                         </div>
                       </div>
 
-                      {/* Action Buttons: Premium Star, Favorite, Share */}
-                      <div className="absolute top-4 right-4 flex flex-col gap-2">
-                        {listing.is_premium ? (
+                      {/* Premium Listing Pulsing Star Badge */}
+                      {listing.is_premium ? (
+                        <div className="absolute top-4 right-4">
                           <div className="w-8 h-8 rounded-full bg-emerald-600 dark:bg-green-600 flex items-center justify-center text-white shadow-xl border border-white/20 animate-pulse hover:animate-none hover:scale-110 transition-all duration-300">
                             <Star className="w-4 h-4 fill-current" />
                           </div>
-                        ) : null}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(listing); }}
-                          className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
-                          aria-label={isFavorite(listing.id) ? "Remove from favorites" : "Add to favorites"}
-                        >
-                          <Heart className={`w-4 h-4 ${isFavorite(listing.id) ? 'fill-red-500 text-red-500' : 'text-slate-600 dark:text-slate-300'}`} />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleShare(listing); }}
-                          className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
-                          aria-label="Share listing"
-                        >
-                          {copiedId === listing.id ? (
-                            <Check className="w-4 h-4 text-emerald-500" />
-                          ) : (
-                            <Share2 className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                          )}
-                        </button>
-                      </div>
+                        </div>
+                      ) : null}
                     </div>
 
                     {/* Card Content details */}
@@ -903,40 +818,40 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                           <Star
                             key={i}
                             className={`w-3.5 h-3.5 ${i < Math.floor(listing.rating || 5)
-                              ? "text-amber-500 fill-amber-500"
-                              : "text-slate-300 dark:text-malazone-navy"
+                                ? "text-amber-500 fill-amber-500"
+                                : "text-slate-300 dark:text-slate-700"
                               }`}
                           />
                         ))}
-                        <span className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 ml-2">
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-2">
                           {(listing.rating || 5).toFixed(1)}
                         </span>
                       </div>
 
                       {/* Typographic Title */}
-                      <h3 className="text-base font-bold text-malazone-navy dark:text-white leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-emerald-700 dark:group-hover:text-green-400 transition-colors">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-emerald-700 dark:group-hover:text-green-400 transition-colors">
                         {isAm ? listing.title_am : listing.title_en}
                       </h3>
 
                       {/* Info Pills based on active category attributes */}
                       <div className="flex flex-wrap gap-2 pt-1">
                         {listing.locality && (
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-malazone-navy bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
                             📍 {listing.locality}
                           </span>
                         )}
                         {listing.plate_code && (
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-malazone-navy bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
                             🚗 {listing.plate_code}
                           </span>
                         )}
                         {listing.fuel_type && (
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-malazone-navy bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
                             ⚡ {listing.fuel_type}
                           </span>
                         )}
                         {listing.area_sqm && (
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-malazone-navy bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
                             📐 {listing.area_sqm} sqm
                           </span>
                         )}
@@ -945,10 +860,10 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
                       {/* Real-time Pricing Strip */}
                       <div className="pt-2 flex items-baseline justify-between mt-auto">
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-2xl font-black text-malazone-navy dark:text-white tracking-tighter italic group-hover:text-emerald-600 dark:group-hover:text-green-400 transition-colors">
+                          <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter italic group-hover:text-emerald-600 dark:group-hover:text-green-400 transition-colors">
                             {listing.price.toLocaleString()}
                           </span>
-                          <span className="text-[10px] font-black text-malazone-navy uppercase tracking-widest">
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                             {priceSuffix}
                           </span>
                         </div>
@@ -960,28 +875,24 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
 
                       {/* ── Direct Middleman (Delala) Eliminator Footer CTAs */}
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
-                        <a
-                          href={`tel:${listing.phone}`}
-                          onClick={(e) => e.stopPropagation()}
+                        <button
+                          onClick={() => requireAuth(() => { window.location.href = `tel:${listing.phone}`; })}
                           className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/50 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/[0.12] hover:border-slate-400 dark:hover:border-white/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group/btn"
                         >
-                          <Phone className="w-3.5 h-3.5 text-malazone-navy dark:text-slate-400 group-hover/btn:text-malazone-navy dark:group-hover/btn:text-white transition-colors" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-malazone-navy dark:text-slate-300 group-hover/btn:text-malazone-navy dark:group-hover/btn:text-white">
+                          <Phone className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover/btn:text-slate-900 dark:group-hover/btn:text-white transition-colors" />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover/btn:text-slate-900 dark:group-hover/btn:text-white">
                             {t.callBtn}
                           </span>
-                        </a>
-                        <a
-                          href={`https://t.me/+${listing.whatsapp.replace("+", "")}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()}
+                        </button>
+                        <button
+                          onClick={() => requireAuth(() => { window.open(`https://t.me/+${listing.whatsapp.replace("+", "")}`, "_blank"); })}
                           className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-blue-500/10 hover:shadow-[0_6px_15px_rgba(36,161,222,0.3)] transition-all duration-300 text-white group/tg"
                         >
                           <Send className="w-3.5 h-3.5 text-white group-hover/tg:translate-x-0.5 group-hover/tg:-translate-y-0.5 transition-transform" />
                           <span className="text-[10px] font-black uppercase tracking-widest text-white">
                             {t.chatBtn}
                           </span>
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -993,33 +904,30 @@ const ListingsCatalog: React.FC<{ activeCategory?: string }> = ({ activeCategory
 
 
           {/* 3. SCROLLING & DATA PAGINATION ARCHITECTURE */}
-          {filteredListings.length > ITEMS_PER_PAGE && (
+          {filteredListings.length > visibleLimit && (
             <div className="mt-12 flex justify-center">
-              <MalazoneProMaxPagination
-                currentGlobalLang={language === "amharic" ? "am" : "en"}
-                totalItems={filteredListings.length}
-                itemsPerPage={ITEMS_PER_PAGE}
-                onPageChange={(page) => {
-                  setCurrentPage(page);
-                  const gridEl = document.getElementById("listings-catalog");
-                  if (gridEl) {
-                    gridEl.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }
-                }}
-              />
+              <button
+                onClick={handleLoadMore}
+                className="flex items-center gap-3 px-10 py-4.5 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group shadow-sm hover:shadow-md hover:border-emerald-500/20 dark:hover:border-green-500/20"
+              >
+                <span className="text-xs font-black uppercase tracking-[0.25em] text-slate-950 dark:text-white">
+                  {t.viewMore}
+                </span>
+                <ChevronRight className="w-4 h-4 text-emerald-600 dark:text-green-500 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           )}
 
           {/* 4. FOUNDER MILSTONE ANCHOR FOOTNOTE */}
           <div className="mt-16 pt-8 border-t border-slate-100 dark:border-white/5 text-center">
-            <p className="text-[10px] font-bold text-malazone-navy dark:text-slate-600 uppercase tracking-[0.25em] leading-relaxed">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-[0.25em] leading-relaxed">
               Luwa Tesemma Kakawo — Founder & CEO / ሉዋ ተሰማ ካካዎ — ዋና ስራ አስፈፃሚ
             </p>
           </div>
 
         </div>
-      </div>
 
+      </div>
     </section>
   );
 };

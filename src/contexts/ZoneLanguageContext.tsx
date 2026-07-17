@@ -180,6 +180,38 @@ const dictionary = {
             "A great work opportunity for brokers, agents, and youth! Onboard vehicle showrooms, heavy machinery, hotels, guest houses, wedding gear, and land holdings in Hawassa, Yirgalem, Aleta Wondo, Bensa/Daye, Chuko, and other local zones into Malazone's legal sales zone. Earn high income paid out directly via Telebirr every day! (Mala-Agents Zone)",
         "banner.cta": "Apply as Mala-Agent",
 
+        /* ── Auth ── */
+        "auth.signin": "Sign In",
+        "auth.signup": "Sign Up",
+        "auth.signout": "Sign Out",
+        "auth.signoutConfirm": "Are you sure you want to sign out?",
+        "auth.email": "Email",
+        "auth.password": "Password",
+        "auth.fullName": "Full Name",
+        "auth.phone": "Phone Number",
+        "auth.accountType": "Account Type",
+        "auth.loginBtn": "Sign In",
+        "auth.registerBtn": "Sign Up",
+        "auth.orContinueWith": "Or continue with",
+        "auth.google": "Google",
+        "auth.dontHaveAccount": "Don't have an account?",
+        "auth.alreadyHaveAccount": "Already have an account?",
+        "auth.secureAccess": "Secure access to Malazone",
+        "auth.loading": "Loading...",
+        "auth.welcomeBack": "Welcome Back!",
+
+        /* ── Forgot / Reset Password ── */
+        "auth.forgotPassword": "Forgot Password?",
+        "auth.forgotPasswordTitle": "Reset Your Password",
+        "auth.forgotPasswordSubtitle": "Enter your email address and we'll send you a link to reset your password.",
+        "auth.sendResetLink": "Send Reset Link",
+        "auth.resetPassword": "Reset Password",
+        "auth.newPassword": "New Password",
+        "auth.confirmPassword": "Confirm Password",
+        "auth.resetSuccess": "Password reset successful! You can now log in.",
+        "auth.resetLinkSent": "If an account with that email exists, we've sent a password reset link.",
+        "auth.backToSignIn": "Back to Sign In",
+
         /* ── Executive Footnote ── */
     },
 
@@ -339,6 +371,38 @@ const dictionary = {
         "banner.recruitment":
             "ለደላላዎች፣ ለወኪሎችና ለወጣቶች የቀረበ ታላቅ የስራ መላ! በሐዋሳ፣ በይርጋለም፣ በአሌታ ወንዶ፣ በቤንሳ/ዳዬ፣ በጩቆ እና በሌሎችም የአካባቢው ዞኖች ያሉ የመኪና ማሳያዎችን፣ ከባድ ማሽነሪዎችን፣ ሆቴሎችን፣ ጌስት ሃውሶችን፣ የሰርግ ዕቃዎችን እና የመሬት ይዞታዎችን በመላዞን ህጋዊ የሽያጭ ዞን ላይ በመመዝገብ በየቀኑ ከፍተኛ ገቢ በቴሌብር በቀጥታ ያግኙ! (Mala-Agents Zone)",
         "banner.cta": "የመላ-ወኪል ሁን",
+
+        /* ── Auth ── */
+        "auth.signin": "ግባ",
+        "auth.signup": "መመዝገብ",
+        "auth.signout": "ወጣ",
+        "auth.signoutConfirm": "መውጣት መፈለግዎ እርግጠኛ ነዎት?",
+        "auth.email": "ኢሜይል",
+        "auth.password": "መለያ ቃል",
+        "auth.fullName": "ሙሉ ስም",
+        "auth.phone": "ስልክ ቁጥር",
+        "auth.accountType": "የመለያ አይነት",
+        "auth.loginBtn": "ግባ",
+        "auth.registerBtn": "መመዝገብ",
+        "auth.orContinueWith": "ወይም በዚህ መንገድ ይቀጥሉ",
+        "auth.google": "ጉግል",
+        "auth.dontHaveAccount": "መለያ የለዎትም?",
+        "auth.alreadyHaveAccount": "መለያ አለዎት?",
+        "auth.secureAccess": "ለመላዞን ደህንነቱ የተጠበቀ መግባት",
+        "auth.loading": "በመጫን ላይ...",
+        "auth.welcomeBack": "እንኳን ደህና መጡ!",
+
+        /* ── Forgot / Reset Password ── */
+        "auth.forgotPassword": "መለያ ቃል ተርሰዋል?",
+        "auth.forgotPasswordTitle": "መለያ ቃልዎን ዳምጡ",
+        "auth.forgotPasswordSubtitle": "ኢሜይል አድራሻዎን ያስገቡ የመለያ ቃልዎን ለማዳመጥ አገናኝ እንልክልዎታለን።",
+        "auth.sendResetLink": "የይለፍ ቃል ለመዳመጥ አገናኝ ላክ",
+        "auth.resetPassword": "መለያ ቃልዎን ዳምጡ",
+        "auth.newPassword": "አዲስ መለያ ቃል",
+        "auth.confirmPassword": "መለያ ቃልዎን ያረጋግጡ",
+        "auth.resetSuccess": "የይለፍ ቃል መዳመጥ ተሳክቷል! አሁን መግባት ይችላሉ።",
+        "auth.resetLinkSent": "በዚህ ኢሜይል መለያ ከነበረ የይለፍ ቃል ለመዳመጥ አገናኝ ልከንልዎታለን።",
+        "auth.backToSignIn": "ወደ መግቢያ ተመለስ",
 
         /* ── Executive Footnote ── */
         "footnote.ceo": "ሉዋ ተሰማ ካካዎ — ዋና ስራ አስፈፃሚ",
