@@ -47,7 +47,7 @@ function AppContent() {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
-  )
+  );
 }
 
 function App() {
@@ -62,4 +62,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
