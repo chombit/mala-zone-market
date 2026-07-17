@@ -6,49 +6,19 @@
  * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
  */
 
-import React, { useState, useEffect } from "react";
-import { Globe, Menu, Sun, Moon, X, ChevronRight, Heart } from "lucide-react";
+import React, { useState } from "react";
+import { Globe, Menu, Sun, Moon, X, ChevronRight, LogIn, LogOut, User, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import LogoImg from "../images/Logo.png";
-import { useFavorites } from "@/contexts/FavoritesContext";
+import SignOut from "./SignOut";
 
 interface HeaderProps {
   activeCategory?: string;
   onCategoryChange?: (cat: string) => void;
 }
-
-// ─── Promo Ticker ─────────────────────────────────────────────────────────────
-interface PromoText {
-  en_value: string;
-  am_value: string;
-}
-
-const PROMO_PREFIX = "promo_ticker_";
-
-const usePromoTicker = () => {
-  const [promos, setPromos] = useState<PromoText[]>([]);
-
-  useEffect(() => {
-    fetch("/api/admin/translations")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) {
-          const items: PromoText[] = data.data
-            .filter((t: any) => t.text_key.startsWith(PROMO_PREFIX))
-            .sort((a: any, b: any) => {
-              const na = parseInt(a.text_key.replace(PROMO_PREFIX, ""), 10);
-              const nb = parseInt(b.text_key.replace(PROMO_PREFIX, ""), 10);
-              return na - nb;
-            });
-          if (items.length > 0) setPromos(items);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  return promos;
-};
 
 const highlightTicker = (text: string) => {
   const green = '<span class="text-[#00A86B] underline decoration-[#00A86B] decoration-2 underline-offset-4">$&</span>';
@@ -59,70 +29,14 @@ const highlightTicker = (text: string) => {
   };
 };
 
-const SlidingTicker: React.FC<{ language: string; fallbackText: string }> = ({
-  language,
-  fallbackText,
-}) => {
-  const promos = usePromoTicker();
-  const [current, setCurrent] = useState(0);
-  const [visible, setVisible] = useState(true);
-
-  // If we have real promos, cycle through them
-  useEffect(() => {
-    if (promos.length <= 1) return;
-    const timer = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setCurrent((c) => (c + 1) % promos.length);
-        setVisible(true);
-      }, 450);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [promos.length]);
-
-  const displayText =
-    promos.length > 0
-      ? language === "en"
-        ? promos[current]?.en_value || fallbackText
-        : promos[current]?.am_value || fallbackText
-      : fallbackText;
-
-  return (
-    <div className="relative overflow-hidden h-[42px] flex items-center justify-center px-6">
-      <p
-        dangerouslySetInnerHTML={highlightTicker(displayText)}
-        style={{
-          transition: "opacity 0.4s ease, transform 0.4s ease",
-          opacity: visible ? 1 : 0,
-          transform: visible ? "translateY(0)" : "translateY(-8px)",
-        }}
-        className="text-xs sm:text-[13px] font-bold tracking-widest text-white uppercase whitespace-nowrap text-center"
-      />
-      {/* Dot indicators (only if multiple promos) */}
-      {promos.length > 1 && (
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-          {promos.map((_, i) => (
-            <span
-              key={i}
-              className="rounded-full transition-all duration-300"
-              style={{
-                width: i === current ? "12px" : "4px",
-                height: "3px",
-                backgroundColor: i === current ? "#34d399" : "rgba(255,255,255,0.25)",
-              }}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => {
   const { language, toggleLanguage, t } = useLanguage();
   const { isDark, toggleTheme } = useTheme();
-  const { favorites, setSidebarOpen } = useFavorites();
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const categories = [
     { key: "nav.cat1", id: "property" },
@@ -130,7 +44,6 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
     { key: "nav.cat3", id: "stay" },
     { key: "nav.cat4", id: "ceremony" },
     { key: "nav.cat5", id: "heavy" },
-    { key: "nav.cat6", id: "electronics" },
   ];
 
   const handleNavClick = (id: string) => {
@@ -144,9 +57,12 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
 
   return (
     <div className="fixed top-0 left-0 w-full z-[150]">
-      {/* ── Sliding Promo Ticker ───────────────────────────────────────── */}
-      <div className="w-full bg-[#0B132B] border-b border-emerald-600/30 overflow-hidden">
-        <SlidingTicker language={language} fallbackText={t("ticker")} />
+      {/* ── Ticker / Announcement Bar ──────────────────────────────── */}
+      <div className="w-full bg-[#0B132B] border-b border-emerald-600/30 py-4 px-6 overflow-hidden">
+        <p
+          className="text-xs sm:text-[13px] font-bold tracking-widest text-white uppercase whitespace-nowrap animate-marquee text-center"
+          dangerouslySetInnerHTML={highlightTicker(t("ticker"))}
+        />
       </div>
 
       {/* ── Main Navigation Bar ───────────────────────────────────── */}
@@ -155,10 +71,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
            w-full px-4 sm:px-6 py-1.5
            flex items-center justify-between gap-4
            transition-all duration-300
-           bg-white
+           bg-white dark:bg-slate-950
            backdrop-blur-3xl
-           border-b border-slate-200/80
-           shadow-sm
+           border-b border-slate-200/80 dark:border-white/5
+           shadow-sm dark:shadow-none
         "
       >
         {/* ── LEFT: Brand Logo ───────── */}
@@ -171,12 +87,12 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
           <img
             src={LogoImg}
             alt="Malazone Logo"
-            className="h-12 sm:h-16 w-auto object-contain"
+            className="h-12 sm:h-16 w-auto object-contain dark:brightness-110"
           />
         </div>
 
         {/* ── CENTER: Nav Category Pills (desktop) ────── */}
-        <nav className="hidden xl:flex items-center gap-2 bg-slate-100 rounded-full p-1.5 border border-slate-200 shrink min-w-0">
+        <nav className="hidden xl:flex items-center gap-2 bg-slate-100 dark:bg-white/5 rounded-full p-1.5 border border-slate-200 dark:border-white/10 shrink min-w-0">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -184,10 +100,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               className={`
                 px-5 py-2.5 rounded-full text-xs font-bold
                 whitespace-nowrap uppercase tracking-wider
-                transition-all duration-200 shadow-sm hover:shadow-md
+                transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-none
                 ${activeCategory === cat.id
-                  ? "bg-[#00A86B] text-malazone-navy shadow-lg shadow-emerald-500/20"
-                  : "text-malazone-navy hover:text-[#00A86B] hover:bg-white"}
+                  ? "bg-[#00A86B] text-black shadow-lg shadow-emerald-500/20"
+                  : "text-slate-600 dark:text-slate-300 hover:text-[#00A86B] dark:hover:text-white hover:bg-white dark:hover:bg-white/10"}
               `}
             >
               {t(cat.key as any)}
@@ -197,28 +113,23 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
 
         {/* ── RIGHT: Controls ─────────────── */}
         <div className="flex items-center gap-3 shrink-0">
-
-          {/* Favorites Button */}
-          <button
-            onClick={() => setSidebarOpen(true)}
-            aria-label="View Favorites"
-            className="
-              relative flex items-center justify-center
-              w-12 h-10 rounded-full
-              border transition-all duration-300 group
-              border-slate-200
-              bg-white
-              hover:bg-slate-50
-              shadow-sm
-            "
-          >
-            <Heart className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
-            {favorites.length > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 text-[9px] font-black text-white bg-rose-500 rounded-full shadow-sm animate-in zoom-in duration-300">
-                {favorites.length}
-              </span>
-            )}
-          </button>
+          {/* Auth Button */}
+          {!isAuthenticated && (
+            <button
+              onClick={() => navigate("/signin")}
+              className="
+                hidden sm:flex items-center gap-2 px-4 py-2 rounded-full
+                bg-gradient-to-r from-[#00A86B] to-emerald-600
+                text-black font-black text-xs
+                shadow-md
+                hover:scale-[1.02] active:scale-[0.98]
+                transition-transform duration-200 h-10
+              "
+            >
+              <LogIn className="w-4 h-4" />
+              {t("auth.signin") || "SIGN IN"}
+            </button>
+          )}
 
           {/* Theme Toggle Capsule */}
           <button
@@ -229,16 +140,16 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               relative flex items-center justify-center
               w-12 h-10 rounded-full
               border transition-all duration-300 group
-              border-slate-200
-              bg-white
-              hover:bg-slate-50
-              shadow-sm
+              border-slate-200 dark:border-white/10
+              bg-white dark:bg-white/5
+              hover:bg-slate-50 dark:hover:bg-white/10
+              shadow-sm dark:shadow-none
             "
           >
             {isDark ? (
               <Sun className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
             ) : (
-              <Moon className="w-4 h-4 text-malazone-navy group-hover:scale-110 transition-transform" />
+              <Moon className="w-4 h-4 text-slate-500 group-hover:scale-110 transition-transform" />
             )}
           </button>
 
@@ -248,36 +159,69 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             className="
               flex items-center gap-2 px-4 py-2 rounded-full
               border transition-all duration-300 group
-              border-slate-200
-              bg-white
-              hover:bg-slate-50
-              hover:border-[#00A86B]/40
-              shadow-sm h-10
+              border-slate-200 dark:border-white/10
+              bg-white dark:bg-white/5
+              hover:bg-slate-50 dark:hover:bg-white/10
+              hover:border-[#00A86B]/40 dark:hover:border-[#00A86B]/30
+              shadow-sm dark:shadow-none h-10
             "
           >
             <Globe className="w-4 h-4 text-[#00A86B] group-hover:rotate-[30deg] transition-transform duration-500" />
-            <span className="text-[10px] font-black tracking-widest text-malazone-navy uppercase">
+            <span className="text-[10px] font-black tracking-widest text-malazone-navy dark:text-white uppercase">
               {language === "en" ? "አማርኛ" : "EN"}
             </span>
           </button>
 
-          {/* Corporate CTA Button */}
-          <button
-            onClick={() => {
-              const el = document.getElementById("agents");
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="
-              hidden sm:flex items-center justify-center
-              bg-gradient-to-r from-[#00A86B] to-emerald-600
-              text-malazone-navy font-black text-xs px-5 py-2.5
-              rounded-xl shadow-md
-              hover:scale-[1.02] active:scale-[0.98]
-              transition-transform duration-200
-            "
-          >
-            {t("nav.agentBtn")}
-          </button>
+          {/* Profile / User Button */}
+          {isAuthenticated && user ? (
+            <div className="relative hidden lg:block">
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="
+                  flex items-center gap-2 px-3 py-1.5 rounded-full
+                  border transition-all duration-300 group
+                  border-slate-200 dark:border-white/10
+                  bg-white dark:bg-white/5
+                  hover:bg-slate-50 dark:hover:bg-white/10
+                  hover:border-[#00A86B]/40 dark:hover:border-[#00A86B]/30
+                  shadow-sm dark:shadow-none h-10
+                "
+              >
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#00A86B] to-emerald-600 flex items-center justify-center text-black text-xs font-black">
+                  {user.full_name?.charAt(0)?.toUpperCase() || "U"}
+                </div>
+                <span className="text-[10px] font-black tracking-widest text-malazone-navy dark:text-white uppercase max-w-[80px] truncate">
+                  {user.full_name?.split(" ")[0] || "Profile"}
+                </span>
+                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${showProfileMenu ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* Profile Dropdown */}
+              {showProfileMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-white/10 z-50 overflow-hidden">
+                    <div className="p-4 border-b border-slate-100 dark:border-white/5">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.full_name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          setShowSignOutModal(true);
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        {t("auth.signout") || "Sign Out"}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : null}
 
           {/* Mobile Menu Icon */}
           <button
@@ -286,9 +230,9 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             className="
               xl:hidden p-2.5 rounded-xl
               border border-transparent
-              hover:border-slate-200
-              hover:bg-slate-100
-              text-malazone-navy
+              hover:border-slate-200 dark:hover:border-white/10
+              hover:bg-slate-100 dark:hover:bg-white/5
+              text-slate-700 dark:text-white
               transition-all duration-200
             "
           >
@@ -307,7 +251,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
           />
 
           {/* Menu Panel */}
-          <nav className="absolute top-0 left-0 right-0 bg-white border-b border-slate-200 shadow-2xl animate-in slide-in-from-top duration-300">
+          <nav className="absolute top-0 left-0 right-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-white/10 shadow-2xl animate-in slide-in-from-top duration-300">
             <div className="flex flex-col p-4 gap-2">
               {categories.map((cat) => (
                 <button
@@ -319,37 +263,59 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                     text-sm font-bold tracking-wide uppercase
                     transition-all duration-200
                     ${activeCategory === cat.id
-                      ? "bg-[#00A86B] text-malazone-navy"
-                      : "text-malazone-navy bg-slate-50 hover:bg-slate-100 hover:text-[#00A86B]"}
+                      ? "bg-[#00A86B] text-black"
+                      : "text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 hover:bg-emerald dark:hover:bg-emerald-500/10 hover:text-[#00A86B] dark:hover:text-emerald-400"}
                   `}
                 >
                   {t(cat.key as any)}
-                  <ChevronRight className={`w-4 h-4 ${activeCategory === cat.id ? "text-malazone-navy" : "opacity-40"}`} />
+                  <ChevronRight className={`w-4 h-4 ${activeCategory === cat.id ? "text-black" : "opacity-40"}`} />
                 </button>
               ))}
 
-              <div className="h-px bg-slate-100 my-2" />
+              <div className="h-px bg-slate-100 dark:bg-white/5 my-2" />
 
-              {/* Mobile Agent Hub CTA */}
-              <button
-                onClick={() => {
-                  const el = document.getElementById("agents");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                  setIsMobileMenuOpen(false);
-                }}
-                className="
-                  flex items-center justify-center gap-3
-                  w-full py-4 rounded-2xl
-                  bg-gradient-to-r from-[#00A86B] to-emerald-600
-                  text-malazone-navy font-black text-sm uppercase tracking-widest
-                  shadow-lg shadow-emerald-500/20
-                "
-              >
-                {t("nav.agentBtn")}
-              </button>
+              {/* Mobile Auth Button */}
+              {!isAuthenticated && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate("/signin");
+                  }}
+                  className="
+                    flex items-center justify-center gap-3
+                    w-full py-4 rounded-2xl
+                    bg-gradient-to-r from-[#00A86B] to-emerald-600
+                    text-black font-black text-sm uppercase tracking-widest
+                    shadow-lg shadow-emerald-500/20
+                  "
+                >
+                  <LogIn className="w-5 h-5" />
+                  {t("auth.signin") || "SIGN IN"}
+                </button>
+              )}
+
+              <div className="h-px bg-slate-100 dark:bg-white/5 my-2" />
+
+              {/* Mobile Profile (signed-in users) */}
+              {isAuthenticated && user ? (
+                <div className="flex items-center gap-3 w-full px-5 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00A86B] to-emerald-600 flex items-center justify-center text-black text-sm font-black shrink-0">
+                    {user.full_name?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.full_name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </nav>
         </div>
+      )}
+
+      {/* Sign Out Modal */}
+      {showSignOutModal && (
+        <SignOut onClose={() => setShowSignOutModal(false)} />
       )}
     </div>
   );
