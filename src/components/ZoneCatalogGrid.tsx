@@ -5,6 +5,8 @@
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSocketTracker } from "../hooks/useSocketTracker";
 import {
   Phone,
   Send,
@@ -18,26 +20,34 @@ import {
   Settings,
   Key,
   Building2,
+  ChevronLeft,
   ChevronRight,
+  Heart,
+  Share2,
+  Check,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { useScrollReveal, use3DTilt } from "@/hooks/useWorldClassAnimations";
+import { useFavorites } from "@/contexts/FavoritesContext";
 import type { ActiveZone } from "./ZoneFilterSidebar";
 import type { FilterState } from "./ZoneFilterSidebar";
 
 /* ────────────────────────────────────────────
    Listing Data Model
    ──────────────────────────────────────────── */
-interface ListingItem {
+export interface ListingItem {
   id: string;
   titleEn: string;
   titleAm: string;
+  descriptionAm?: string;
+  descriptionEn?: string;
   price: number;
   priceSuffixKey: string;
   priceTagKey: string;
+  isNegotiable?: boolean;
   image: string;
+  images?: string[];
   zone: ActiveZone;
   locationKey: string;
   locationTag: string;
@@ -57,14 +67,16 @@ interface ListingItem {
   bathrooms?: number;
   /* Machinery-specific */
   billingTrack?: string;
+  specLabel?: string;
+  specVal?: string;
   phone: string;
   whatsapp: string;
 }
 
 /* ────────────────────────────────────────────
-   Mock Inventory Data
+   Mock Inventory Data (Fallback)
    ──────────────────────────────────────────── */
-const listings: ListingItem[] = [
+export const FALLBACK_LISTINGS: ListingItem[] = [
   {
     id: "car-001",
     titleEn: "Toyota Vitz 2018 - Excellent Condition",
@@ -289,6 +301,82 @@ const listings: ListingItem[] = [
   },
 ];
 
+/* ── Map DB listing shape to ListingItem ── */
+function mapDbListingToItem(row: any): ListingItem {
+  const cat = row.category || "property";
+  let zone: ActiveZone = "house";
+  if (cat === "motors") zone = "car";
+  else if (cat === "stay" || cat === "ceremony") zone = "ceremony";
+  else if (cat === "heavy") zone = "machinery";
+  else if (cat === "electronics") zone = "electronics";
+
+  const images: string[] = (() => {
+    if (!row.images) return [];
+    if (Array.isArray(row.images)) return row.images;
+    try { return JSON.parse(row.images); } catch { return []; }
+  })();
+
+  return {
+    id: String(row.id),
+    titleEn: row.title_en || "",
+    titleAm: row.title_am || "",
+    price: Number(row.price) || 0,
+    priceSuffixKey: row.price_suffix === "per_day" ? "price.day" : row.price_suffix === "per_hour" ? "price.hour" : "price.etb",
+    priceTagKey: row.is_premium ? "price.fixed" : "price.negotiable",
+    image: images[0] || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp",
+    images,
+    zone,
+    locationKey: row.location_key || "",
+    locationTag: (row.location_label_en || "").toUpperCase() || "PIASSA",
+    rating: 4.5,
+    isVerified: !!row.is_verified,
+    isPremium: !!row.is_premium,
+    badgeKey: row.is_verified ? "badge.verifiedCarta" : "badge.verified",
+    plateCode: row.plate_code || undefined,
+    fuelType: row.fuel_type || undefined,
+    fuelTag: row.fuel_type ? row.fuel_type.toUpperCase() : undefined,
+    condition: row.condition_type || undefined,
+    titleDeed: row.title_deed || undefined,
+    sqm: row.area_sqm ? Number(row.area_sqm) : undefined,
+    bedrooms: row.bedrooms ? Number(row.bedrooms) : undefined,
+    bathrooms: row.bathrooms ? Number(row.bathrooms) : undefined,
+    billingTrack: zone === "machinery" ? "ETB / Hour" : undefined,
+    phone: row.phone || "",
+    whatsapp: row.whatsapp || row.phone || "",
+    descriptionAm: row.description_am || undefined,
+    descriptionEn: row.description_en || undefined,
+  };
+}
+
+/* ── Fetch Listings from API ── */
+function useListings() {
+  const [listings, setListings] = useState<ListingItem[]>(FALLBACK_LISTINGS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetch("/api/listings")
+      .then(res => res.json())
+      .then(data => {
+        if (cancelled) return;
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setListings(data.data.map(mapDbListingToItem));
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setListings(FALLBACK_LISTINGS);
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  return { listings, loading };
+}
+
 /* ────────────────────────────────────────────
    Props
    ──────────────────────────────────────────── */
@@ -323,8 +411,9 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
   );
 };
 
+const formatPrice = (n: number) => n.toLocaleString();
+
 /* ────────────────────────────────────────────
-   Listing Card Component
    ──────────────────────────────────────────── */
 const ListingCard: React.FC<{
   item: any;
@@ -332,6 +421,16 @@ const ListingCard: React.FC<{
   gridVisible: boolean;
 }> = ({ item, index, gridVisible }) => {
   const { language, t } = useLanguage();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const requireAuth = useCallback((action: () => void) => {
+    if (!isAuthenticated) {
+      navigate("/signin");
+      return;
+    }
+    action();
+  }, [isAuthenticated, navigate]);
   const { ref: tiltRef, style: tiltStyle } = use3DTilt(10, 1200);
 
   const formatPrice = (n: number) => n.toLocaleString();
@@ -530,6 +629,8 @@ const ListingCard: React.FC<{
 /* ────────────────────────────────────────────
    Component
    ──────────────────────────────────────────── */
+const ITEMS_PER_PAGE = 6;
+
 const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   activeZone,
   filters,
@@ -537,8 +638,12 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   const { language, t } = useLanguage();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [visibleCount, setVisibleCount] = useState(6);
+  const { trackEvent } = useSocketTracker();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const [currentPage, setCurrentPage] = useState(1);
   const { ref: gridRef, isVisible: gridVisible } = useScrollReveal({ threshold: 0.1 });
+  const { listings, loading } = useListings();
 
   const requireAuth = useCallback((action: () => void) => {
     if (!isAuthenticated) {
@@ -547,6 +652,10 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
     }
     action();
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeZone, filters]);
 
   /* ── Filter Logic ── */
   const filtered = useMemo(() => {
@@ -608,16 +717,41 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
     });
   }, [activeZone, filters]);
 
-  const visibleListings = filtered.slice(0, visibleCount);
-  const hasMore = visibleCount < filtered.length;
+  // Reset to page 1 whenever filters/zone change
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const visibleListings = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
 
-  /* ── Heading Key ── */
-  const headingKey = `grid.heading.${activeZone}` as any;
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    const el = document.getElementById("zone-catalog-section");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
-  const formatPrice = (n: number) => n.toLocaleString();
+  const handleToggleFavorite = (item: ListingItem) => {
+    toggleFavorite(item);
+  };
+
+  const handleShare = async (item: ListingItem) => {
+    const url = `${window.location.origin}/listing/${item.id}`;
+    const title = language === 'amharic' ? item.titleAm : item.titleEn;
+    if (navigator.share) {
+      navigator.share({ title, url }).catch(() => {});
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopiedId(item.id);
+        setTimeout(() => setCopiedId(null), 2000);
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+      }
+    }
+  };
 
   return (
-    <section 
+    <section
+      id="zone-catalog-section"
       ref={gridRef}
       className={`flex-1 min-w-0 transition-all duration-700 ease-out ${
         gridVisible 
@@ -644,13 +778,14 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
           {visibleListings.map((item, index) => (
             <article
               key={item.id}
+              onClick={() => { trackEvent('visit', item); navigate(`/listing/${item.id}`); }}
               style={{ 
                 animationDelay: `${index * 0.1}s`,
                 opacity: gridVisible ? 1 : 0,
                 transform: gridVisible ? 'translateY(0)' : 'translateY(20px)',
                 transition: `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`
               }}
-              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col relative transition-all duration-500"
+              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col relative transition-all duration-500 cursor-pointer"
             >
               {/* ── Image Container ── */}
               <div className="relative h-52 overflow-hidden">
@@ -672,12 +807,32 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   </span>
                 </div>
 
-                {/* Premium Star */}
-                {item.isPremium && (
-                  <div className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-4 h-4 text-white" />
-                  </div>
-                )}
+                {/* Action Buttons: Premium Star, Favorite, Share */}
+                <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+                  {item.isPremium && (
+                    <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleToggleFavorite(item); }}
+                    className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
+                    aria-label={isFavorite(item.id) ? "Remove from favorites" : "Add to favorites"}
+                  >
+                    <Heart className={`w-4 h-4 ${isFavorite(item.id) ? 'fill-red-500 text-red-500' : 'text-slate-600 dark:text-slate-300'}`} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleShare(item); }}
+                    className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
+                    aria-label="Share listing"
+                  >
+                    {copiedId === item.id ? (
+                      <Check className="w-4 h-4 text-emerald-500" />
+                    ) : (
+                      <Share2 className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* ── Card Body ── */}
@@ -835,15 +990,42 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
         </div>
       )}
 
-      {/* ── Load More Button ── */}
-      {hasMore && (
-        <div className="flex justify-center mt-10">
+      {/* ── Numbered Pagination ── */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-10 flex-wrap">
+          {/* Prev */}
           <button
-            onClick={() => setVisibleCount((p) => p + 6)}
-            className="flex items-center gap-2 px-8 py-3 rounded-full border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 hover:border-[#00A86B] text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:text-[#00A86B] transition-all font-sans"
+            onClick={() => goToPage(safePage - 1)}
+            disabled={safePage === 1}
+            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {t("grid.viewAll")}
-            <ChevronRight className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
+            {language === "amharic" ? "የቀደመ" : "Prev"}
+          </button>
+
+          {/* Page Numbers */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => goToPage(page)}
+              className={`min-w-[42px] h-[42px] px-3 rounded-xl border text-sm font-black transition-all ${
+                page === safePage
+                  ? "bg-[#00A86B] border-[#00A86B] text-white shadow-[0_4px_16px_rgba(0,168,107,0.35)] scale-105"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B]"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+          {/* Next */}
+          <button
+            onClick={() => goToPage(safePage + 1)}
+            disabled={safePage === totalPages}
+            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {language === "amharic" ? "ቀጣዩ" : "Next"}
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
