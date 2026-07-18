@@ -16,14 +16,13 @@ export function MalaAgentsUnified() {
     am: {
       badgeZone: "✨ ቀጥተኛና ደላላ-አልባ ይፋዊ ግብይት",
       heading: "ያለ ደላላ በቀጥታ ይገበያዩ!",
-      subMotto: "ቤት፣ መኪና፣ ሆቴል፣ የሰርግ ዕቃዎች፣ ከባድ ማሽነሪ እና ኤሌክትሮኒክስዎን ያለምንም የደላላ ጣልቃ-ገብነት በቀጥታ ለገዢዎች የሚያቀርቡበት ታማኝ የዲጂታል ማዕከል",
-      mainBody: "malazone ንብረትዎን (ቤት፣ መኪና፣ ሆቴል፣ የሰርግ ዕቃዎች፣ ከባድ ማሽነሪ ወይም ኤሌክትሮኒክስ) ያለምንም የደላላ ጣልቃ-ገብነት በቀጥታ ለአገር ውስጥና ለውጭ ሀገር (Diaspora) ገዢዎች የሚያቀርቡበት የታመነ ይፋዊ መድረክ ነው። ንብረትዎን በሕጋዊ መንገድ በመመዝገብ በቀጥታ ከባለገንዘብ ገዢዎች ጋር ያለምንም ውዥንብር ይደራደሩ፤ ግብይትዎን በፍጥነት ያጠናቅቁ!",
-      card1Title: "🛒 ለንብረት ባለቤቶች",
-      card1Desc: "ቤት፣ መኪና፣ ሆቴል፣ የሰርግ ዕቃዎች፣ ማሽነሪና ኤሌክትሮኒክስዎን በመመዝገብ በቀጥታ ለአገር ውስጥና ለዲያስፖራ ገዢዎች ማቅረብ",
-      card2Title: "🛡️ ፍጹም ሕጋዊና ታማኝ",
-      card2Desc: "ከከተማ ማዘጋጃ ቤቶች የይዞታ ሰነዶች እና ከትራንስፖርት ቢሮዎች መዛግብት ጋር የተቆራኘ አስተማማኝ አሰራር",
-      card3Title: "⚡ ፈጣንና ቀጥተኛ ግብይት",
-      card3Desc: "ከባለቤቶች ጋር በቀጥታ በመገናኘት ግብይትዎን ያለምንም ውዥንብር በፍጥነት ማጠናቀቅ",
+      subMotto: "ቤት፣ መኪና፣ ሆቴል፣ የሰርግ ዕቃዎች፣ ከባድ ማሽነሪ እና ኤሌክትሮኒክስ — ያለ ደላላ ጣልቃ-ገብነት በቀጥታ ለገዢዎች ያቅርቡ!",
+      card1Title: "ንብረትዎን ያስመዝግቡ",
+      card1Desc: "ቤት፣ መኪና፣ ሆቴል፣ ማሽነሪ ወይም ኤሌክትሮኒክስ — ለአገር ውስጥና ለዲያስፖራ ገዢዎች በቀጥታ ያቅርቡ።",
+      card2Title: "ሕጋዊ እና አስተማማኝ",
+      card2Desc: "ከማዘጋጃ ቤትና ከትራንስፖርት ቢሮ ጋር የተቆራኘ የተረጋገጠ አሰራር።",
+      card3Title: "ፈጣን ቀጥተኛ ግብይት",
+      card3Desc: "ከባለቤቶች ጋር በቀጥታ ይገናኙ — ያለ ውዥንብር ግብይት ያጠናቅቁ።",
       btnCTA: "ንብረትዎን አሁኑኑ ይመዝግቡ",
       socialProof: "ባለቤቶች ንብረታቸውን በስኬት መዝግበዋል",
       videoTitle: "የአጠቃቀም ማብሪያ ቪዲዮ",
@@ -34,14 +33,13 @@ export function MalaAgentsUnified() {
     en: {
       badgeZone: "✨ Direct & Broker-Free Official Trade",
       heading: "Trade Directly Without Brokers!",
-      subMotto: "The trusted digital hub to showcase your houses, cars, hotels, wedding gear, heavy machinery, and electronics directly to verified buyers.",
-      mainBody: "malazone is the trusted platform to list your assets (real estate, vehicles, hotels, wedding gear, heavy equipment, or smart electronics) directly to local and international diaspora buyers with zero middleman friction. Register your property securely, negotiate directly with genuine buyers, and execute your transactions with absolute transparency.",
-      card1Title: "🛒 For Asset Owners",
-      card1Desc: "List your houses, cars, hotels, wedding gear, machinery, and electronics and connect directly with verified global buyers.",
-      card2Title: "🛡️ Institutional Trust",
-      card2Desc: "Fully secure operations synchronized directly with regional transit and municipality registries.",
-      card3Title: "⚡ Rapid Peer-to-Peer Execution",
-      card3Desc: "Connect directly with verified owners and finalize your business transactions with zero confusion.",
+      subMotto: "Houses, cars, hotels, wedding gear, heavy machinery & electronics — list and sell directly to verified buyers!",
+      card1Title: "Register Your Property",
+      card1Desc: "List houses, cars, hotels, machinery or electronics and connect directly with verified global buyers.",
+      card2Title: "Legally Verified & Trusted",
+      card2Desc: "Secure operations synchronized with regional transit and municipality registries.",
+      card3Title: "Fast Direct Transactions",
+      card3Desc: "Connect directly with owners — finalize deals with zero middleman confusion.",
       btnCTA: "Register Your Property Now",
       socialProof: "Property Owners Registered Successfully",
       videoTitle: "malazone User Guide",
@@ -77,55 +75,53 @@ export function MalaAgentsUnified() {
       <div className="max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
         {/* 🟢 LEFT COLUMN: Content & Value Propositions */}
-        <div className="lg:col-span-6 space-y-6">
+        <div className="lg:col-span-6 space-y-5">
 
-          <div className="flex items-center space-x-2">
-            <span className="text-[10px] sm:text-xs font-black bg-emerald-50 dark:bg-emerald-950/30 text-[#00A86B] border border-emerald-200/40 dark:border-emerald-800/30 px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-[#00A86B] animate-pulse" />
-              <span>{t.badgeZone}</span>
-            </span>
-          </div>
+          {/* Heading */}
+          <h2 className="text-4xl sm:text-5xl font-black text-[#00A86B] tracking-tight leading-[1.1]">
+            {t.heading}
+          </h2>
 
-          <div className="space-y-2">
-            <h2 className="text-4xl sm:text-5xl font-black text-[#00A86B] tracking-tight leading-none">
-              {t.heading}
-            </h2>
-            <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 tracking-wide leading-relaxed">
-              {t.subMotto}
-            </p>
-          </div>
-
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-            {t.mainBody}
+          {/* Subtitle */}
+          <p className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
+            {t.subMotto}
           </p>
 
-          {/* 3ኛ አምድ የቅንጦት ካርዶች */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-            <div className="flex flex-col justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 h-full group">
-              <ShoppingBag className="size-5 text-[#00A86B] shrink-0 mb-3" />
-              <div className="space-y-1">
-                <h4 className="text-xs font-black text-slate-900 dark:text-white leading-tight">{t.card1Title}</h4>
-                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-loose pt-1 pr-1">{t.card1Desc}</p>
+          {/* Feature Rows */}
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 px-5 py-4 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 group">
+              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-[#00A86B] shrink-0">
+                <ShoppingBag className="size-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">{t.card1Title}</h4>
+                <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{t.card1Desc}</p>
               </div>
             </div>
-            <div className="flex flex-col justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 h-full group">
-              <ShieldCheck className="size-5 text-[#00A86B] shrink-0 mb-3" />
-              <div className="space-y-1">
-                <h4 className="text-xs font-black text-slate-900 dark:text-white leading-tight">{t.card2Title}</h4>
-                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-loose pt-1 pr-1">{t.card2Desc}</p>
+
+            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 px-5 py-4 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 group">
+              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-[#00A86B] shrink-0">
+                <ShieldCheck className="size-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">{t.card2Title}</h4>
+                <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{t.card2Desc}</p>
               </div>
             </div>
-            <div className="flex flex-col justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 p-5 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 h-full group">
-              <Zap className="size-5 text-[#00A86B] shrink-0 mb-3" />
-              <div className="space-y-1">
-                <h4 className="text-xs font-black text-slate-900 dark:text-white leading-tight">{t.card3Title}</h4>
-                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-loose pt-1 pr-1">{t.card3Desc}</p>
+
+            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 px-5 py-4 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 group">
+              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-[#00A86B] shrink-0">
+                <Zap className="size-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">{t.card3Title}</h4>
+                <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{t.card3Desc}</p>
               </div>
             </div>
           </div>
 
-          {/* ⚡ CTA & SOCIAL PROOF */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4 border-t border-slate-100 dark:border-white/5">
+          {/* CTA & SOCIAL PROOF */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-3 border-t border-slate-100 dark:border-white/5">
             <button
               onClick={() => setShowRegistration(true)}
               className="bg-[#00A86B] hover:bg-emerald-600 text-black font-black text-xs uppercase tracking-wider px-7 py-4 rounded-2xl transition-all shadow-md shadow-emerald-500/10 flex items-center space-x-2 group cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"

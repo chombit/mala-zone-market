@@ -6,12 +6,15 @@
  * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
  */
 
+import React, { useState } from "react";
+import { Globe, Menu, Sun, Moon, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Heart } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { Globe, Menu, Sun, Moon, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Settings, UserCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { getNextLanguage, LANGUAGE_OPTIONS, type Language } from "@/i18n";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFavorites } from "@/contexts/FavoritesContext";
 import { useNavigate } from "react-router-dom";
 import LogoImg from "../images/Logo.png";
 import SignOut from "./SignOut";
@@ -34,6 +37,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
   const { language, toggleLanguage, t } = useLanguage();
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
+  const { favorites, setSidebarOpen } = useFavorites();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
@@ -45,6 +49,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
     { key: "nav.cat3", id: "stay" },
     { key: "nav.cat4", id: "ceremony" },
     { key: "nav.cat5", id: "heavy" },
+    { key: "nav.cat6", id: "electronics" },
   ];
 
   const handleNavClick = (id: string) => {
@@ -72,10 +77,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
            w-full px-4 sm:px-6 py-1.5
            flex items-center justify-between gap-4
            transition-all duration-300
-           bg-white dark:bg-slate-950
+           bg-white
            backdrop-blur-3xl
-           border-b border-slate-200/80 dark:border-white/5
-           shadow-sm dark:shadow-none
+           border-b border-slate-200/80
+           shadow-sm
         "
       >
         {/* ── LEFT: Brand Logo ───────── */}
@@ -88,23 +93,23 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
           <img
             src={LogoImg}
             alt="Malazone Logo"
-            className="h-12 sm:h-16 w-auto object-contain dark:brightness-110"
+            className="h-12 sm:h-16 w-auto object-contain"
           />
         </div>
 
         {/* ── CENTER: Nav Category Pills (desktop) ────── */}
-        <nav className="hidden xl:flex items-center gap-2 bg-slate-100 dark:bg-white/5 rounded-full p-1.5 border border-slate-200 dark:border-white/10 shrink min-w-0">
+        <nav className="hidden xl:flex items-center gap-2 bg-slate-100 rounded-full p-1 border border-slate-200 shrink-0">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => handleNavClick(cat.id)}
               className={`
-                px-5 py-2.5 rounded-full text-xs font-bold
+                px-4 py-2 rounded-full text-[11px] font-black
                 whitespace-nowrap uppercase tracking-wider
-                transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-none
+                transition-all duration-200 shadow-sm hover:shadow-md
                 ${activeCategory === cat.id
                   ? "bg-[#00A86B] text-black shadow-lg shadow-emerald-500/20"
-                  : "text-slate-600 dark:text-slate-300 hover:text-[#00A86B] dark:hover:text-white hover:bg-white dark:hover:bg-white/10"}
+                  : "text-slate-600 hover:text-[#00A86B] hover:bg-white"}
               `}
             >
               {t(cat.key as any)}
@@ -141,10 +146,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               relative flex items-center justify-center
               w-12 h-10 rounded-full
               border transition-all duration-300 group
-              border-slate-200 dark:border-white/10
-              bg-white dark:bg-white/5
-              hover:bg-slate-50 dark:hover:bg-white/10
-              shadow-sm dark:shadow-none
+              border-slate-200
+              bg-white
+              hover:bg-slate-50
+              shadow-sm
             "
           >
             {isDark ? (
@@ -154,20 +159,44 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             )}
           </button>
 
+          {/* Favorites Button */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            aria-label="View Favorites"
+            className="
+              relative flex items-center justify-center
+              w-12 h-10 rounded-full
+              border transition-all duration-300 group
+              border-slate-200
+              bg-white
+              hover:bg-slate-50
+              shadow-sm
+            "
+          >
+            <Heart className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
+            {favorites.length > 0 && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-black text-white bg-red-500 rounded-full shadow-md border-2 border-white">
+                {favorites.length}
+              </span>
+            )}
+          </button>
+
           {/* Language Toggle Capsule */}
           <button
             onClick={toggleLanguage}
             className="
               flex items-center gap-2 px-4 py-2 rounded-full
               border transition-all duration-300 group
-              border-slate-200 dark:border-white/10
-              bg-white dark:bg-white/5
-              hover:bg-slate-50 dark:hover:bg-white/10
-              hover:border-[#00A86B]/40 dark:hover:border-[#00A86B]/30
-              shadow-sm dark:shadow-none h-10
+              border-slate-200
+              bg-white
+              hover:bg-slate-50
+              hover:border-[#00A86B]/40
+              shadow-sm h-10
             "
           >
             <Globe className="w-4 h-4 text-[#00A86B] group-hover:rotate-[30deg] transition-transform duration-500" />
+            <span className="text-[10px] font-black tracking-widest text-malazone-navy uppercase">
+              {language === "en" ? "አማርኛ" : "EN"}
             <span className="text-[10px] font-black tracking-widest text-malazone-navy dark:text-white uppercase">
               {LANGUAGE_OPTIONS.find(o => o.value === language)?.labelShort || language}
             </span>
@@ -179,6 +208,13 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="
+                  flex items-center gap-2 px-3 py-1.5 rounded-full
+                  border transition-all duration-300 group
+                  border-slate-200
+                  bg-white
+                  hover:bg-slate-50
+                  hover:border-[#00A86B]/40
+                  shadow-sm h-10
                   flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full
                   transition-all duration-300 group
                   hover:bg-slate-100 dark:hover:bg-white/10
@@ -189,6 +225,8 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00A86B] to-emerald-500 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-emerald-500/20 ring-2 ring-white dark:ring-slate-950">
                   {user.full_name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
+                <span className="text-[10px] font-black tracking-widest text-malazone-navy uppercase max-w-[80px] truncate">
+                  {user.full_name?.split(" ")[0] || "Profile"}
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-[90px] truncate">
                   {user.full_name?.split(" ")[0] || "User"}
                 </span>
@@ -199,6 +237,10 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               {showProfileMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                      <p className="text-sm font-bold text-slate-900 truncate">{user.full_name}</p>
+                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
                   <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-slate-200/50 dark:shadow-black/30 border border-slate-200/80 dark:border-white/10 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     {/* User Info Header */}
                     <div className="p-4 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-b border-slate-100 dark:border-white/5">
@@ -247,6 +289,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                           setShowProfileMenu(false);
                           setShowSignOutModal(true);
                         }}
+                        className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
                         className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors duration-150"
                       >
                         <LogOut className="w-4 h-4" />
@@ -266,9 +309,9 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             className="
               xl:hidden p-2.5 rounded-xl
               border border-transparent
-              hover:border-slate-200 dark:hover:border-white/10
-              hover:bg-slate-100 dark:hover:bg-white/5
-              text-slate-700 dark:text-white
+              hover:border-slate-200
+              hover:bg-slate-100
+              text-slate-700
               transition-all duration-200
             "
           >

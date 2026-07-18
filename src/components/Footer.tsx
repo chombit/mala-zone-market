@@ -28,6 +28,7 @@ const footerTranslations = {
     col2: [
       { label: "About Malazone", page: "about" as PageView },
       { label: "FAQ", page: "faq" as PageView },
+      { label: "Privacy Policy", page: "privacy" as PageView }
       { label: "Privacy Policy", page: "privacy" as PageView },
       { label: "Contact", page: "contact" as PageView }
     ] as { icon?: any, label: string, page?: PageView }[],
@@ -53,6 +54,7 @@ const footerTranslations = {
     col2: [
       { label: "ስለ መላዞን", page: "about" as PageView },
       { label: "ተደጋጋሚ ጥያቄዎች", page: "faq" as PageView },
+      { label: "የግል ምስጢር ጥበቃ", page: "privacy" as PageView }
       { label: "የግል ምስጢር ጥበቃ", page: "privacy" as PageView },
       { label: "ያግኙን", page: "contact" as PageView }
     ] as { icon?: any, label: string, page?: PageView }[],
