@@ -143,7 +143,7 @@ interface ContactPageProps {
 
 const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
   const { language } = useLanguage();
-  const d = t[language as keyof typeof t];
+  const d = t[language as keyof typeof t] || t.en;
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);

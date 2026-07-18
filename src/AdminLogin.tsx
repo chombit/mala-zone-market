@@ -17,7 +17,7 @@ const AdminLogin: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'am'>('en');
+  const [language, setLanguage] = useState<'en' | 'am' | 'sid'>('en');
   const navigate = useNavigate();
   const { login } = useAdminAuth();
 
@@ -31,17 +31,18 @@ const AdminLogin: React.FC = () => {
       if (success) {
         navigate('/admin');
       } else {
-        alert(language === 'en' ? 'Access Denied: Invalid Credentials' : 'መግባት ተከልክሏል፡ የተሳሳተ መለያ ቃላት');
+        alert(language === 'en' ? 'Access Denied: Invalid Credentials' : language === 'sid' ? 'Duunfni dhokaa\'ame: Akkaawuntii sirrii hin taane' : 'መግባት ተከልክሏል፡ የተሳሳተ መለያ ቃላት');
       }
     } catch (e) {
-      alert(language === 'en' ? 'Error Occurred' : 'ስህተት ተከስቷል');
+      alert(language === 'en' ? 'Error Occurred' : language === 'sid' ? 'Dogina dhufe' : 'ስህተት ተከስቷል');
     } finally {
       setLoading(false);
     }
   };
 
   const toggleLanguage = () => {
-    setLanguage(prev => prev === 'en' ? 'am' : 'en');
+    const order: ('en' | 'am' | 'sid')[] = ['am', 'sid', 'en'];
+    setLanguage(prev => order[(order.indexOf(prev) + 1) % order.length]);
   };
 
   return (
@@ -89,7 +90,7 @@ const AdminLogin: React.FC = () => {
               className="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 border border-slate-200 hover:bg-slate-200 transition-all duration-300 text-xs font-semibold text-malazone-navy"
             >
               <Globe className="w-4 h-4" />
-              {language === 'en' ? 'አማርኛ' : 'English'}
+              {language === 'en' ? 'አማርኛ' : language === 'sid' ? 'English' : 'Sidaamu'}
             </button>
           </div>
           

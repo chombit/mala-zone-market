@@ -162,7 +162,7 @@ interface AboutPageProps {
 
 const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => {
   const { language } = useLanguage();
-  const d = t[language as keyof typeof t];
+  const d = t[language as keyof typeof t] || t.en;
 
   const zones = [
     { icon: Building2, title: d.zone1Title, desc: d.zone1Desc, color: "from-emerald-500/10 to-teal-500/5" },
