@@ -240,7 +240,7 @@ interface PrivacyPageProps {
 
 const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
   const { language } = useLanguage();
-  const d = t[language as keyof typeof t];
+  const d = t[language as keyof typeof t] || t.en;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">

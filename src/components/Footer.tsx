@@ -29,6 +29,8 @@ const footerTranslations = {
       { label: "About Malazone", page: "about" as PageView },
       { label: "FAQ", page: "faq" as PageView },
       { label: "Privacy Policy", page: "privacy" as PageView }
+      { label: "Privacy Policy", page: "privacy" as PageView },
+      { label: "Contact", page: "contact" as PageView }
     ] as { icon?: any, label: string, page?: PageView }[],
     col3Title: "CONTACT",
     col3: [
@@ -53,12 +55,39 @@ const footerTranslations = {
       { label: "ስለ መላዞን", page: "about" as PageView },
       { label: "ተደጋጋሚ ጥያቄዎች", page: "faq" as PageView },
       { label: "የግል ምስጢር ጥበቃ", page: "privacy" as PageView }
+      { label: "የግል ምስጢር ጥበቃ", page: "privacy" as PageView },
+      { label: "ያግኙን", page: "contact" as PageView }
     ] as { icon?: any, label: string, page?: PageView }[],
     col3Title: "አድራሻ",
     col3: [
       { label: "+251 911 123 456" },
       { label: "support@malazone.com" },
       { label: "ሐዋሳ, ኢትዮጵያ" }
+    ] as { icon?: any, label: string }[],
+    copyright: "© 2026 Malazone Technologies PLC. All Rights Reserved."
+  },
+  sidamu: {
+    col1Title: "Lakkal Seetta",
+    col1: [
+      { icon: Building2, label: "Manzawuna Beti" },
+      { icon: Car, label: "Oottobillisiinota" },
+      { icon: DoorOpen, label: "Ummata Hooje" },
+      { icon: Music, label: "Waashettu" },
+      { icon: Tractor, label: "Shaayinarii Dandalicha" },
+      { icon: Smartphone, label: "Elektrooniks Lakkal" }
+    ],
+    col2Title: "GUMAAFFA",
+    col2: [
+      { label: "Malazone Keetta", page: "about" as PageView },
+      { label: "Gaaffii", page: "faq" as PageView },
+      { label: "Dincii Ijaa", page: "privacy" as PageView },
+      { label: "Nagaa", page: "contact" as PageView }
+    ] as { icon?: any, label: string, page?: PageView }[],
+    col3Title: "AAKKADHAA",
+    col3: [
+      { label: "+251 911 123 456" },
+      { label: "support@malazone.com" },
+      { label: " Hawaassa, Itoophiyaa" }
     ] as { icon?: any, label: string }[],
     copyright: "© 2026 Malazone Technologies PLC. All Rights Reserved."
   }

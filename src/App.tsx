@@ -11,11 +11,34 @@ import ResetPassword from './components/ResetPassword';
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ZoneLanguageProvider } from './contexts/ZoneLanguageContext';
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import MainSite from './MainSite'
+import AdminPanel from './AdminPanel'
+import AdminLogin from './AdminLogin'
+import SignIn from './components/SignIn'
+import ForgotPassword from './components/ForgotPassword'
+import ResetPassword from './components/ResetPassword'
+import ListingDetailsPage from './components/pages/ListingDetailsPage'
+import MyAccountPage from './components/pages/MyAccountPage'
+import SettingsPage from './components/pages/SettingsPage'
+import { FavoritesProvider } from './contexts/FavoritesContext'
 
-// Auth Guard using the auth context
+import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { LanguageProvider } from './contexts/LanguageContext'
+
+// Auth Guard using the admin auth context
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAdminAuth();
   return isAuthenticated ? <>{children}</> : <Navigate to="/admin/login" />;
+};
+
+// Auth Guard for user profile pages
+const ProtectedUserRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return null;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/signin" />;
 };
 
 function AppContent() {
@@ -28,6 +51,10 @@ function AppContent() {
 
           {/* Listing Details Page */}
           <Route path="/listing/:id" element={<ListingDetailsPage />} />
+
+          {/* User Profile Pages (Protected) */}
+          <Route path="/account" element={<ProtectedUserRoute><MyAccountPage /></ProtectedUserRoute>} />
+          <Route path="/settings" element={<ProtectedUserRoute><SettingsPage /></ProtectedUserRoute>} />
 
           {/* Sign In/Sign Up */}
           <Route path="/signin" element={<SignIn />} />
