@@ -12,6 +12,7 @@ import ZoneFilterSidebar, { ActiveZone, FilterState } from './components/ZoneFil
 import ZoneCatalogGrid from './components/ZoneCatalogGrid';
 import { MalaAgentsUnified } from './components/MalaAgentsUnified';
 import TrendingListings from './components/TrendingListings';
+import CategoryGrid from './components/CategoryGrid';
 import { MalaZoneTestimonials } from './components/MalaZoneTestimonials';
 import Footer from './components/Footer';
 import AboutPage from './components/pages/AboutPage';
@@ -124,19 +125,17 @@ const MainSite: React.FC = () => {
           {/* ── Mobile Trending Cards ──────────────────────── */}
           <TrendingListings />
 
+          {/* ── Mobile Category Grid ──────────────────────── */}
+          <CategoryGrid
+            onCategoryChange={handleCategoryChange}
+            onFilterClick={() => setShowMobileFilters(true)}
+          />
+
           {/* ── Split-Screen Catalog Section ──────────────────────── */}
           <div
             id="listings-catalog"
-            className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-12 pb-4"
+            className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-12 pb-4"
           >
-            {/* Mobile Filter Toggle Button */}
-            <button
-              onClick={() => setShowMobileFilters(true)}
-              className="lg:hidden mb-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#00A86B] text-white font-bold text-sm shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              <SlidersHorizontal className="w-5 h-5" />
-              Filter Listings
-            </button>
 
             <div className="flex flex-col lg:flex-row gap-8">
               {/* Desktop: Always show sidebar | Mobile: Show as modal */}
