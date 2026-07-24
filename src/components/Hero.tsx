@@ -274,7 +274,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
     <section
       id="hero-section"
       className="
-        relative w-full min-h-[320px] sm:min-h-screen
+        relative w-full min-h-[220px] sm:min-h-screen
         bg-slate-50 dark:bg-slate-950
         flex flex-col overflow-hidden
         transition-colors duration-500
