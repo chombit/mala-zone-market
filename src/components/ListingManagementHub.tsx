@@ -52,7 +52,10 @@ const ListingManagementHub: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this asset from Malazone?")) return;
     
     try {
-      const response = await fetch(`/api/admin/listings/${id}`, { method: "DELETE" });
+      const response = await fetch(`/api/admin/listings/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       const result = await response.json();
       if (result.success) {
         fetchListings();

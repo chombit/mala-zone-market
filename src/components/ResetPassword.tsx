@@ -73,8 +73,8 @@ const ResetPassword: React.FC = () => {
           {/* Logo/Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-1 mb-4">
-              <span className="text-4xl font-black text-gray-900">MALA</span>
-              <span className="text-4xl font-black text-[#00A86B]">ZONE</span>
+              <span className="text-3xl sm:text-4xl font-black text-gray-900">MALA</span>
+              <span className="text-3xl sm:text-4xl font-black text-[#00A86B]">ZONE</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               {t('auth.resetPassword')}

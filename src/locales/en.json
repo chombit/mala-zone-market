@@ -36,6 +36,13 @@
   "search.intent": "Intent",
   "search.btn": "Find Solution",
   "cat.all": "All Zones",
+  "cat.property": "Property",
+  "cat.motors": "Motors",
+  "cat.stay": "Stay",
+  "cat.ceremony": "Ceremony",
+  "cat.heavy": "Heavy",
+  "cat.electronics": "Electronics",
+  "cat.title": "Select Category",
 
   "stats.clients": "Happy Clients",
   "stats.listings": "Active Listings",
@@ -104,6 +111,7 @@
 
   "cta.call": "Direct Call",
   "cta.whatsapp": "Telegram",
+  "cta.chat": "Message Seller",
 
   "badge.verifiedCarta": "Verified Carta",
   "badge.verified": "Verified",

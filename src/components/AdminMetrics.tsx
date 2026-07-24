@@ -23,7 +23,9 @@ const AdminMetrics: React.FC = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await fetch("/api/admin/analytics");
+        const response = await fetch("/api/admin/analytics", {
+          credentials: "include",
+        });
         const result = await response.json();
         if (result.success) {
           setData(result.data);
@@ -105,7 +107,7 @@ const AdminMetrics: React.FC = () => {
               <p className="text-[11px] font-black text-malazone-navy uppercase tracking-widest">
                 {m.label}
               </p>
-              <h3 className="text-3xl font-black text-malazone-navy tracking-tight">
+              <h3 className="text-2xl sm:text-3xl font-black text-malazone-navy tracking-tight">
                 {m.value}
               </h3>
             </div>

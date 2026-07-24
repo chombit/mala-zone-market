@@ -27,7 +27,9 @@ const TranslationsManager: React.FC = () => {
   const fetchTranslations = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/translations");
+      const res = await fetch("/api/admin/translations", {
+        credentials: "include",
+      });
       const data = await res.json();
       if (data.success) {
         setTranslations(data.data);
@@ -72,6 +74,7 @@ const TranslationsManager: React.FC = () => {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData)
       });
       const data = await res.json();
@@ -94,7 +97,10 @@ const TranslationsManager: React.FC = () => {
     }
 
     try {
-      const res = await fetch(`/api/admin/translations/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/translations/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       const data = await res.json();
       if (data.success) {
         showToast(data.message, "success");
@@ -127,7 +133,7 @@ const TranslationsManager: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-malazone-navy tracking-tight flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-black text-malazone-navy tracking-tight flex items-center gap-2">
             <Globe className="w-6 h-6 text-[#00A86B]" />
             Localization & Content
           </h2>

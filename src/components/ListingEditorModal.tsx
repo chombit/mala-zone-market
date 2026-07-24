@@ -4,8 +4,8 @@
  * © 2026 Malazone Technologies PLC
  */
 
-import React, { useState, useEffect } from "react";
-import { X, Save, Package, Globe, Tag, Phone, MapPin, ShieldCheck, Star, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, Save, Package, Globe, Tag, Phone, MapPin, ShieldCheck, Star, Loader2, Camera, Trash2, ImagePlus } from "lucide-react";
 import { useAdminLanguage } from "../contexts/AdminLanguageContext";
 
 interface ListingForm {
@@ -49,6 +49,9 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
   const { t, language } = useAdminLanguage();
   const isAm = language === "amharic";
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
   
   const [formData, setFormData] = useState<ListingForm>({
     title_en: "",
@@ -79,7 +82,10 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
   });
 
   useEffect(() => {
+    setNewImages([]);
     if (listing) {
+      const parsedImages = typeof listing.images === 'string' ? JSON.parse(listing.images) : (listing.images || []);
+      setExistingImages(parsedImages);
       setFormData({
         id: listing.id,
         title_en: listing.title_en || "",
@@ -95,7 +101,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         is_premium: listing.is_premium === 1 || listing.is_premium === true,
         is_verified: listing.is_verified === 1 || listing.is_verified === true,
         is_active: listing.is_active === 1 || listing.is_active === true,
-        images: typeof listing.images === 'string' ? JSON.parse(listing.images) : (listing.images || ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"]),
+        images: parsedImages.length > 0 ? parsedImages : ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"],
         plate_code: listing.plate_code || "",
         fuel_type: listing.fuel_type || "benzine",
         condition_type: listing.condition_type || "used",
@@ -109,6 +115,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         imei_serial: listing.imei_serial || ""
       });
     } else {
+      setExistingImages([]);
       setFormData({
         title_en: "",
         title_am: "",
@@ -123,7 +130,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         is_premium: false,
         is_verified: true,
         is_active: true,
-        images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"],
+        images: [],
         plate_code: "",
         fuel_type: "benzine",
         condition_type: "used",
@@ -149,10 +156,38 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
       const url = listing ? `/api/admin/listings/${listing.id}` : "/api/admin/listings";
       const method = listing ? "PUT" : "POST";
       
+      const fd = new FormData();
+      fd.append('title_en', formData.title_en);
+      fd.append('title_am', formData.title_am);
+      fd.append('description_en', formData.description_en);
+      fd.append('description_am', formData.description_am);
+      fd.append('category', formData.category);
+      fd.append('price', String(formData.price));
+      fd.append('price_suffix', formData.price_suffix);
+      fd.append('phone', formData.phone);
+      fd.append('whatsapp', formData.whatsapp);
+      fd.append('location_key', formData.location_key);
+      fd.append('is_premium', formData.is_premium ? '1' : '0');
+      fd.append('is_verified', formData.is_verified ? '1' : '0');
+      fd.append('is_active', formData.is_active ? '1' : '0');
+      fd.append('existing_images', JSON.stringify(existingImages));
+      if (formData.plate_code) fd.append('plate_code', formData.plate_code);
+      if (formData.fuel_type) fd.append('fuel_type', formData.fuel_type);
+      if (formData.condition_type) fd.append('condition_type', formData.condition_type);
+      if (formData.area_sqm) fd.append('area_sqm', String(formData.area_sqm));
+      if (formData.capacity) fd.append('capacity', String(formData.capacity));
+      fd.append('with_operator', formData.with_operator ? '1' : '0');
+      fd.append('is_zero_km', formData.is_zero_km ? '1' : '0');
+      if (formData.bedrooms) fd.append('bedrooms', String(formData.bedrooms));
+      if (formData.bathrooms) fd.append('bathrooms', String(formData.bathrooms));
+      if (formData.title_deed) fd.append('title_deed', formData.title_deed);
+      if (formData.imei_serial) fd.append('imei_serial', formData.imei_serial);
+      newImages.forEach(file => fd.append('images', file));
+
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        credentials: "include",
+        body: fd
       });
       
       const result = await response.json();
@@ -173,16 +208,16 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl animate-fade-in" onClick={onClose} />
       
-      <div className="relative w-full max-w-4xl bg-white border border-slate-200 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col max-h-[90vh] animate-zoom-in">
+      <div className="relative w-full max-w-4xl bg-white border border-slate-200 rounded-2xl sm:rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col max-h-[90vh] animate-zoom-in">
         
         {/* Modal Header */}
-        <div className="p-8 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div className="p-5 sm:p-8 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-[#00A86B]/10 flex items-center justify-center text-[#00A86B]">
               <Package className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-malazone-navy tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-black text-malazone-navy tracking-tight">
                 {listing ? t("admin.hub.listings.edit") : t("admin.hub.listings.add")}
               </h2>
               <p className="text-[10px] font-bold text-malazone-navy uppercase tracking-widest">Malazone Asset Lifecycle Management</p>
@@ -194,7 +229,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         </div>
 
         {/* Modal Body (Scrollable) */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-10 space-y-6 sm:space-y-10 custom-scrollbar">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {/* Left Column: Core Data */}
@@ -224,7 +259,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               </div>
 
               {/* Category & Price */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.hub.listings.category")}</label>
                   <select 
@@ -286,30 +321,73 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
 
               {/* Images */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Asset Image URL</label>
-                <div className="relative">
-                  <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy" />
-                  <input 
-                    value={formData.images[0]}
-                    onChange={e => setFormData({...formData, images: [e.target.value]})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
-                    placeholder="https://images.unsplash.com/..."
-                  />
-                </div>
-                {formData.images[0] && (
-                  <div className="mt-4 w-32 h-20 rounded-xl overflow-hidden border border-slate-200">
-                    <img src={formData.images[0]} className="w-full h-full object-cover" alt="Preview" />
+                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">
+                  Product Images (up to 4)
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    const total = existingImages.length + newImages.length + files.length;
+                    const allowed = Math.max(0, 4 - existingImages.length - newImages.length);
+                    setNewImages(prev => [...prev, ...files.slice(0, allowed)]);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={existingImages.length + newImages.length >= 4}
+                  className="w-full border-2 border-dashed border-slate-200 rounded-xl py-6 flex flex-col items-center gap-2 hover:border-[#00A86B]/50 hover:bg-[#00A86B]/5 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ImagePlus className="w-8 h-8 text-slate-400" />
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    {existingImages.length + newImages.length >= 4 ? 'Max 4 images' : 'Add Photos (up to 4)'}
+                  </span>
+                </button>
+                {(existingImages.length > 0 || newImages.length > 0) && (
+                  <div className="grid grid-cols-4 gap-3">
+                    {existingImages.map((url, i) => (
+                      <div key={`existing-${i}`} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200">
+                        <img src={url} className="w-full h-full object-cover" alt="" />
+                        <div className="absolute top-1 left-1 bg-[#00A86B] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">{i + 1}</div>
+                        <button
+                          type="button"
+                          onClick={() => setExistingImages(prev => prev.filter((_, j) => j !== i))}
+                          className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {newImages.map((file, i) => (
+                      <div key={`new-${i}`} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200">
+                        <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" alt="" />
+                        <div className="absolute top-1 left-1 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">{existingImages.length + i + 1}</div>
+                        <button
+                          type="button"
+                          onClick={() => setNewImages(prev => prev.filter((_, j) => j !== i))}
+                          className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
 
               {/* ── Dynamic Zone Specific Fields ── */}
-              <div className="p-8 rounded-2xl bg-slate-50 border border-slate-200 space-y-8 animate-fade-in">
+              <div className="p-5 sm:p-8 rounded-2xl bg-slate-50 border border-slate-200 space-y-8 animate-fade-in">
                 <p className="text-[10px] font-black text-[#00A86B] uppercase tracking-[0.3em] mb-4">Zone Specific Details</p>
                 
                 {/* Motors / Heavy Machinery */}
                 {(formData.category === 'motors' || formData.category === 'heavy') && (
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Plate Code</label>
                       <input 
@@ -370,7 +448,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                 {/* Property / Stay */}
                 {(formData.category === 'property' || formData.category === 'stay') && (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Area (SQM)</label>
                         <input 
@@ -391,7 +469,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Bedrooms</label>
                         <input 
@@ -484,7 +562,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               </div>
 
               {/* Contact Info */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.phone")}</label>
                   <input 
@@ -504,7 +582,7 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               </div>
 
               {/* Toggles */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { key: "is_premium", icon: <Star />, label: t("admin.form.premium") },
                   { key: "is_verified", icon: <ShieldCheck />, label: t("admin.form.verified") },
@@ -530,14 +608,14 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         </form>
 
         {/* Modal Footer */}
-        <div className="p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-4">
+        <div className="p-5 sm:p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-4">
           <button onClick={onClose} className="px-8 py-4 rounded-xl text-malazone-navy font-black uppercase tracking-widest text-xs hover:text-malazone-navy transition-all">
             Cancel
           </button>
           <button 
             onClick={handleSubmit}
             disabled={loading}
-            className="px-12 py-4 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-[#00A86B]/25 transition-all flex items-center gap-3"
+            className="px-6 sm:px-12 py-4 rounded-xl bg-[#00A86B] hover:bg-[#00A86B]/90 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-[#00A86B]/25 transition-all flex items-center gap-3"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {t("admin.hub.listings.save")}

@@ -70,6 +70,7 @@ const PropertyVerificationHub: React.FC = () => {
       const response = await fetch(`/api/admin/verify-listing/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ is_verified: action === 'approve' })
       });
       const result = await response.json();

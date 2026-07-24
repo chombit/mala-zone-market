@@ -190,7 +190,9 @@ const PromoTickerManager: React.FC = () => {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/translations");
+      const res = await fetch("/api/admin/translations", {
+        credentials: "include",
+      });
       const data = await res.json();
       if (data.success) {
         const promos: PromoItem[] = data.data
@@ -222,6 +224,7 @@ const PromoTickerManager: React.FC = () => {
         const res = await fetch("/api/admin/translations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ text_key, en_value: editing.en_value.trim(), am_value: editing.am_value.trim(), section: "promo_ticker" }),
         });
         const data = await res.json();
@@ -232,6 +235,7 @@ const PromoTickerManager: React.FC = () => {
         const res = await fetch(`/api/admin/translations/${item.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ text_key: item.text_key, en_value: editing.en_value.trim(), am_value: editing.am_value.trim(), section: "promo_ticker" }),
         });
         const data = await res.json();
@@ -249,7 +253,10 @@ const PromoTickerManager: React.FC = () => {
     if (!item.id) return;
     setDeleting(idx);
     try {
-      const res = await fetch(`/api/admin/translations/${item.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/translations/${item.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       const data = await res.json();
       if (data.success) { flash("Promo text removed.", "success"); fetchItems(); }
       else flash(data.message || "Failed to delete.", "error");

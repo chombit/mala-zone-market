@@ -72,7 +72,7 @@ export function MalaAgentsUnified() {
 
   return (
     <section className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-10 pb-6 px-6 sm:px-12 lg:px-20 w-full text-left font-sans antialiased select-none overflow-hidden transition-colors duration-300">
-      <div className="max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      <div className="max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
 
         {/* 🟢 LEFT COLUMN: Content & Value Propositions */}
         <div className="lg:col-span-6 space-y-5">

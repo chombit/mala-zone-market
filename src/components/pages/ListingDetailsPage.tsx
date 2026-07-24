@@ -15,7 +15,8 @@ import {
   Share2,
   Copy,
   Printer,
-  Check
+  Check,
+  MessageCircle
 } from 'lucide-react';
 import type { ListingItem } from '../ZoneCatalogGrid';
 import { FALLBACK_LISTINGS } from '../ZoneCatalogGrid';
@@ -24,6 +25,10 @@ import { useLanguage } from '../../contexts/ZoneLanguageContext';
 import Header from '../Header';
 import Footer from '../Footer';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { useChat } from '../../contexts/ChatContext';
+import { useAuth } from '../../contexts/AuthContext';
+import StarRating from '../StarRating';
+import RateSellerModal from '../RateSellerModal';
 
 // Translation helpers
 const translateCondition = (condition: string | undefined, lang: 'am' | 'en'): string => {
@@ -210,6 +215,7 @@ const ListingDetailsContent = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { user } = useAuth();
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [isFavoriteLocal, setIsFavoriteLocal] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
@@ -218,6 +224,10 @@ const ListingDetailsContent = () => {
   const [relatedListings, setRelatedListings] = useState<ListingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { trackEvent } = useSocketTracker();
+  const { openChat } = useChat();
+  const [sellerRating, setSellerRating] = useState<{ avg: number; count: number }>({ avg: 0, count: 0 });
+  const [showRateModal, setShowRateModal] = useState(false);
+  const [hasRated, setHasRated] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -244,6 +254,32 @@ const ListingDetailsContent = () => {
           setListing(item);
           setIsFavoriteLocal(isFavorite(item.id));
           trackEvent('visit', item);
+
+          // Fetch seller ratings and check if user has already rated
+          if (data.data.user_id) {
+            try {
+              const ratRes = await fetch(`/api/ratings/seller/${data.data.user_id}`);
+              const ratData = await ratRes.json();
+              if (ratData.success) {
+                setSellerRating({
+                  avg: ratData.data.summary.avg_rating || 0,
+                  count: ratData.data.summary.total_reviews || 0,
+                });
+              }
+            } catch {}
+
+            // Check if current user has already rated this listing
+            if (user?.phone_number) {
+              try {
+                const checkRes = await fetch(`/api/ratings/check?phone=${user.phone_number}&listing_id=${id}`);
+                const checkData = await checkRes.json();
+                if (checkData.success && checkData.data.rated) {
+                  setHasRated(true);
+                }
+              } catch {}
+            }
+          }
+
           const cat = data.data.category;
           if (cat) {
             try {
@@ -288,7 +324,7 @@ const ListingDetailsContent = () => {
       zone,
       locationKey: row.location_key || "",
       locationTag: (row.location_label_en || "").toUpperCase() || "PIASSA",
-      rating: 4.5,
+      rating: row.avg_rating ? Number(row.avg_rating) : 0,
       isVerified: !!row.is_verified,
       isPremium: !!row.is_premium,
       badgeKey: row.is_verified ? "badge.verifiedCarta" : "badge.verified",
@@ -305,6 +341,8 @@ const ListingDetailsContent = () => {
       whatsapp: row.whatsapp || row.phone || "",
       descriptionAm: row.description_am || undefined,
       descriptionEn: row.description_en || undefined,
+      sellerUserId: row.user_id ? Number(row.user_id) : undefined,
+      sellerName: row.seller_name || undefined,
     };
   }
 
@@ -320,7 +358,7 @@ const ListingDetailsContent = () => {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Listing Not Found</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white mb-4">Listing Not Found</h2>
           <button
             onClick={() => navigate('/')}
             className="bg-[#00A86B] text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-600 transition-colors"
@@ -702,18 +740,35 @@ const ListingDetailsContent = () => {
                 </div>
 
                 {/* Vendor Profile Section */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-white/5 flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-xl shrink-0">
-                    👤
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider">{t.ownerTitle}</p>
-                    <p className="text-sm font-black text-slate-900 dark:text-white">{t.ownerName}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star className="size-3.5 fill-amber-400 text-amber-400" />
-                      <span className="text-[10px] font-bold text-amber-500">{t.ownerReviews}</span>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-xl shrink-0">
+                      👤
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider">{t.ownerTitle}</p>
+                      <p className="text-sm font-black text-slate-900 dark:text-white">{listing.sellerName || t.ownerName}</p>
+                      {sellerRating.count > 0 ? (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <StarRating rating={sellerRating.avg} size="sm" showValue />
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500">({sellerRating.count})</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                          <span className="text-[10px] font-bold text-amber-500">{t.ownerReviews}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
+                  {!hasRated && listing.sellerUserId && (
+                    <button
+                      onClick={() => setShowRateModal(true)}
+                      className="mt-3 w-full text-xs font-bold text-[#00A86B] hover:text-emerald-600 py-1.5 rounded-lg border border-[#00A86B]/30 hover:border-[#00A86B] transition-colors"
+                    >
+                      ⭐ Rate this seller
+                    </button>
+                  )}
                 </div>
 
                 {/* High-Conversion Primary Actions */}
@@ -738,6 +793,22 @@ const ListingDetailsContent = () => {
                     <span className="font-black tracking-wider uppercase text-xs">{t.btnTelegram}</span>
                   </a>
 
+                  {listing.sellerUserId && (
+                    <button
+                      onClick={() =>
+                        openChat(
+                          listing.sellerUserId!,
+                          listing.sellerName || "Seller",
+                          Number(listing.id)
+                        )
+                      }
+                      className="w-full bg-white dark:bg-slate-900 border border-[#00A86B] text-[#00A86B] dark:text-emerald-400 py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-950/20 shadow-sm"
+                    >
+                      <MessageCircle className="size-4" />
+                      <span className="font-black tracking-wider uppercase text-xs">Message Seller</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={handleToggleFavorite}
                     className={`w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer shadow-inner ${isFavoriteLocal ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-800/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
@@ -753,6 +824,21 @@ const ListingDetailsContent = () => {
           </div>
         </div>
       </div>
+
+      {/* Rate Seller Modal */}
+      {listing && listing.sellerUserId && (
+        <RateSellerModal
+          isOpen={showRateModal}
+          onClose={() => {
+            setShowRateModal(false);
+            setHasRated(true);
+          }}
+          sellerId={listing.sellerUserId}
+          sellerName={listing.sellerName || "Seller"}
+          listingId={Number(listing.id)}
+          listingTitle={listing.titleEn}
+        />
+      )}
 
       {/* Lightbox */}
       {showLightbox && (

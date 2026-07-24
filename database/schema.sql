@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
   username VARCHAR(50) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL, -- Never store plain passwords!
   full_name VARCHAR(100) NOT NULL,
-  role ENUM('super_admin', 'admin') DEFAULT 'admin',
+  role ENUM('super_admin', 'admin', 'g2b_municipality', 'g2b_transport') DEFAULT 'admin',
   is_active BOOLEAN DEFAULT TRUE,
   last_login TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -230,6 +230,31 @@ CREATE TABLE IF NOT EXISTS categories (
 ) ENGINE=InnoDB;
 
 -- ─────────────────────────────────────────────
+-- AUDIT LOGS TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  admin_user_id INT NULL,
+  user_id INT NULL,
+  actor_type ENUM('admin', 'user', 'system', 'anonymous') DEFAULT 'system',
+  actor_identifier VARCHAR(255) NULL,
+  actor_role VARCHAR(50) NULL,
+  action VARCHAR(100) NOT NULL,
+  resource_type VARCHAR(100) NOT NULL,
+  resource_id VARCHAR(100) NULL,
+  details JSON NULL,
+  ip_address VARCHAR(45) NULL,
+  user_agent VARCHAR(500) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_audit_admin_user (admin_user_id),
+  INDEX idx_audit_user (user_id),
+  INDEX idx_audit_actor_type (actor_type),
+  INDEX idx_audit_action (action),
+  INDEX idx_audit_resource (resource_type, resource_id),
+  INDEX idx_audit_created_at (created_at)
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
 -- INITIAL SETUP
 -- ─────────────────────────────────────────────
 -- Note: Use 'node database/seed.js' for full production-ready data population.
@@ -281,4 +306,44 @@ CREATE TABLE IF NOT EXISTS site_config (
   config_key VARCHAR(50) NOT NULL UNIQUE,
   config_value TEXT NOT NULL,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- MESSAGES TABLE (Buyer-Seller Chat)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sender_id INT NOT NULL,
+  receiver_id INT NOT NULL,
+  listing_id INT DEFAULT NULL,
+  message_text TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE SET NULL,
+  INDEX idx_msg_sender (sender_id),
+  INDEX idx_msg_receiver (receiver_id),
+  INDEX idx_msg_listing (listing_id),
+  INDEX idx_msg_read (is_read),
+  INDEX idx_msg_created (created_at)
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- RATINGS TABLE (Buyer → Seller Ratings)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS ratings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  listing_id INT DEFAULT NULL,
+  rater_id INT NOT NULL,
+  seller_id INT NOT NULL,
+  rating TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  review TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE SET NULL,
+  FOREIGN KEY (rater_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_rating_per_listing (rater_id, listing_id),
+  INDEX idx_rating_seller (seller_id),
+  INDEX idx_rating_created (created_at)
 ) ENGINE=InnoDB;

@@ -63,16 +63,16 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       />
       
       {/* Modal Container */}
-      <div className="relative w-full max-w-xl bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden animate-zoom-in">
+      <div className="relative w-full max-w-xl bg-slate-900 border border-white/10 rounded-2xl sm:rounded-[2.5rem] shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden animate-zoom-in">
         
         {/* Progress/Success State Overlay */}
         {success && (
-          <div className="absolute inset-0 z-20 bg-slate-900 flex flex-col items-center justify-center p-12 text-center space-y-8 animate-fade-in">
+          <div className="absolute inset-0 z-20 bg-slate-900 flex flex-col items-center justify-center p-8 sm:p-12 text-center space-y-8 animate-fade-in">
             <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center">
               <CheckCircle2 className="w-12 h-12 text-green-500" />
             </div>
             <div className="space-y-4">
-              <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">
+              <h3 className="text-2xl sm:text-3xl font-black text-white uppercase italic tracking-tighter">
                 {isAm ? "እንኳን ደስ አሎት!" : "Welcome Aboard!"}
               </h3>
               <p className="text-malazone-navy font-medium leading-relaxed">
@@ -90,7 +90,7 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           </div>
         )}
 
-        <div className="p-10 sm:p-14 space-y-10">
+        <div className="p-6 sm:p-10 lg:p-14 space-y-6 sm:space-y-10">
           {/* Header */}
           <div className="flex items-start justify-between">
             <div className="space-y-4">
@@ -98,7 +98,7 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 <ShieldCheck className="w-3 h-3" />
                 Mala-Agent Enrollment
               </div>
-              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-none">
+              <h2 className="text-2xl sm:text-3xl font-black text-white uppercase italic tracking-tighter leading-none">
                 {isAm ? "ወኪል ይሁኑ" : "Enlist as Agent"}
               </h2>
             </div>

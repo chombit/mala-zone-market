@@ -25,9 +25,13 @@ import {
   Heart,
   Share2,
   Check,
+  MessageCircle,
+  Image,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChat } from "@/contexts/ChatContext";
+import { useCity } from "@/contexts/CityContext";
 import { useScrollReveal, use3DTilt } from "@/hooks/useWorldClassAnimations";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import type { ActiveZone } from "./ZoneFilterSidebar";
@@ -55,6 +59,7 @@ export interface ListingItem {
   isVerified: boolean;
   isPremium: boolean;
   badgeKey: string;
+  reviewCount?: number;
   /* Car-specific */
   plateCode?: string;
   fuelType?: string;
@@ -71,234 +76,42 @@ export interface ListingItem {
   specVal?: string;
   phone: string;
   whatsapp: string;
+  sellerUserId?: number;
+  sellerName?: string;
 }
 
 /* ────────────────────────────────────────────
    Mock Inventory Data (Fallback)
    ──────────────────────────────────────────── */
 export const FALLBACK_LISTINGS: ListingItem[] = [
-  {
-    id: "car-001",
-    titleEn: "Toyota Vitz 2018 - Excellent Condition",
-    titleAm: "ቶዮታ ቪትዝ 2018 - ምርጥ ሁኔታ",
-    price: 1250000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.9,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verifiedCarta",
-    plateCode: "CODE 2",
-    fuelType: "Benzine",
-    fuelTag: "BENZINE",
-    condition: "Excellent",
-    phone: "+251911000001",
-    whatsapp: "251911000001",
-  },
-  {
-    id: "house-001",
-    titleEn: "Modern Lakefront Villa with Lake View",
-    titleAm: "ዘመናዊ ቪላ በሐዋሳ ሐይቅ ዳርቻ",
-    price: 15000000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800",
-    zone: "house",
-    locationKey: "loc.hawassa",
-    locationTag: "LAKEFRONT",
-    rating: 5.0,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.verifiedCarta",
-    titleDeed: "Verified Carta",
-    sqm: 450,
-    phone: "+251911000002",
-    whatsapp: "251911000002",
-  },
-  {
-    id: "car-002",
-    titleEn: "Excavator for Rent - Per Hour",
-    titleAm: "ኤክስካቫተር ለኪራይ - በሰዓት",
-    price: 2500,
-    priceSuffixKey: "price.hour",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1579412691522-861f6540960d?q=80&w=800&auto=format&fit=crop",
-    zone: "machinery",
-    locationKey: "loc.bensa",
-    locationTag: "PIASSA",
-    rating: 4.8,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.withOperator",
-    billingTrack: "ETB / Hour",
-    phone: "+251911000003",
-    whatsapp: "251911000003",
-  },
-  {
-    id: "house-002",
-    titleEn: "Commercial Plot with Carta - Piassa",
-    titleAm: "ቆንጆ የቢተሰብ ቪላ በሐዋሳ ፒያሳ",
-    price: 12500000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
-    zone: "house",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.4,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.verifiedCarta",
-    titleDeed: "Verified Carta",
-    sqm: 300,
-    phone: "+251911000004",
-    whatsapp: "251911000004",
-  },
-  {
-    id: "car-003",
-    titleEn: "Toyota RAV4 2022 Hybrid - Brand New",
-    titleAm: "ቶዮታ RAV4 2022 ሃይብሪድ - አዲስ ዜሮ",
-    price: 6400000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1633477189729-9290b3261d0a?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.9,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.zeroKm",
-    plateCode: "CODE 2",
-    fuelType: "Hybrid / Electric",
-    fuelTag: "ELECTRIC",
-    condition: "Zero Mileage",
-    phone: "+251911000005",
-    whatsapp: "251911000005",
-  },
-  {
-    id: "cer-001",
-    titleEn: "Luxury Wedding Hall (1000 Pax)",
-    titleAm: "ዘመናዊ የሰርግ አዳራሽ (1000 ሰው)",
-    price: 45000,
-    priceSuffixKey: "price.day",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800",
-    zone: "ceremony",
-    locationKey: "loc.yirgalem",
-    locationTag: "TABOR",
-    rating: 4.7,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.verified",
-    phone: "+251911000006",
-    whatsapp: "251911000006",
-  },
-  {
-    id: "house-003",
-    titleEn: "Lake View Land - 500 Sqm with Carta",
-    titleAm: "ሰፊ መሬት በሐዋሳ ታቦር - ለንግድም ሆነ ለኑሮ የሚሆን",
-    price: 8500000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=800",
-    zone: "house",
-    locationKey: "loc.hawassa",
-    locationTag: "TABOR",
-    rating: 4.8,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verifiedCarta",
-    titleDeed: "Verified Carta",
-    sqm: 500,
-    phone: "+251911000007",
-    whatsapp: "251911000007",
-  },
-  {
-    id: "car-004",
-    titleEn: "Suzuki Dzire 2021 - Locally Used, Fuel Efficient",
-    titleAm: "ሱዙኪ ድዛየር 2021 - ያገር ውስጥ ነዳጅ ቆጣቢ",
-    price: 2100000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.chuko",
-    locationTag: "CHUKO",
-    rating: 4.5,
-    isVerified: false,
-    isPremium: false,
-    badgeKey: "badge.verified",
-    plateCode: "CODE 3",
-    fuelType: "Benzine",
-    fuelTag: "BENZINE",
-    condition: "Locally Used",
-    phone: "+251911000008",
-    whatsapp: "251911000008",
-  },
-  {
-    id: "car-005",
-    titleEn: "Hyundai Elantra 2023 EV - Zero Mileage",
-    titleAm: "ሂዩንዳይ ኤላንትራ 2023 ኤሌክትሪክ - አዲስ ዜሮ",
-    price: 4900000,
-    priceSuffixKey: "price.etb",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=800",
-    zone: "car",
-    locationKey: "loc.hawassa",
-    locationTag: "PIASSA",
-    rating: 4.8,
-    isVerified: true,
-    isPremium: true,
-    badgeKey: "badge.zeroKm",
-    plateCode: "CODE 2",
-    fuelType: "Electric",
-    fuelTag: "ELECTRIC",
-    condition: "Zero Mileage",
-    phone: "+251911000009",
-    whatsapp: "251911000009",
-  },
-  {
-    id: "heavy-001",
-    titleEn: "Dozer D8R - Available for Construction Work",
-    titleAm: "ዶዘር D8R - ለኮንስትራክሽን ስራ የሚሆን",
-    price: 3500,
-    priceSuffixKey: "price.hour",
-    priceTagKey: "price.fixed",
-    image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800",
-    zone: "machinery",
-    locationKey: "loc.aleta",
-    locationTag: "ALETA WONDO",
-    rating: 4.6,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.withOperator",
-    billingTrack: "ETB / Hour",
-    phone: "+251911000010",
-    whatsapp: "251911000010",
-  },
-  {
-    id: "cer-002",
-    titleEn: "Full DJ Gear & Sound System for Weddings",
-    titleAm: "የዲጄ እቃዎች እና የድምፅ ሲስተም ለሰርግ",
-    price: 15000,
-    priceSuffixKey: "price.day",
-    priceTagKey: "price.negotiable",
-    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800",
-    zone: "ceremony",
-    locationKey: "loc.hawassa",
-    locationTag: "LAKEFRONT",
-    rating: 4.8,
-    isVerified: true,
-    isPremium: false,
-    badgeKey: "badge.verified",
-    phone: "+251911000011",
-    whatsapp: "251911000011",
-  },
+  { id: "37", titleEn: "3 Bedroom House in Tabor", titleAm: "3 መኝታ ክፍል ቤት በታቦር", price: 4500000, priceSuffixKey: "price.etb", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80&fm=webp"], zone: "house", locationKey: "hawassa", locationTag: "TABOR", rating: 4, reviewCount: 13, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", titleDeed: "yes", sqm: 180, bedrooms: 3, bathrooms: 2, phone: "+251911223344", whatsapp: "+251911223344", descriptionEn: "Spacious 3-bedroom house in Tabor, Hawassa.", descriptionAm: "በሐዋሳ ታቦር ውስጥ ሰፊ 3 መኝታ ክፍል ቤት።", sellerUserId: 6, sellerName: "Solomon Birhanu" },
+  { id: "38", titleEn: "Lakefront 2BR Apartment — Furnished", titleAm: "2 መኝታ ክፍል አፓርታማ በሐይቅ ጫፍ — የተቀመጠ", price: 18000, priceSuffixKey: "price.month", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80&fm=webp"], zone: "house", locationKey: "hawassa", locationTag: "LAKEFRONT", rating: 4.2, reviewCount: 11, isVerified: true, isPremium: false, badgeKey: "badge.verified", titleDeed: "yes", sqm: 95, bedrooms: 2, bathrooms: 1, phone: "+251911223355", whatsapp: "+251911223355", descriptionEn: "Fully furnished 2-bedroom apartment overlooking Lake Hawassa.", descriptionAm: "በሐዋሳ ሐይቅ ገጽታ የሚያይ ሙሉ በሙሉ የተቀመጠ 2 መኝታ ክፍል አፓርታማ።", sellerUserId: 15, sellerName: "solomon birhanu buche" },
+  { id: "39", titleEn: "New 4-Bedroom Villa in Piassa", titleAm: "አዲስ 4 መኝታ ክፍል ቪላ በፒያሳ", price: 7800000, priceSuffixKey: "price.etb", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fm=webp"], zone: "house", locationKey: "hawassa", locationTag: "PIASSA", rating: 4.4, reviewCount: 11, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", titleDeed: "yes", sqm: 280, bedrooms: 4, bathrooms: 3, phone: "+251911223377", whatsapp: "+251911223377", descriptionEn: "Brand new 4-bedroom villa with servant quarter.", descriptionAm: "አዲስ 4 መኝታ ክፍል ቪላ ከአገልግሎት ክፍል ጋር።", sellerUserId: 22, sellerName: "Muluken Melese" },
+  { id: "40", titleEn: "Shop Space for Rent — Hawassa Center", titleAm: "የሱপ ቦታ በኪራይ — ሀዋሳ ማዕከል", price: 8000, priceSuffixKey: "price.month", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp", zone: "house", locationKey: "hawassa", locationTag: "PIASSA", rating: 4.1, reviewCount: 8, isVerified: true, isPremium: false, badgeKey: "badge.verified", sqm: 30, phone: "+251911223399", whatsapp: "+251911223399", descriptionEn: "Ground-floor commercial space in central Hawassa.", descriptionAm: "በሀዋሳ ማዕከል ውስጥ የምድር ፊት የንግድ ቦታ።", sellerUserId: 26, sellerName: "Biniam" },
+  { id: "41", titleEn: "Vacation House near Lake Langano", titleAm: "የማረፊያ ቤት በላንጋኖ ሐይቅ አቅራቢያ", price: 3200000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=800&q=80&fm=webp"], zone: "house", locationKey: "yirgalem", locationTag: "LANGANO", rating: 4.3, reviewCount: 11, isVerified: false, isPremium: false, badgeKey: "badge.verified", titleDeed: "yes", sqm: 120, bedrooms: 2, bathrooms: 1, phone: "+251911223400", whatsapp: "+251911223400", descriptionEn: "2-bedroom vacation home with lake view.", descriptionAm: "የሐይቅ ገጽታ ያለው 2 መኝታ ክፍል ማረፊያ ቤት።", sellerUserId: 27, sellerName: "Mulatu" },
+  { id: "42", titleEn: "2019 Toyota Corolla — Single Owner", titleAm: "2019 ቶዮታ ኮሮላ — አንድ ባለቤት", price: 1200000, priceSuffixKey: "price.etb", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80&fm=webp"], zone: "car", locationKey: "hawassa", locationTag: "TABOR", rating: 4, reviewCount: 13, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", plateCode: "A1234", fuelType: "benzine", fuelTag: "BENZINE", condition: "used", phone: "+251911223344", whatsapp: "+251911223344", descriptionEn: "Well-maintained 2019 Toyota Corolla. Single owner, 45,000 km.", descriptionAm: "በጠበቀ ሁኔታ የተጠበቀ 2019 ቶዮታ ኮሮላ።", sellerUserId: 6, sellerName: "Solomon Birhanu" },
+  { id: "43", titleEn: "2022 Honda CB500 Motorcycle", titleAm: "2022 ሆንዳ CB500 ሞተር ሳይክል", price: 320000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80&fm=webp"], zone: "car", locationKey: "hawassa", locationTag: "PIASSA", rating: 4, reviewCount: 12, isVerified: true, isPremium: false, badgeKey: "badge.verified", plateCode: "B5678", fuelType: "benzine", fuelTag: "BENZINE", condition: "used", phone: "+251911223388", whatsapp: "+251911223388", descriptionEn: "Low-mileage Honda CB500F. 8,000 km, always garaged.", descriptionAm: "ዝቅተኛ ርቀት ያለው ሆንዳ CB500F።", sellerUserId: 24, sellerName: "Ashenafi Haile" },
+  { id: "44", titleEn: "2021 Hyundai Tucson — Full Options", titleAm: "2021 ሀይንዳይ ቱሰን — ሙሉ አማራጮች", price: 2800000, priceSuffixKey: "price.etb", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1633477189729-9290b3261d0a?w=800&q=80&fm=webp", zone: "car", locationKey: "addis_ababa", locationTag: "ADDIS ABABA", rating: 4.5, reviewCount: 10, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", plateCode: "C9012", fuelType: "benzine", fuelTag: "BENZINE", condition: "used", phone: "+251911223366", whatsapp: "+251911223366", descriptionEn: "2021 Hyundai Tucson Premium. AWD, panoramic sunroof.", descriptionAm: "2021 ሀይንዳይ ቱሰን ፕሪሚየም።", sellerUserId: 19, sellerName: "Ada" },
+  { id: "45", titleEn: "Electric Motorbike — E-Lion", titleAm: "ኤሌክትሪክ ሞተር ሳይክል — E-Lion", price: 85000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80&fm=webp", zone: "car", locationKey: "hawassa", locationTag: "LAKEFRONT", rating: 4.1, reviewCount: 8, isVerified: true, isPremium: false, badgeKey: "badge.verified", fuelType: "electric", fuelTag: "ELECTRIC", condition: "new", phone: "+251911223399", whatsapp: "+251911223399", descriptionEn: "Brand new E-Lion electric motorbike. 80km range.", descriptionAm: "አዲስ E-Lion ኤሌክትሪክ ሞተር ሳይክል።", sellerUserId: 26, sellerName: "Biniam" },
+  { id: "46", titleEn: "2020 Toyota Hilux Double Cabin", titleAm: "2020 ቶዮታ ሂሉክስ ድብል ኪ臖ን", price: 3500000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=800&q=80&fm=webp", zone: "car", locationKey: "aleta_wondo", locationTag: "ALETA WONDO", rating: 4, reviewCount: 11, isVerified: true, isPremium: false, badgeKey: "badge.verified", plateCode: "D3456", fuelType: "diesel", fuelTag: "DIESEL", condition: "used", phone: "+251911223377", whatsapp: "+251911223377", descriptionEn: "Toyota Hilux 2020, diesel, 4WD, used for light duty only.", descriptionAm: "ቶዮታ ሂሉክስ 2020፣ ዴዘል፣ 4WD።", sellerUserId: 22, sellerName: "Muluken Melese" },
+  { id: "47", titleEn: "Hawassa Lakeview Hotel — Standard Room", titleAm: "ሐዋሳ የሐይቅ ገጽታ ሆቴል — መደበኛ ክፍል", price: 2500, priceSuffixKey: "price.day", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&q=80&fm=webp"], zone: "ceremony", locationKey: "hawassa", locationTag: "LAKEFRONT", rating: 4, reviewCount: 11, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", phone: "+251911223355", whatsapp: "+251911223355", descriptionEn: "Standard hotel room with lake view. Free Wi-Fi, breakfast included.", descriptionAm: "የሐይቅ ገጽታ ያለው መደበኛ የሆቴል ክፍል።", sellerUserId: 15, sellerName: "solomon birhanu buche" },
+  { id: "48", titleEn: "Lakefront Airbnb Studio", titleAm: "የሐይቅ ጫፍ ኤርቢኤንቢ ስቱዲዮ", price: 3500, priceSuffixKey: "price.day", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80&fm=webp", zone: "ceremony", locationKey: "hawassa", locationTag: "LAKEFRONT", rating: 4, reviewCount: 12, isVerified: true, isPremium: false, badgeKey: "badge.verified", phone: "+251911223388", whatsapp: "+251911223388", descriptionEn: "Cozy self-contained studio apartment. Kitchen, balcony.", descriptionAm: "ቀላል ራስን የሚያስተዳድር ስቱዲዮ አፓርታማ።", sellerUserId: 24, sellerName: "Ashenafi Haile" },
+  { id: "49", titleEn: "Haile Resort — Deluxe Room", titleAm: "ሀይሌ ሪዞርት — ዴሉክስ ክፍል", price: 4500, priceSuffixKey: "price.day", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80&fm=webp"], zone: "ceremony", locationKey: "hawassa", locationTag: "LAKEFRONT", rating: 4.4, reviewCount: 11, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", phone: "+251911223400", whatsapp: "+251911223400", descriptionEn: "Premium lakefront resort room. Pool access, restaurant, spa.", descriptionAm: "ፕሪሚየም የሐይቅ ጫፍ ሪዞርት ክፍል።", sellerUserId: 27, sellerName: "Mulatu" },
+  { id: "50", titleEn: "Budget Guest House — Tabor", titleAm: "ምንጭ ያለው የእንግዳ ቤት — ታቦር", price: 1200, priceSuffixKey: "price.day", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1587381420270-3e1a5b9e6904?w=800&q=80&fm=webp", zone: "ceremony", locationKey: "hawassa", locationTag: "TABOR", rating: 4.5, reviewCount: 10, isVerified: false, isPremium: false, badgeKey: "badge.verified", phone: "+251911223366", whatsapp: "+251911223366", descriptionEn: "Clean, affordable guesthouse in Tabor.", descriptionAm: "በታቦር ውስጥ ን끗 ያለ ምንጭ ያለው የእንግዳ ቤት።", sellerUserId: 19, sellerName: "Ada" },
+  { id: "51", titleEn: "Lake Langano Resort — Family Suite", titleAm: "የሐይቅ ሪዞርት — ስንቅ ክፍል", price: 6000, priceSuffixKey: "price.day", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&fm=webp", zone: "ceremony", locationKey: "yirgalem", locationTag: "LANGANO", rating: 3.9, reviewCount: 13, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", phone: "+251911223344", whatsapp: "+251911223344", descriptionEn: "Spacious family suite at Lake Langano resort.", descriptionAm: "በላንጋኖ ሪዞርት ውስጥ ሰፊ ስንቅ ክፍል።", sellerUserId: 6, sellerName: "Solomon Birhanu" },
+  { id: "52", titleEn: "Wedding Catering — Full Service", titleAm: "የሰርግ ማቅያ — ሙሉ አገልግሎት", price: 2500, priceSuffixKey: "price.day", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80&fm=webp", zone: "ceremony", locationKey: "hawassa", locationTag: "TABOR", rating: 4, reviewCount: 11, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", phone: "+251911223377", whatsapp: "+251911223377", descriptionEn: "Professional wedding catering for up to 500 guests.", descriptionAm: "ለ500 እንግዶች ሰርግ ማቅያ አገልግሎት።", sellerUserId: 22, sellerName: "Muluken Melese" },
+  { id: "53", titleEn: "DJ & Sound System — Events", titleAm: "ዲเจ እና ድምጽ ስስተም — ዝግጅቶች", price: 8000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=800&q=80&fm=webp"], zone: "ceremony", locationKey: "hawassa", locationTag: "PIASSA", rating: 4.1, reviewCount: 8, isVerified: true, isPremium: false, badgeKey: "badge.verified", phone: "+251911223399", whatsapp: "+251911223399", descriptionEn: "Professional DJ with full sound system for events.", descriptionAm: "ለሰርግ፣ ልደት እና ዝግጅቶች ፕሮፌሽናል ዲเจ።", sellerUserId: 26, sellerName: "Biniam" },
+  { id: "54", titleEn: "Habesha Ceremony Hall — 300 Capacity", titleAm: "ሀበሻ ስርዓት አዳራሽ — 300 ተረን틴", price: 15000, priceSuffixKey: "price.etb", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80&fm=webp", zone: "ceremony", locationKey: "hawassa", locationTag: "TABOR", rating: 4, reviewCount: 11, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", phone: "+251911223355", whatsapp: "+251911223355", descriptionEn: "Modern ceremony hall with full amenities.", descriptionAm: "ዘመናዊ ስርዓት አዳራሽ ከሙሉ ማመቻቸት ጋር።", sellerUserId: 15, sellerName: "solomon birhanu buche" },
+  { id: "55", titleEn: "Floral Decoration & Event Styling", titleAm: "የአበቦች ማጌזן እና ዝግጅት ዘይቤ", price: 12000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=800&q=80&fm=webp", zone: "ceremony", locationKey: "hawassa", locationTag: "LAKEFRONT", rating: 4.4, reviewCount: 11, isVerified: true, isPremium: false, badgeKey: "badge.verified", phone: "+251911223400", whatsapp: "+251911223400", descriptionEn: "Complete event decoration service.", descriptionAm: "ሙሉ ዝግጅት ማጌזן አገልግሎት።", sellerUserId: 27, sellerName: "Mulatu" },
+  { id: "56", titleEn: "Cat 320 Excavator — For Hire", titleAm: "ካት 320 አቃቂ — በኪራይ", price: 35000, priceSuffixKey: "price.day", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1579412691522-861f6540960d?w=800&q=80&fm=webp", zone: "machinery", locationKey: "hawassa", locationTag: "TABOR", rating: 4, reviewCount: 13, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", billingTrack: "ETB / Day", phone: "+251911223344", whatsapp: "+251911223344", descriptionEn: "Cat 320D excavator for construction. Operator available.", descriptionAm: "ለግንባታ እና የምድር ሥራ ካት 320D አቃቂ።", sellerUserId: 6, sellerName: "Solomon Birhanu" },
+  { id: "57", titleEn: "Hitachi ZX200 Excavator", titleAm: "ሀይታቺ ZX200 አቃቂ", price: 30000, priceSuffixKey: "price.day", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=800&q=80&fm=webp", zone: "machinery", locationKey: "yirgalem", locationTag: "YIRGALEM", rating: 4, reviewCount: 12, isVerified: true, isPremium: false, badgeKey: "badge.verified", billingTrack: "ETB / Day", phone: "+251911223388", whatsapp: "+251911223388", descriptionEn: "Well-maintained Hitachi ZX200 excavator. 20-ton class.", descriptionAm: "በጠበቀ ሁኔታ የተጠበቀ ሀይታቺ ZX200 አቃቂ።", sellerUserId: 24, sellerName: "Ashenafi Haile" },
+  { id: "58", titleEn: "SDLG L956F Wheel Loader", titleAm: "SDLG L956F ዞላ ማጓጓző", price: 28000, priceSuffixKey: "price.day", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&q=80&fm=webp", zone: "machinery", locationKey: "bensa", locationTag: "BENSA", rating: 4.5, reviewCount: 10, isVerified: true, isPremium: false, badgeKey: "badge.verified", billingTrack: "ETB / Day", phone: "+251911223366", whatsapp: "+251911223366", descriptionEn: "SDLG L956F wheel loader. 5-ton bucket.", descriptionAm: "SDLG L956F ዞላ ማጓጓző።", sellerUserId: 19, sellerName: "Ada" },
+  { id: "59", titleEn: "XCMG Crane — 25 Ton", titleAm: "XCMG ክሬን — 25 ቶን", price: 45000, priceSuffixKey: "price.day", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&fm=webp", zone: "machinery", locationKey: "chuko", locationTag: "CHUKO", rating: 4, reviewCount: 11, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", billingTrack: "ETB / Day", phone: "+251911223377", whatsapp: "+251911223377", descriptionEn: "XCMG 25-ton mobile crane for construction projects.", descriptionAm: "ለግንባታ ፕሮጀክቶች XCMG 25 ቶን ሞባይል ክሬን።", sellerUserId: 22, sellerName: "Muluken Melese" },
+  { id: "60", titleEn: "Samsung Galaxy S24 Ultra — 256GB", titleAm: "ሳምሰንግ ጋላክሲ S24 እልትራ — 256GB", price: 85000, priceSuffixKey: "price.etb", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80&fm=webp", images: ["https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=800&q=80&fm=webp", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80&fm=webp"], zone: "electronics", locationKey: "hawassa", locationTag: "PIASSA", rating: 4, reviewCount: 12, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", condition: "new", phone: "+251911223388", whatsapp: "+251911223388", descriptionEn: "Brand new Samsung Galaxy S24 Ultra. Titanium Black, 256GB.", descriptionAm: "አዲስ ሳምሰንግ ጋላክሲ S24 እልትራ።", sellerUserId: 24, sellerName: "Ashenafi Haile" },
+  { id: "61", titleEn: "LG 55\" OLED Smart TV", titleAm: "LG 55\" OLED ሳማርት ቲቪ", price: 65000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800&q=80&fm=webp", zone: "electronics", locationKey: "hawassa", locationTag: "TABOR", rating: 3.9, reviewCount: 13, isVerified: true, isPremium: false, badgeKey: "badge.verified", condition: "new", phone: "+251911223344", whatsapp: "+251911223344", descriptionEn: "LG 55-inch OLED 4K Smart TV. Dolby Vision, webOS.", descriptionAm: "LG 55 ኢንች OLED 4K ሳማርት ቲቪ።", sellerUserId: 6, sellerName: "Solomon Birhanu" },
+  { id: "62", titleEn: "MacBook Air M3 — 15\"", titleAm: "MacBook Air M3 — 15\"", price: 120000, priceSuffixKey: "price.etb", priceTagKey: "price.fixed", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80&fm=webp", zone: "electronics", locationKey: "addis_ababa", locationTag: "ADDIS ABABA", rating: 4.4, reviewCount: 11, isVerified: true, isPremium: true, badgeKey: "badge.verifiedCarta", condition: "new", phone: "+251911223400", whatsapp: "+251911223400", descriptionEn: "Apple MacBook Air 15-inch M3 chip, 16GB RAM, 512GB SSD.", descriptionAm: "Apple MacBook Air 15 ኢንች M3 chip፣ 16GB RAM።", sellerUserId: 27, sellerName: "Mulatu" },
+  { id: "63", titleEn: "PS5 Console + 2 Controllers", titleAm: "PS5 ኮንሶል + 2 ኮንትሮለሮች", price: 45000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800&q=80&fm=webp", zone: "electronics", locationKey: "hawassa", locationTag: "LAKEFRONT", rating: 4.5, reviewCount: 10, isVerified: true, isPremium: false, badgeKey: "badge.verified", condition: "used", phone: "+251911223366", whatsapp: "+251911223366", descriptionEn: "PlayStation 5 disc edition with 2 DualSense controllers.", descriptionAm: "PlayStation 5 ዲስክ ቅርጫ ከ2 DualSense ኮንትሮለሮች ጋር።", sellerUserId: 19, sellerName: "Ada" },
+  { id: "64", titleEn: "iPhone 15 Pro Max — 256GB", titleAm: "iPhone 15 Pro Max — 256GB", price: 95000, priceSuffixKey: "price.etb", priceTagKey: "price.negotiable", image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80&fm=webp", zone: "electronics", locationKey: "hawassa", locationTag: "TABOR", rating: 4, reviewCount: 11, isVerified: true, isPremium: false, badgeKey: "badge.verified", condition: "used", phone: "+251911223355", whatsapp: "+251911223355", descriptionEn: "iPhone 15 Pro Max, Natural Titanium, 256GB. 95% battery health.", descriptionAm: "iPhone 15 Pro Max፣ ተፈጥሮ ታይታኒየም፣ 256GB።", sellerUserId: 15, sellerName: "solomon birhanu buche" },
 ];
 
 /* ── Map DB listing shape to ListingItem ── */
@@ -328,7 +141,8 @@ function mapDbListingToItem(row: any): ListingItem {
     zone,
     locationKey: row.location_key || "",
     locationTag: (row.location_label_en || "").toUpperCase() || "PIASSA",
-    rating: 4.5,
+    rating: row.avg_rating ? Number(row.avg_rating) : 0,
+    reviewCount: row.review_count ? Number(row.review_count) : 0,
     isVerified: !!row.is_verified,
     isPremium: !!row.is_premium,
     badgeKey: row.is_verified ? "badge.verifiedCarta" : "badge.verified",
@@ -345,18 +159,21 @@ function mapDbListingToItem(row: any): ListingItem {
     whatsapp: row.whatsapp || row.phone || "",
     descriptionAm: row.description_am || undefined,
     descriptionEn: row.description_en || undefined,
+    sellerUserId: row.user_id ? Number(row.user_id) : undefined,
+    sellerName: row.seller_name || undefined,
   };
 }
 
 /* ── Fetch Listings from API ── */
-function useListings() {
+function useListings(cityKey?: string) {
   const [listings, setListings] = useState<ListingItem[]>(FALLBACK_LISTINGS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetch("/api/listings")
+    const url = cityKey ? `/api/listings?city=${cityKey}` : "/api/listings";
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         if (cancelled) return;
@@ -372,7 +189,7 @@ function useListings() {
         }
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [cityKey]);
 
   return { listings, loading };
 }
@@ -460,6 +277,14 @@ const ListingCard: React.FC<{
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 group-hover:opacity-100" />
 
+        {/* Image Count Badge */}
+        {item.images && item.images.length > 1 && (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm border border-white/20 rounded-lg px-2 py-1">
+            <Image className="w-3 h-3 text-white" />
+            <span className="text-[11px] font-semibold text-white">{item.images.length}</span>
+          </div>
+        )}
+
         {/* Glassmorphic Status Badge */}
         <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/25 dark:bg-black/35 backdrop-blur-xl border border-white/30 rounded-xl px-3 py-1.5 group-hover:scale-105 transition-transform duration-300">
           <span className="w-2.5 h-2.5 rounded-full bg-[#00A86B] animate-pulse" />
@@ -480,8 +305,11 @@ const ListingCard: React.FC<{
       {/* ── Card Body ── */}
       <div className="p-5 flex flex-col flex-grow">
         {/* Star Rating */}
-        <div className="mb-2">
+        <div className="mb-2 flex items-center gap-1.5">
           <StarRating rating={item.rating} />
+          {item.reviewCount ? (
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">({item.reviewCount})</span>
+          ) : null}
         </div>
 
         {/* Title */}
@@ -522,7 +350,7 @@ const ListingCard: React.FC<{
 
         {/* Zone-Specific Data Rows */}
         {item.zone === "car" && (
-          <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
             <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 text-center group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
               <p className="text-[9px] text-slate-400 uppercase mb-0.5">{t("label.plateCode")}</p>
               <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.plateCode}</p>
@@ -539,7 +367,7 @@ const ListingCard: React.FC<{
         )}
 
         {item.zone === "house" && (
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
             <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2 group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
               <Key className="w-4.5 h-4.5 text-amber-500" />
               <div>
@@ -639,11 +467,13 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { trackEvent } = useSocketTracker();
+  const { currentCity } = useCity();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { openChat } = useChat();
   const [currentPage, setCurrentPage] = useState(1);
   const { ref: gridRef, isVisible: gridVisible } = useScrollReveal({ threshold: 0.1 });
-  const { listings, loading } = useListings();
+  const { listings, loading } = useListings(currentCity?.key);
 
   const requireAuth = useCallback((action: () => void) => {
     if (!isAuthenticated) {
@@ -774,7 +604,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
 
       {/* ── Card Grid ── */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {visibleListings.map((item, index) => (
             <article
               key={item.id}
@@ -788,7 +618,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
               className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl overflow-hidden group hover:border-[#00A86B]/30 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_24px_48px_rgba(0,168,107,0.15)] shadow-md flex flex-col relative transition-all duration-500 cursor-pointer"
             >
               {/* ── Image Container ── */}
-              <div className="relative h-52 overflow-hidden">
+              <div className="relative h-40 sm:h-52 overflow-hidden">
                 <img
                   src={item.image}
                   alt={language === "amharic" ? item.titleAm : item.titleEn}
@@ -797,6 +627,14 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                {/* Image Count Badge */}
+                {item.images && item.images.length > 1 && (
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm border border-white/20 rounded-lg px-2 py-1">
+                    <Image className="w-3 h-3 text-white" />
+                    <span className="text-[11px] font-semibold text-white">{item.images.length}</span>
+                  </div>
+                )}
 
                 {/* Glassmorphic Status Badge */}
                 <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/20 dark:bg-black/30 backdrop-blur-md border border-white/20 rounded-lg px-2.5 py-1.5">
@@ -836,19 +674,22 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
               </div>
 
               {/* ── Card Body ── */}
-              <div className="p-5 flex flex-col flex-grow">
+              <div className="p-3 sm:p-5 flex flex-col flex-grow">
                 {/* Star Rating */}
-                <div className="mb-2">
+                <div className="mb-1.5 sm:mb-2 flex items-center gap-1.5">
                   <StarRating rating={item.rating} />
+                  {item.reviewCount ? (
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">({item.reviewCount})</span>
+                  ) : null}
                 </div>
 
                 {/* Title */}
-                <h3 className="text-[15px] font-bold text-slate-900 dark:text-white leading-snug mb-3 line-clamp-2 group-hover:text-[#00A86B] transition-colors font-sans tracking-wide">
+                <h3 className="text-[13px] sm:text-[15px] font-bold text-slate-900 dark:text-white leading-snug mb-2 sm:mb-3 line-clamp-2 group-hover:text-[#00A86B] transition-colors font-sans tracking-wide">
                   {language === "amharic" ? item.titleAm : item.titleEn}
                 </h3>
 
                 {/* Info Micro-Pills */}
-                <div className="flex flex-wrap gap-1.5 mb-4">
+                <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-3 sm:mb-4">
                   {/* Location pill */}
                   <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 rounded-md px-2 py-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     <MapPin className="w-3 h-3 text-red-500" />
@@ -878,9 +719,9 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   )}
                 </div>
 
-                {/* Zone-Specific Data Rows */}
+                {/* Zone-Specific Data Rows - Hidden on mobile for cleaner look */}
                 {item.zone === "car" && (
-                  <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
                     <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-2 border border-slate-100 dark:border-white/5 text-center">
                       <p className="text-[9px] text-slate-400 uppercase mb-0.5">{t("label.plateCode")}</p>
                       <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{item.plateCode}</p>
@@ -897,7 +738,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                 )}
 
                 {item.zone === "house" && (
-                  <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                     <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2">
                       <Key className="w-4 h-4 text-amber-500" />
                       <div>
@@ -964,20 +805,29 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   {/* ── Delala Eliminator Buttons ── */}
                   <div className="flex gap-2.5">
                     <button
-                      onClick={() => requireAuth(() => { window.location.href = `tel:${item.phone}`; })}
+                      onClick={(e) => { e.stopPropagation(); requireAuth(() => { window.location.href = `tel:${item.phone}`; }); }}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 hover:bg-slate-100 dark:bg-slate-900/50 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md dark:shadow-none font-sans"
                     >
                       <Phone className="w-4 h-4 text-slate-500 dark:text-slate-400 transition-colors" />
                       {t("cta.call")}
                     </button>
                     <button
-                      onClick={() => requireAuth(() => { window.open(`https://t.me/+${item.whatsapp.replace("+", "")}`, "_blank"); })}
+                      onClick={(e) => { e.stopPropagation(); requireAuth(() => { window.open(`https://t.me/+${item.whatsapp.replace("+", "")}`, "_blank"); }); }}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-[0_6px_15px_rgba(36,161,222,0.3)] group/tg font-sans"
                     >
                       <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       {t("cta.whatsapp")}
                     </button>
                   </div>
+                  {item.sellerUserId && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openChat(item.sellerUserId!, item.sellerName || "Seller", Number(item.id)); }}
+                      className="mt-2.5 w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-[#00A86B]/40 text-[#00A86B] dark:text-emerald-400 hover:bg-[#00A86B]/5 dark:hover:bg-emerald-950/20 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm font-sans"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      {t("cta.chat") || "Message Seller"}
+                    </button>
+                  )}
                 </div>
               </div>
             </article>

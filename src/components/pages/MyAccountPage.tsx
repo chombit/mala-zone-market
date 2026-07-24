@@ -43,7 +43,7 @@ const MyAccountPage: React.FC = () => {
         </button>
 
         {/* Avatar Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-8 text-center mb-6">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 text-center mb-6">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#00A86B] to-emerald-500 flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-emerald-500/20 mx-auto mb-4">
             {user.full_name?.charAt(0)?.toUpperCase() || "U"}
           </div>

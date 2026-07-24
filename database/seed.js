@@ -16,6 +16,8 @@ const seedDatabase = async () => {
     const SALT_ROUNDS = 12;
     const superAdminPassword = await bcrypt.hash("superadmin123", SALT_ROUNDS);
     const adminPassword = await bcrypt.hash("admin", SALT_ROUNDS);
+    const municipalityPassword = await bcrypt.hash("g2b", SALT_ROUNDS);
+    const transportPassword = await bcrypt.hash("g2b", SALT_ROUNDS);
 
     // 2. Insert initial admin users
     await db.execute(`
@@ -23,10 +25,14 @@ const seedDatabase = async () => {
         (username, password_hash, full_name, role, is_active) 
       VALUES 
         (?, ?, ?, ?, ?),
+        (?, ?, ?, ?, ?),
+        (?, ?, ?, ?, ?),
         (?, ?, ?, ?, ?)
     `, [
       "superadmin", superAdminPassword, "System Super Admin", "super_admin", true,
-      "admin", adminPassword, "System Admin", "admin", true
+      "admin", adminPassword, "System Admin", "admin", true,
+      "muni_officer", municipalityPassword, "Municipality Clerk Seat 02", "g2b_municipality", true,
+      "trans_officer", transportPassword, "Transit Officer Seat 09", "g2b_transport", true
     ]);
     console.log("✅ Admin users seeded successfully!");
 
@@ -51,7 +57,8 @@ const seedDatabase = async () => {
         ("motors", "Motors & EV", "መኪናዎች", "Cars, motorcycles, EVs", "መኪናዎች፣ ሞተር ሳይክሎች", 1, true),
         ("stay", "Stay & Ceremony", "እንቅልፍ እና ስርዓት", "Hotels, halls, ceremony services", "ሆቴሎች፣ አዳራሾች", 2, true),
         ("ceremony", "Ceremony", "ስርዓት", "Ceremony services", "ስርዓት አገልግሎቶች", 3, true),
-        ("heavy", "Heavy Machinery", "ከባድ ማሽነሪዎች", "Excavators, tractors, loaders", "ማሽነሪዎች", 4, true)
+        ("heavy", "Heavy Machinery", "ከባድ ማሽነሪዎች", "Excavators, tractors, loaders", "ማሽነሪዎች", 4, true),
+        ("electronics", "Electronics", "ኤሌክትሮኒክስ", "Phones, laptops, gadgets", "ስማርትፎኖች፣ ዋቂያዎች", 5, true)
     `);
     console.log("✅ Categories seeded successfully!");
 
@@ -106,6 +113,8 @@ const seedDatabase = async () => {
     console.log("\n📝 Credentials:");
     console.log("   - Super Admin: superadmin / superadmin123");
     console.log("   - Admin: admin / admin");
+    console.log("   - Municipality: muni_officer / g2b");
+    console.log("   - Transport: trans_officer / g2b");
     console.log("\n✅ All data seeded successfully!");
 
   } catch (err) {

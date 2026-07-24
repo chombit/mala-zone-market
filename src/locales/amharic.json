@@ -36,6 +36,13 @@
   "search.intent": "የፍላጎት አይነት",
   "search.btn": "መላ አግኝ (ፈልግ)",
   "cat.all": "ሁሉም ዞኖች",
+  "cat.property": "ንብረት",
+  "cat.motors": "መኪና",
+  "cat.stay": "ማረፊያ",
+  "cat.ceremony": "ሰርግ",
+  "cat.heavy": "ከባድ ማሽን",
+  "cat.electronics": "ኤሌክትሮኒክስ",
+  "cat.title": "ዞን ምረጥ",
 
   "stats.clients": "ደስተኛ ደንበኞች",
   "stats.listings": "ንቁ ማስታወቂያዎች",
@@ -104,6 +111,7 @@
 
   "cta.call": "ቀጥታ ደውል",
   "cta.whatsapp": "በቴሌግራም",
+  "cta.chat": "ሻጭን ያሰነጋቅ",
 
   "badge.verifiedCarta": "ካርታ የተረጋገጠ",
   "badge.verified": "የተረጋገጠ",

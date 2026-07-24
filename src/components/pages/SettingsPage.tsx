@@ -31,7 +31,7 @@ const SettingsPage: React.FC = () => {
           {isAm ? "ተመለስ" : "Back"}
         </button>
 
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-8">
           {isAm ? "ማስተካከያ" : "Settings"}
         </h1>
 

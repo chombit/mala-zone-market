@@ -11,6 +11,7 @@ import Hero from './components/Hero';
 import ZoneFilterSidebar, { ActiveZone, FilterState } from './components/ZoneFilterSidebar';
 import ZoneCatalogGrid from './components/ZoneCatalogGrid';
 import { MalaAgentsUnified } from './components/MalaAgentsUnified';
+import TrendingListings from './components/TrendingListings';
 import { MalaZoneTestimonials } from './components/MalaZoneTestimonials';
 import Footer from './components/Footer';
 import AboutPage from './components/pages/AboutPage';
@@ -20,6 +21,8 @@ import { FavoritesProvider } from './contexts/FavoritesContext';
 import { FavoritesSidebar } from './components/FavoritesSidebar';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import BottomNavigation from './components/BottomNavigation';
+import ChatPanel from './components/ChatPanel';
+import { SlidersHorizontal, X } from 'lucide-react';
 
 import GigHubPage from './components/pages/GigHubPage';
 import AgentOnboardPage from './components/pages/AgentOnboardPage';
@@ -47,6 +50,7 @@ const MainSite: React.FC = () => {
   const [activeZone, setActiveZone] = useState<ActiveZone>("all");
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [currentPage, setCurrentPage] = useState<PageView>("home");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const { language } = useLanguage();
 
   /* Sync header category pills → activeZone for the catalog grid */
@@ -79,8 +83,6 @@ const MainSite: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /* ── Sub-page views ── */
-
   return (
     <FavoritesProvider>
       <div
@@ -102,7 +104,7 @@ const MainSite: React.FC = () => {
           onCategoryChange={handleCategoryChange}
         />
 
-        <div className="pt-[140px]">
+        <div className="pt-[110px] sm:pt-[140px]">
           {currentPage === "about" && <AboutPage onBack={() => navigateTo("home")} />}
           {currentPage === "contact" && <ContactPage onBack={() => navigateTo("home")} />}
           {currentPage === "privacy" && <PrivacyPage onBack={() => navigateTo("home")} />}
@@ -119,18 +121,63 @@ const MainSite: React.FC = () => {
             onFilterChange={(key, value) => handleFilterChange(key as keyof FilterState, value)}
           />
 
+          {/* ── Mobile Trending Cards ──────────────────────── */}
+          <TrendingListings />
+
           {/* ── Split-Screen Catalog Section ──────────────────────── */}
           <div
             id="listings-catalog"
-            className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4"
+            className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-12 pb-4"
           >
+            {/* Mobile Filter Toggle Button */}
+            <button
+              onClick={() => setShowMobileFilters(true)}
+              className="lg:hidden mb-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#00A86B] text-white font-bold text-sm shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              <SlidersHorizontal className="w-5 h-5" />
+              Filter Listings
+            </button>
+
             <div className="flex flex-col lg:flex-row gap-8">
-              <ZoneFilterSidebar
-                activeZone={activeZone}
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onReset={handleReset}
-              />
+              {/* Desktop: Always show sidebar | Mobile: Show as modal */}
+              <div className="hidden lg:block">
+                <ZoneFilterSidebar
+                  activeZone={activeZone}
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
+                  onReset={handleReset}
+                />
+              </div>
+
+              {/* Mobile Filter Modal */}
+              {showMobileFilters && (
+                <>
+                  <div
+                    className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+                    onClick={() => setShowMobileFilters(false)}
+                  />
+                  <div className="fixed inset-y-0 left-0 right-0 z-50 lg:hidden overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-900 p-4 min-h-screen">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Filters</h2>
+                        <button
+                          onClick={() => setShowMobileFilters(false)}
+                          className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                        </button>
+                      </div>
+                      <ZoneFilterSidebar
+                        activeZone={activeZone}
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                        onReset={handleReset}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <ZoneCatalogGrid
                 activeZone={activeZone}
                 filters={filters}
@@ -159,10 +206,10 @@ const MainSite: React.FC = () => {
           activeCategory={activeCategory} 
           onCategoryChange={handleCategoryChange} 
         />
+        <ChatPanel />
       </div>
     </FavoritesProvider>
   );
 };
 
 export default MainSite;
-

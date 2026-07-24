@@ -19,7 +19,10 @@ import {
 import { useAdminAuth } from "../contexts/AdminAuthContext";
 
 type PortalType = "municipality" | "transport";
+type WorkflowStatus = "submitted" | "under_review" | "needs_clarification" | "approved" | "rejected" | "fraud_flagged";
 type AuditStatus = "verified" | "fraudulent";
+type RejectionReason = "registry_mismatch" | "court_injunction" | "tax_arrears" | "ownership_dispute" | "document_fraud" | "stolen_vehicle" | "crime_flag" | "incomplete_docs" | "other";
+type ReviewScope = "property_review" | "legal_review" | "vehicle_review";
 type AssetCategory = "all" | "land" | "house" | "business";
 
 interface ApiPendingItem {
@@ -71,6 +74,10 @@ interface LandFormState {
   taxClear: boolean;
   digitalSignature: string;
   notes: string;
+  rejectionReason: RejectionReason | "";
+  evidenceReferences: string[];
+  workflowStatus: WorkflowStatus;
+  reviewScope: ReviewScope;
 }
 
 interface VehicleFormState {
@@ -78,6 +85,10 @@ interface VehicleFormState {
   ownershipMatch: boolean;
   digitalSignature: string;
   notes: string;
+  rejectionReason: RejectionReason | "";
+  evidenceReferences: string[];
+  workflowStatus: WorkflowStatus;
+  reviewScope: ReviewScope;
 }
 
 const createLandForm = (): LandFormState => ({
@@ -85,14 +96,22 @@ const createLandForm = (): LandFormState => ({
   noCourtInjunctions: false,
   taxClear: false,
   digitalSignature: "",
-  notes: ""
+  notes: "",
+  rejectionReason: "",
+  evidenceReferences: [],
+  workflowStatus: "submitted",
+  reviewScope: "property_review"
 });
 
 const createVehicleForm = (): VehicleFormState => ({
   crimeCheck: false,
   ownershipMatch: false,
   digitalSignature: "",
-  notes: ""
+  notes: "",
+  rejectionReason: "",
+  evidenceReferences: [],
+  workflowStatus: "submitted",
+  reviewScope: "vehicle_review"
 });
 
 const fallbackLandRecords: LandRecord[] = [
@@ -281,7 +300,13 @@ const QueuePanel: React.FC<QueuePanelProps> = ({ title, subtitle, countLabel, ic
   </div>
 );
 
-export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?: PortalType }) {
+export default function GovernmentAuditDashboard({
+  overrideTab,
+  activeSection = "pending"
+}: {
+  overrideTab?: PortalType;
+  activeSection?: "pending" | "approved" | "fraud" | "history" | "profile";
+}) {
   const { user } = useAdminAuth();
   const [activePortal, setActivePortal] = useState<PortalType>(overrideTab || "municipality");
   const [propertyQueue, setPropertyQueue] = useState<LandRecord[]>(fallbackLandRecords);
@@ -298,12 +323,34 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
   const [statusMessage, setStatusMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [municipalityApprovedCount, setMunicipalityApprovedCount] = useState(0);
   const [municipalityRejectedCount, setMunicipalityRejectedCount] = useState(0);
+  const [auditHistoryLogs, setAuditHistoryLogs] = useState<any[]>([]);
+
+  const fetchAuditHistory = useCallback(async () => {
+    try {
+      const response = await fetch("/api/g2b/history", { credentials: "include" });
+      const payload = (await response.json()) as { success: boolean; data?: any[] };
+      if (payload.success) {
+        setAuditHistoryLogs(payload.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch audit history:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchAuditHistory();
+  }, [fetchAuditHistory]);
 
   useEffect(() => {
     if (overrideTab) {
       setActivePortal(overrideTab);
+    } else if (user?.role === "g2b_municipality") {
+      setActivePortal("municipality");
+    } else if (user?.role === "g2b_transport") {
+      setActivePortal("transport");
     }
-  }, [overrideTab]);
+  }, [overrideTab, user?.role]);
+
 
   const officerProfile = useMemo(() => {
     const fallback = getDefaultOfficerProfile(activePortal);
@@ -397,7 +444,10 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
     setStatusMessage(null);
 
     try {
-      const response = await fetch("/api/g2b/pending");
+      const auditTypeParam = activePortal === "transport" ? "vehicle" : "land";
+      const response = await fetch(`/api/g2b/pending?audit_type=${auditTypeParam}`, {
+        credentials: "include",
+      });
       const payload = (await response.json()) as PendingResponse;
 
       if (!response.ok || !payload.success) {
@@ -421,7 +471,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activePortal]);
 
   useEffect(() => {
     void fetchPending();
@@ -451,20 +501,32 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
     id: number,
     auditType: "land" | "vehicle",
     status: AuditStatus,
-    notes: string
+    notes: string,
+    rejectionReason?: RejectionReason,
+    evidenceReferences?: string[]
   ) => {
     setSubmittingKey(`${auditType}-${id}-${status}`);
     setStatusMessage(null);
+
+    const workflowStatus: WorkflowStatus = status === "verified" ? "approved" : "fraud_flagged";
+    const reviewScope: ReviewScope = auditType === "land" ? "property_review" : "vehicle_review";
+    const officerRole: "g2b_municipality" | "g2b_transport" = activePortal === "municipality" ? "g2b_municipality" : "g2b_transport";
 
     try {
       const response = await fetch(`/api/g2b/audit/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           officer_name: officerProfile.officerName,
+          officer_role: officerRole,
           audit_type: auditType,
           status,
-          notes
+          workflow_status: workflowStatus,
+          rejection_reason: rejectionReason || null,
+          notes,
+          evidence_references: evidenceReferences || [],
+          review_scope: reviewScope
         })
       });
 
@@ -592,26 +654,51 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
 
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-2xl border border-[#00A86B] bg-[#00A86B] px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-500/20"
-            >
-              <Building2 className="h-4 w-4" />
-              Land & Deed Registry
-            </button>
+            {activeSection === "pending" && (
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-[#00A86B] bg-[#00A86B] px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-500/20">
+                {activePortal === "transport" ? <Car className="h-4 w-4" /> : <Building2 className="h-4 w-4" />}
+                {activePortal === "transport" ? "Vehicle Transport Logs" : "Land & Deed Registry"}
+              </div>
+            )}
+            {activeSection === "approved" && (
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500 bg-emerald-50 px-5 py-3 text-sm font-black text-emerald-800 shadow-sm">
+                <CheckCircle2 className="h-4 w-4" />
+                Approved & Certified Registry
+              </div>
+            )}
+            {activeSection === "fraud" && (
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-rose-500 bg-rose-50 px-5 py-3 text-sm font-black text-rose-700 shadow-sm">
+                <AlertTriangle className="h-4 w-4" />
+                Fraud & Impound Alerts
+              </div>
+            )}
+            {activeSection === "history" && (
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-blue-400 bg-blue-50 px-5 py-3 text-sm font-black text-blue-800 shadow-sm">
+                <MessageSquare className="h-4 w-4" />
+                Officer Audit Log History
+              </div>
+            )}
+            {activeSection === "profile" && (
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-400 bg-slate-100 px-5 py-3 text-sm font-black text-slate-700 shadow-sm">
+                <UserCheck className="h-4 w-4" />
+                Bureau Officer Profile
+              </div>
+            )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => void fetchPending()}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-malazone-navy transition hover:border-slate-300 hover:bg-slate-50"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Refresh Queue
-          </button>
+          {activeSection === "pending" && (
+            <button
+              type="button"
+              onClick={() => void fetchPending()}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-malazone-navy transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Refresh Queue
+            </button>
+          )}
         </div>
 
-        {activePortal === "municipality" && (
+        {activeSection === "pending" && activePortal === "municipality" && (
           <div className="mx-auto max-w-6xl space-y-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -761,7 +848,7 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
           </div>
         )}
 
-        {activePortal === "transport" && (
+        {activeSection === "pending" && activePortal === "transport" && (
           <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
             <QueuePanel
               title="Vehicle Transport Log"
@@ -963,6 +1050,77 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                       />
                     </div>
 
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">Rejection Reason</label>
+                      <select
+                        value={currentVehicleForm.rejectionReason}
+                        onChange={(event) =>
+                          updateVehicleForm(selectedVehicle.id, {
+                            rejectionReason: event.target.value as RejectionReason | ""
+                          })
+                        }
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
+                      >
+                        <option value="">Select rejection reason</option>
+                        <option value="stolen_vehicle">Stolen Vehicle</option>
+                        <option value="crime_flag">Crime Flag</option>
+                        <option value="ownership_dispute">Ownership Dispute</option>
+                        <option value="document_fraud">Document Fraud</option>
+                        <option value="incomplete_docs">Incomplete Documents</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">Evidence References</label>
+                      <textarea
+                        rows={2}
+                        value={currentVehicleForm.evidenceReferences.join("\n")}
+                        onChange={(event) =>
+                          updateVehicleForm(selectedVehicle.id, {
+                            evidenceReferences: event.target.value.split("\n").filter(ref => ref.trim().length > 0)
+                          })
+                        }
+                        placeholder="Enter document IDs or URLs (one per line)"
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">Workflow Status</label>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                        <span className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-black ${
+                          currentVehicleForm.workflowStatus === "submitted" ? "bg-slate-200 text-slate-700" :
+                          currentVehicleForm.workflowStatus === "under_review" ? "bg-blue-100 text-blue-700" :
+                          currentVehicleForm.workflowStatus === "needs_clarification" ? "bg-amber-100 text-amber-700" :
+                          currentVehicleForm.workflowStatus === "approved" ? "bg-emerald-100 text-emerald-700" :
+                          currentVehicleForm.workflowStatus === "rejected" ? "bg-red-100 text-red-700" :
+                          "bg-rose-100 text-rose-700"
+                        }`}>
+                          {currentVehicleForm.workflowStatus.replace(/_/g, " ").toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">Review Scope</label>
+                      <select
+                        value={currentVehicleForm.reviewScope}
+                        onChange={(event) =>
+                          updateVehicleForm(selectedVehicle.id, {
+                            reviewScope: event.target.value as ReviewScope
+                          })
+                        }
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
+                      >
+                        <option value="vehicle_review">Vehicle Review (የመኪና ግምገር)</option>
+                        <option value="legal_review">Legal Review (የህግ ግምገር)</option>
+                      </select>
+                      <p className="mt-2 text-xs text-malazone-navy">
+                        Transport officers are restricted to vehicle and legal reviews only.
+                      </p>
+                    </div>
+
                     <div className="flex flex-wrap items-center justify-end gap-3">
                       <button
                         type="button"
@@ -972,7 +1130,9 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                             selectedVehicle.id,
                             "vehicle",
                             "fraudulent",
-                            `Reject / Impound Alert raised by ${officerProfile.officerName}. ${currentVehicleForm.notes.trim()}`
+                            `Reject / Impound Alert raised by ${officerProfile.officerName}. ${currentVehicleForm.notes.trim()}`,
+                            currentVehicleForm.rejectionReason || undefined,
+                            currentVehicleForm.evidenceReferences
                           )
                         }
                         className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-black text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:border-rose-100 disabled:bg-rose-50/70 disabled:text-rose-300"
@@ -994,7 +1154,9 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                             "verified",
                             `Crime Check: ${currentVehicleForm.crimeCheck ? "clear" : "pending"} | Ownership Match: ${
                               currentVehicleForm.ownershipMatch ? "confirmed" : "not confirmed"
-                            } | Notes: ${currentVehicleForm.notes.trim() || "Transport record certified."}`
+                            } | Notes: ${currentVehicleForm.notes.trim() || "Transport record certified."}`,
+                            undefined,
+                            currentVehicleForm.evidenceReferences
                           )
                         }
                         className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00A86B] px-5 py-3 text-sm font-black text-malazone-navy shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-malazone-navy/50"
@@ -1019,6 +1181,223 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                 </div>
               )}
             </QueuePanel>
+          </div>
+        )}
+
+        {activeSection === "approved" && (
+          <div className="mx-auto max-w-6xl space-y-6">
+            <QueuePanel
+              title="የጸደቁና የተረጋገጡ መዝገቦች (Approved & Certified Registry)"
+              subtitle="በማዘጋጃ ቤትና በትራንስፖርት መመሪያ የተረጋገጡና Verified Badge የተሰጣቸው ንብረቶችና መኪናዎች።"
+              countLabel={`${auditHistoryLogs.filter((h) => h.status === "verified" || h.workflow_status === "approved").length} ጸድቀዋል`}
+              icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+            >
+              <div className="overflow-hidden rounded-2xl border border-slate-200">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.2em] text-malazone-navy">
+                      <tr>
+                        <th className="px-4 py-3.5">ID / ንብረት</th>
+                        <th className="px-4 py-3.5">ባለቤት</th>
+                        <th className="px-4 py-3.5">የካርታ/ሰሌዳ ቁጥር</th>
+                        <th className="px-4 py-3.5">ያረጋገጠው ኦፊሰር</th>
+                        <th className="px-4 py-3.5">የጸደቀበት ቀን</th>
+                        <th className="px-4 py-3.5 text-right">ሁኔታ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white text-malazone-navy">
+                      {auditHistoryLogs
+                        .filter((h) => h.status === "verified" || h.workflow_status === "approved")
+                        .map((item) => (
+                          <tr key={item.id} className="transition hover:bg-slate-50">
+                            <td className="px-4 py-3.5 font-black"># {item.listing_id || item.id} — {item.title || "ንብረት"}</td>
+                            <td className="px-4 py-3.5 font-semibold">{item.seller_name || "ያልተገለጸ"}</td>
+                            <td className="px-4 py-3.5 font-mono text-xs font-bold">
+                              {item.cata_registry || item.plate_code || item.chassis_number || "Verified Code"}
+                            </td>
+                            <td className="px-4 py-3.5 font-bold text-emerald-700">{item.officer_name || officerProfile.officerName}</td>
+                            <td className="px-4 py-3.5 text-xs text-slate-500">
+                              {item.created_at ? new Date(item.created_at).toLocaleDateString("am-ET") : "ዛሬ"}
+                            </td>
+                            <td className="px-4 py-3.5 text-right">
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
+                                <CheckCircle2 className="h-3.5 w-3.5" /> VERIFIED
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      {auditHistoryLogs.filter((h) => h.status === "verified" || h.workflow_status === "approved").length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500">
+                            እስካሁን የጸደቁ መዝገቦች የሉም።
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </QueuePanel>
+          </div>
+        )}
+
+        {activeSection === "fraud" && (
+          <div className="mx-auto max-w-6xl space-y-6">
+            <QueuePanel
+              title="የታገዱና ማጭበርበር ያለባቸው መዝገቦች (Fraud & Impound Alerts)"
+              subtitle="በህግ እገዳ፣ የሰነድ ሀሰተኝነት፣ ወይም የስርቆት ጥቆማ ምክንያት ውድቅ የተደረጉና ከስርዓቱ የታገዱ መዝገቦች።"
+              countLabel={`${auditHistoryLogs.filter((h) => h.status === "fraudulent" || h.workflow_status === "fraud_flagged").length} የታገዱ`}
+              icon={<AlertTriangle className="h-5 w-5 text-rose-600" />}
+            >
+              <div className="overflow-hidden rounded-2xl border border-slate-200">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.2em] text-malazone-navy">
+                      <tr>
+                        <th className="px-4 py-3.5">ID / ንብረት</th>
+                        <th className="px-4 py-3.5">ባለቤት</th>
+                        <th className="px-4 py-3.5">የውድቅ ምክንያት</th>
+                        <th className="px-4 py-3.5">የከለከለው ኦፊሰር</th>
+                        <th className="px-4 py-3.5">የቀን ታሪክ</th>
+                        <th className="px-4 py-3.5 text-right">ሁኔታ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white text-malazone-navy">
+                      {auditHistoryLogs
+                        .filter((h) => h.status === "fraudulent" || h.workflow_status === "fraud_flagged")
+                        .map((item) => (
+                          <tr key={item.id} className="transition hover:bg-rose-50/50">
+                            <td className="px-4 py-3.5 font-black text-rose-900"># {item.listing_id || item.id} — {item.title || "ንብረት"}</td>
+                            <td className="px-4 py-3.5 font-semibold">{item.seller_name || "ያልተገለጸ"}</td>
+                            <td className="px-4 py-3.5">
+                              <span className="rounded-lg bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-800">
+                                {item.rejection_reason || "የሰነድ ጉድለት / ማጭበርበር"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 font-bold text-slate-700">{item.officer_name || officerProfile.officerName}</td>
+                            <td className="px-4 py-3.5 text-xs text-slate-500">
+                              {item.created_at ? new Date(item.created_at).toLocaleDateString("am-ET") : "ዛሬ"}
+                            </td>
+                            <td className="px-4 py-3.5 text-right">
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-800">
+                                <AlertTriangle className="h-3.5 w-3.5" /> FRAUD FLAGGED
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      {auditHistoryLogs.filter((h) => h.status === "fraudulent" || h.workflow_status === "fraud_flagged").length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500">
+                            እስካሁን ውድቅ የተደረጉ ወይም የታገዱ መዝገቦች የሉም።
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </QueuePanel>
+          </div>
+        )}
+
+        {activeSection === "history" && (
+          <div className="mx-auto max-w-6xl space-y-6">
+            <QueuePanel
+              title="የኦፊሰር ውሳኔዎች ታሪክ (Officer Decision Audit Trail Logs)"
+              subtitle="የመንግስት ኦፊሰሮች ያከናወኗቸው የማረጋገጫና የእገዳ ውሳኔዎች ሙሉ መዝገብ።"
+              countLabel={`${auditHistoryLogs.length} የውሳኔ መዝገቦች`}
+              icon={<FileText className="h-5 w-5 text-blue-600" />}
+            >
+              <div className="overflow-hidden rounded-2xl border border-slate-200">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.2em] text-malazone-navy">
+                      <tr>
+                        <th className="px-4 py-3.5">ተ.ቁ</th>
+                        <th className="px-4 py-3.5">የኦፊሰር ስም</th>
+                        <th className="px-4 py-3.5">ሚና / ቢሮ</th>
+                        <th className="px-4 py-3.5">የውሳኔ ዓይነት</th>
+                        <th className="px-4 py-3.5">የቀን ሰዓት</th>
+                        <th className="px-4 py-3.5">ማስታወሻ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white text-malazone-navy">
+                      {auditHistoryLogs.map((item, index) => (
+                        <tr key={item.id || index} className="transition hover:bg-slate-50">
+                          <td className="px-4 py-3.5 font-bold">#{item.id || index + 1}</td>
+                          <td className="px-4 py-3.5 font-black text-malazone-navy">{item.officer_name || officerProfile.officerName}</td>
+                          <td className="px-4 py-3.5 text-xs font-bold text-slate-600">{item.officer_role || officerProfile.bureau}</td>
+                          <td className="px-4 py-3.5">
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-black ${
+                              item.status === "verified" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                            }`}>
+                              {item.status === "verified" ? "✓ VERIFIED" : "✕ REJECTED"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-xs text-slate-500">
+                            {item.created_at ? new Date(item.created_at).toLocaleString() : "ዛሬ"}
+                          </td>
+                          <td className="px-4 py-3.5 text-xs font-medium text-slate-600 max-w-xs truncate">
+                            {item.notes || "ማስታወሻ የለውም"}
+                          </td>
+                        </tr>
+                      ))}
+                      {auditHistoryLogs.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500">
+                            እስካሁን የተቀመጡ የኦዲት ታሪክ መዝገቦች የሉም።
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </QueuePanel>
+          </div>
+        )}
+
+        {activeSection === "profile" && (
+          <div className="mx-auto max-w-4xl space-y-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
+              <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
+                <div className="h-16 w-16 bg-gradient-to-br from-[#00A86B] to-emerald-700 rounded-full flex items-center justify-center text-white font-black text-2xl shadow-md">
+                  {officerProfile.officerName[0]}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-malazone-navy">{officerProfile.officerName}</h2>
+                  <p className="text-sm font-bold text-[#00A86B]">{officerProfile.bureau}</p>
+                  <span className="inline-flex items-center gap-1.5 mt-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 border border-emerald-200">
+                    <UserCheck className="h-3.5 w-3.5" /> Certified Level 3 Auditor
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-500">Department Bureau</p>
+                  <p className="mt-2 text-base font-black text-malazone-navy">{officerProfile.bureau}</p>
+                  <p className="mt-1 text-xs text-slate-500">Hawassa Regional Bureau Registry Division</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-500">Digital Signature Auth Code</p>
+                  <p className="mt-2 text-base font-mono font-black text-[#00A86B]">SEC-GOV-ETH-{user?.id || 1082}</p>
+                  <p className="mt-1 text-xs text-slate-500">Active attestation credential key</p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-emerald-50/50 p-5 space-y-3">
+                <h3 className="text-sm font-black text-malazone-navy flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-[#00A86B]" />
+                  የኦፊሰር ደህንነትና መብቶች (Security Scope & Privileges)
+                </h3>
+                <ul className="text-xs text-slate-600 space-y-2 list-disc list-inside font-medium">
+                  <li>ይህ መለያ የመሬት ይዞታና የመኪና ባለቤትነት ሰነዶችን ኦፊሴላዊ ማረጋገጫ (Verified Badge) የመስጠት ስልጣን አለው።</li>
+                  <li>ማንኛውም ውሳኔ በህጋዊ የኦዲት መዝገብ (Audit Logs) ላይ በዲጂታል ፊርማ ይመዘገባል።</li>
+                  <li>የውሸት ሰነድ ወይም ስርቆት ሲያጋጥም መዝገቡን ወዲያውኑ ከስርዓቱ የማገድና ለህግ የማስተላለፍ ስልጣን ተሰጥቷል።</li>
+                </ul>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -1250,6 +1629,78 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                       </p>
                     </div>
 
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">የውድቅ ምክንያት (Rejection Reason)</label>
+                      <select
+                        value={currentLandForm.rejectionReason}
+                        onChange={(event) =>
+                          updateLandForm(municipalityReviewRecord.id, {
+                            rejectionReason: event.target.value as RejectionReason | ""
+                          })
+                        }
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
+                      >
+                        <option value="">የውድቅ ምክንያት ይምረጡ</option>
+                        <option value="registry_mismatch">Registry Mismatch</option>
+                        <option value="court_injunction">Court Injunction</option>
+                        <option value="tax_arrears">Tax Arrears</option>
+                        <option value="ownership_dispute">Ownership Dispute</option>
+                        <option value="document_fraud">Document Fraud</option>
+                        <option value="incomplete_docs">Incomplete Documents</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">የማረጋገጫ ሰነዶች (Evidence References)</label>
+                      <textarea
+                        rows={2}
+                        value={currentLandForm.evidenceReferences.join("\n")}
+                        onChange={(event) =>
+                          updateLandForm(municipalityReviewRecord.id, {
+                            evidenceReferences: event.target.value.split("\n").filter(ref => ref.trim().length > 0)
+                          })
+                        }
+                        placeholder="የሰነድ መለያዎችን ወይም URL አስገባ (እያንዳንዱ በአዲስ መስመር)"
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">የስራ ደረጃ (Workflow Status)</label>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                        <span className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-black ${
+                          currentLandForm.workflowStatus === "submitted" ? "bg-slate-200 text-slate-700" :
+                          currentLandForm.workflowStatus === "under_review" ? "bg-blue-100 text-blue-700" :
+                          currentLandForm.workflowStatus === "needs_clarification" ? "bg-amber-100 text-amber-700" :
+                          currentLandForm.workflowStatus === "approved" ? "bg-emerald-100 text-emerald-700" :
+                          currentLandForm.workflowStatus === "rejected" ? "bg-red-100 text-red-700" :
+                          "bg-rose-100 text-rose-700"
+                        }`}>
+                          {currentLandForm.workflowStatus.replace(/_/g, " ").toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-malazone-navy">የግምገር ደረጃ (Review Scope)</label>
+                      <select
+                        value={currentLandForm.reviewScope}
+                        onChange={(event) =>
+                          updateLandForm(municipalityReviewRecord.id, {
+                            reviewScope: event.target.value as ReviewScope
+                          })
+                        }
+                        className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-malazone-navy outline-none transition focus:border-[#00A86B] focus:bg-white"
+                      >
+                        <option value="property_review">Property Review (የንብረት ግምገር)</option>
+                        <option value="legal_review">Legal Review (የህግ ግምገር)</option>
+                      </select>
+                      <p className="mt-2 text-xs text-malazone-navy">
+                        Municipality officers are restricted to property and legal reviews only.
+                      </p>
+                    </div>
+
                     <div className="flex flex-wrap items-center justify-end gap-3">
                       <button
                         type="button"
@@ -1266,7 +1717,9 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                             municipalityReviewRecord.id,
                             "land",
                             "fraudulent",
-                            `ጉድለት አለበት: ${currentLandForm.notes.trim()}`
+                            `ጉድለት አለበት: ${currentLandForm.notes.trim()}`,
+                            currentLandForm.rejectionReason || undefined,
+                            currentLandForm.evidenceReferences
                           )
                         }
                         className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-black text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:border-rose-100 disabled:bg-rose-50/70 disabled:text-rose-300"
@@ -1290,7 +1743,9 @@ export default function GovernmentAuditDashboard({ overrideTab }: { overrideTab?
                               currentLandForm.noCourtInjunctions ? "yes" : "no"
                             } | Tax Clear: ${currentLandForm.taxClear ? "yes" : "no"} | Notes: ${
                               currentLandForm.notes.trim() || "የጸደቀ"
-                            }`
+                            }`,
+                            undefined,
+                            currentLandForm.evidenceReferences
                           )
                         }
                         className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00A86B] px-5 py-3 text-sm font-black text-malazone-navy shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-malazone-navy/50"

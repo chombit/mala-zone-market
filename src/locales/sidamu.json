@@ -36,6 +36,13 @@
   "search.intent": "Farmaajo",
   "search.btn": "Furmaata Argadhu",
   "cat.all": "Littii Hundi",
+  "cat.property": "Meelee",
+  "cat.motors": "Kootaalee",
+  "cat.stay": "Hagamtaa",
+  "cat.ceremony": "Maqaajii",
+  "cat.heavy": "Cinnaan",
+  "cat.electronics": "Elektirooniksii",
+  "cat.title": "Littii Fili",
 
   "stats.clients": "Nagaya Dhangalaftota",
   "stats.listings": "Gabaa Fagaayaa Haqqa",
@@ -104,6 +111,7 @@
 
   "cta.call": "Haadhii Gamtee",
   "cta.whatsapp": "Telegram",
+  "cta.chat": "Nagaa Haasifii",
 
   "badge.verifiedCarta": "Kaartaa Mirkaneesse",
   "badge.verified": "Mirkaneesse",

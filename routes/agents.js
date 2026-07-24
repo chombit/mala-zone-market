@@ -8,9 +8,34 @@
 "use strict";
 
 const express = require("express");
+const multer = require("multer");
+const sharp = require("sharp");
+const path = require("path");
+const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 const db = require("../database/db");
 
 const router = express.Router();
+
+// ── Image Upload Pipeline (same as listings.js)
+const UPLOAD_DIR = path.join(__dirname, "..", "public", "uploads");
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024, files: 4 },
+});
+
+async function processImage(buffer) {
+  const filename = `mala_${uuidv4()}.webp`;
+  const outputPath = path.join(UPLOAD_DIR, filename);
+  await sharp(buffer)
+    .resize({ width: 1200, withoutEnlargement: true, fit: "inside" })
+    .webp({ quality: 80, effort: 6 })
+    .toFile(outputPath);
+  return `/uploads/${filename}`;
+}
 
 // ─────────────────────────────────────────────
 // VALIDATION
@@ -123,8 +148,13 @@ router.get("/:phone", async (req, res) => {
     const { phone } = req.params;
     const cleanPhone = phone.replace(/\s/g, "");
 
+    // Join agents table with users table to get agent info with phone number
     const [[agent]] = await db.execute(
-      "SELECT * FROM agents WHERE phone_number = ?",
+      `SELECT a.id, a.user_id, a.sub_city, a.earnings_total_etb, a.status,
+              u.full_name, u.phone_number
+       FROM agents a
+       JOIN users u ON a.user_id = u.id
+       WHERE u.phone_number = ?`,
       [cleanPhone]
     );
 
@@ -138,12 +168,12 @@ router.get("/:phone", async (req, res) => {
 
     // Fetch agent's recent listings
     const [listings] = await db.execute(
-      `SELECT id, title, category, price, price_suffix, is_active, created_at, view_count
+      `SELECT id, title_en, title_am, category, price, price_suffix, is_active, created_at, view_count
        FROM listings
-       WHERE user_id = (SELECT user_id FROM agents WHERE phone_number = ?)
+       WHERE user_id = ?
        ORDER BY created_at DESC
        LIMIT 10`,
-      [cleanPhone]
+      [agent.user_id]
     );
 
     // Calculate stats
@@ -154,12 +184,12 @@ router.get("/:phone", async (req, res) => {
       success: true,
       data: {
         id: agent.id,
+        user_id: agent.user_id,
         full_name: agent.full_name,
         phone_number: agent.phone_number,
         sub_city: agent.sub_city,
         status: agent.status,
         earnings_total_etb: agent.earnings_total_etb,
-        registered_at: agent.created_at,
         recent_listings: listings,
         stats: {
           total_listings: listings.length,
@@ -197,7 +227,9 @@ router.post("/earnings/record", async (req, res) => {
 
     // Verify agent exists
     const [[agent]] = await db.execute(
-      "SELECT id FROM agents WHERE phone_number = ?",
+      `SELECT a.id FROM agents a
+       JOIN users u ON a.user_id = u.id
+       WHERE u.phone_number = ?`,
       [cleanPhone]
     );
     if (!agent) {
@@ -240,10 +272,11 @@ router.get("/leaderboard/top", async (req, res) => {
     const limit = Math.min(Number(req.query.limit) || 20, 100);
 
     const [agents] = await db.execute(
-      `SELECT id, full_name, sub_city, earnings_total_etb
-       FROM agents
-       WHERE status = 'active'
-       ORDER BY earnings_total_etb DESC
+      `SELECT a.id, a.user_id, u.full_name, u.phone_number, a.sub_city, a.earnings_total_etb, a.status
+       FROM agents a
+       JOIN users u ON a.user_id = u.id
+       WHERE a.status = 'active'
+       ORDER BY a.earnings_total_etb DESC
        LIMIT ?`,
       [limit]
     );
@@ -283,7 +316,7 @@ router.get("/stats/program", async (req, res) => {
        FROM listings
        WHERE user_id IN (
          SELECT DISTINCT u.id FROM users u
-         JOIN agents a ON u.phone_number = a.phone_number
+         JOIN agents a ON a.user_id = u.id
        )`
     );
 
@@ -311,6 +344,115 @@ router.get("/stats/program", async (req, res) => {
   } catch (err) {
     console.error("[GET /agents/stats/program]", err);
     res.status(500).json({ success: false, message: "Failed to fetch stats" });
+  }
+});
+
+/**
+ * POST /api/agents/status
+ * Update agent status (admin only)
+ */
+router.post("/status", async (req, res) => {
+  try {
+    const { agent_id, status } = req.body;
+
+    if (!agent_id || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: agent_id, status"
+      });
+    }
+
+    if (!['pending', 'active', 'suspended'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status. Must be: pending, active, or suspended"
+      });
+    }
+
+    await db.execute(
+      "UPDATE agents SET status = ? WHERE id = ?",
+      [status, agent_id]
+    );
+
+    res.json({
+      success: true,
+      message: "Agent status updated successfully"
+    });
+  } catch (err) {
+    console.error("[POST /agents/status]", err);
+    res.status(500).json({ success: false, message: "Failed to update agent status" });
+  }
+});
+
+/**
+ * POST /api/agents/listings
+ * Create a new listing as an agent
+ */
+router.post("/listings", upload.array("images", 4), async (req, res) => {
+  try {
+    const { phone, title_en, title_am, category, price, price_suffix, location_key, description_en, description_am, whatsapp, is_premium, is_verified } = req.body;
+
+    if (!phone || !title_en || !title_am || !category) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: phone, title_en, title_am, category",
+      });
+    }
+
+    const cleanPhone = phone.replace(/\s/g, "");
+
+    const [[agent]] = await db.execute(
+      `SELECT a.id, a.user_id FROM agents a
+       JOIN users u ON a.user_id = u.id
+       WHERE u.phone_number = ? AND a.status = 'active'`,
+      [cleanPhone]
+    );
+
+    if (!agent) {
+      return res.status(404).json({ success: false, message: "Agent not found or inactive" });
+    }
+
+    const contactPhone = cleanPhone;
+    const imageFiles = req.files || [];
+    const imageUrls = await Promise.all(imageFiles.map(f => processImage(f.buffer)));
+    const locationLabels = {
+      hawassa_piassa: { en: "Piassa, Hawassa", am: "ፒያሳ፣ ሀዋሳ" },
+      hawassa_tabor: { en: "Tabor, Hawassa", am: "ታቦር፣ ሀዋሳ" },
+      hawassa_lakefront: { en: "Lakefront, Hawassa", am: "የሐይቅ ጫፍ፣ ሀዋሳ" },
+      yirgalem: { en: "Yirgalem", am: "ይርጋለም" },
+      bensa: { en: "Bensa", am: "በንሳ" },
+      chuko: { en: "Chuko", am: "ጭகቆ" },
+      aleta_wondo: { en: "Aleta Wondo", am: "አለታ ወንዶ" },
+    };
+    const loc = locationLabels[location_key] || { en: "Hawassa", am: "ሀዋሳ" };
+
+    const [result] = await db.execute(
+      `INSERT INTO listings (
+        user_id, title_en, title_am, category, price, price_suffix,
+        location_key, location_label_am, location_label_en,
+        phone, whatsapp, images, is_active, is_premium, is_verified,
+        description_en, description_am, view_count
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, 0)`,
+      [
+        agent.user_id, title_en, title_am, category,
+        Number(price) || 0, price_suffix || "fixed",
+        location_key || "hawassa_piassa", loc.am, loc.en,
+        contactPhone, whatsapp || contactPhone,
+        JSON.stringify(imageUrls),
+        is_premium === "true" || is_premium === 1 ? 1 : 0,
+        is_verified === "true" || is_verified === 1 ? 1 : 0,
+        description_en || null, description_am || null,
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Listing created successfully",
+      data: { id: result.insertId },
+    });
+  } catch (err) {
+    console.error("[POST /agents/listings]", err);
+    res.status(500).json({ success: false, message: "Failed to create listing" });
   }
 });
 

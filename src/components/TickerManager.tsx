@@ -23,7 +23,9 @@ const TickerManager: React.FC = () => {
 
   const fetchTicker = async () => {
     try {
-      const res = await fetch("/api/admin/translations");
+      const res = await fetch("/api/admin/translations", {
+        credentials: "include",
+      });
       const data = await res.json();
       if (data.success) {
         const ticker = data.data.find((t: Translation) => t.text_key === "ticker");
@@ -59,6 +61,7 @@ const TickerManager: React.FC = () => {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 

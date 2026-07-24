@@ -6,15 +6,14 @@
  * © 2026 Malazone Technologies PLC | Founder: Luwa Tesemma Kakawo
  */
 
-import React, { useState } from "react";
-import { Globe, Menu, Sun, Moon, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Heart } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
-import { Globe, Menu, Sun, Moon, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Settings, UserCircle } from "lucide-react";
+import { Globe, Menu, Sun, Moon, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Heart, Settings, UserCircle, MapPin } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { getNextLanguage, LANGUAGE_OPTIONS, type Language } from "@/i18n";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
+import { useCity } from "@/contexts/CityContext";
 import { useNavigate } from "react-router-dom";
 import LogoImg from "../images/Logo.png";
 import SignOut from "./SignOut";
@@ -38,10 +37,12 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
   const { favorites, setSidebarOpen } = useFavorites();
+  const { currentCity, cities, setCity } = useCity();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
 
   const categories = [
     { key: "nav.cat1", id: "property" },
@@ -64,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
   return (
     <div className="fixed top-0 left-0 w-full z-[150]">
       {/* ── Ticker / Announcement Bar ──────────────────────────────── */}
-      <div className="w-full bg-[#0B132B] border-b border-emerald-600/30 py-4 px-6 overflow-hidden">
+      <div className="w-full bg-[#0B132B] border-b border-emerald-600/30 py-2.5 sm:py-4 px-4 sm:px-6 overflow-hidden">
         <p
           className="text-xs sm:text-[13px] font-bold tracking-widest text-white uppercase whitespace-nowrap animate-marquee text-center"
           dangerouslySetInnerHTML={highlightTicker(t("ticker"))}
@@ -119,6 +120,52 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
 
         {/* ── RIGHT: Controls ─────────────── */}
         <div className="flex items-center gap-3 shrink-0">
+          {/* City Selector */}
+          {currentCity && (
+            <div className="relative hidden md:block">
+              <button
+                onClick={() => setShowCityDropdown(!showCityDropdown)}
+                className="flex items-center gap-2 px-3 py-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition-all duration-300 h-10"
+              >
+                <MapPin className="w-4 h-4 text-[#00A86B]" />
+                <span className="text-xs font-bold text-slate-700">
+                  {language === 'amharic' ? currentCity.labelAm : currentCity.labelEn}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showCityDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showCityDropdown && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowCityDropdown(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="p-2">
+                      {cities.filter(c => c.isActive).map((city) => (
+                        <button
+                          key={city.key}
+                          onClick={() => {
+                            setCity(city.key);
+                            setShowCityDropdown(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                            currentCity.key === city.key
+                              ? 'bg-[#00A86B]/10 text-[#00A86B]'
+                              : 'text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          <MapPin className="w-4 h-4 shrink-0" />
+                          <span>{language === 'amharic' ? city.labelAm : city.labelEn}</span>
+                          {currentCity.key === city.key && (
+                            <div className="ml-auto w-2 h-2 rounded-full bg-[#00A86B]" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Auth Button */}
           {!isAuthenticated && (
             <button
@@ -195,8 +242,6 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             "
           >
             <Globe className="w-4 h-4 text-[#00A86B] group-hover:rotate-[30deg] transition-transform duration-500" />
-            <span className="text-[10px] font-black tracking-widest text-malazone-navy uppercase">
-              {language === "en" ? "አማርኛ" : "EN"}
             <span className="text-[10px] font-black tracking-widest text-malazone-navy dark:text-white uppercase">
               {LANGUAGE_OPTIONS.find(o => o.value === language)?.labelShort || language}
             </span>
@@ -208,25 +253,17 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="
-                  flex items-center gap-2 px-3 py-1.5 rounded-full
-                  border transition-all duration-300 group
-                  border-slate-200
-                  bg-white
-                  hover:bg-slate-50
-                  hover:border-[#00A86B]/40
-                  shadow-sm h-10
                   flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full
                   transition-all duration-300 group
-                  hover:bg-slate-100 dark:hover:bg-white/10
                   border border-transparent hover:border-slate-200 dark:hover:border-white/10
-                  h-11
+                  bg-white dark:bg-transparent
+                  hover:bg-slate-100 dark:hover:bg-white/10
+                  shadow-sm h-11
                 "
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00A86B] to-emerald-500 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-emerald-500/20 ring-2 ring-white dark:ring-slate-950">
                   {user.full_name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
-                <span className="text-[10px] font-black tracking-widest text-malazone-navy uppercase max-w-[80px] truncate">
-                  {user.full_name?.split(" ")[0] || "Profile"}
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-[90px] truncate">
                   {user.full_name?.split(" ")[0] || "User"}
                 </span>
@@ -237,10 +274,6 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
               {showProfileMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
-                    <div className="p-4 border-b border-slate-100">
-                      <p className="text-sm font-bold text-slate-900 truncate">{user.full_name}</p>
-                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
                   <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-slate-200/50 dark:shadow-black/30 border border-slate-200/80 dark:border-white/10 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     {/* User Info Header */}
                     <div className="p-4 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-b border-slate-100 dark:border-white/5">
@@ -289,7 +322,6 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                           setShowProfileMenu(false);
                           setShowSignOutModal(true);
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
                         className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors duration-150"
                       >
                         <LogOut className="w-4 h-4" />

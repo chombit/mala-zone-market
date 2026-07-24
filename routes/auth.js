@@ -15,6 +15,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const db = require("../database/db");
 const rateLimit = require("express-rate-limit");
+const { getUserActor, sanitizeForAudit, writeAuditLog } = require("../utils/auditLogger");
 
 const router = express.Router();
 
@@ -125,6 +126,22 @@ const sanitizeUser = (user) => {
   return sanitized;
 };
 
+const getCurrentUserFromRequest = async (req) => {
+  try {
+    const token = req.cookies.malazone_token || req.headers.authorization?.replace("Bearer ", "");
+
+    if (!token) {
+      return null;
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const [users] = await db.execute("SELECT * FROM users WHERE id = ?", [decoded.id]);
+    return users[0] || null;
+  } catch (err) {
+    return null;
+  }
+};
+
 // Local Login
 router.post("/login", loginLimiter, async (req, res) => {
   try {
@@ -144,6 +161,14 @@ router.post("/login", loginLimiter, async (req, res) => {
     );
 
     if (users.length === 0) {
+      await writeAuditLog({
+        req,
+        actorType: "anonymous",
+        actorIdentifier: email,
+        action: "user_login_failed",
+        resourceType: "user_session",
+        details: { reason: "email_not_found" },
+      });
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
@@ -154,6 +179,14 @@ router.post("/login", loginLimiter, async (req, res) => {
     const user = users[0];
 
     if (!user.password_hash) {
+      await writeAuditLog({
+        req,
+        ...getUserActor(user),
+        action: "user_login_failed",
+        resourceType: "user_session",
+        resourceId: user.id,
+        details: { reason: "social_login_required" },
+      });
       return res.status(401).json({
         success: false,
         message: "Please use social login for this account",
@@ -164,6 +197,14 @@ router.post("/login", loginLimiter, async (req, res) => {
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!passwordMatch) {
+      await writeAuditLog({
+        req,
+        ...getUserActor(user),
+        action: "user_login_failed",
+        resourceType: "user_session",
+        resourceId: user.id,
+        details: { reason: "invalid_password" },
+      });
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
@@ -187,6 +228,15 @@ router.post("/login", loginLimiter, async (req, res) => {
       message_am: "በተሳካ ሁኔታ ገብተዋል",
       user: sanitizeUser(user),
       token
+    });
+
+    await writeAuditLog({
+      req,
+      ...getUserActor(user),
+      action: "user_login_success",
+      resourceType: "user_session",
+      resourceId: user.id,
+      details: { provider: user.provider },
     });
   } catch (err) {
     console.error("[Auth Login Error]", err);
@@ -214,6 +264,14 @@ router.post("/register", loginLimiter, async (req, res) => {
     // Check if email exists
     const [existingUsers] = await db.execute("SELECT id FROM users WHERE email = ?", [email]);
     if (existingUsers.length > 0) {
+      await writeAuditLog({
+        req,
+        actorType: "anonymous",
+        actorIdentifier: email,
+        action: "user_registration_failed",
+        resourceType: "user_account",
+        details: { reason: "email_already_registered" },
+      });
       return res.status(409).json({
         success: false,
         message: "Email already registered",
@@ -246,6 +304,18 @@ router.post("/register", loginLimiter, async (req, res) => {
       message_am: "በተሳካ ሁኔታ ተመዝግበዋል",
       user: sanitizeUser(user),
       token
+    });
+
+    await writeAuditLog({
+      req,
+      ...getUserActor(user),
+      action: "user_registered",
+      resourceType: "user_account",
+      resourceId: user.id,
+      details: {
+        account_type: user.account_type,
+        provider: user.provider,
+      },
     });
   } catch (err) {
     console.error("[Auth Register Error]", err);
@@ -282,9 +352,20 @@ router.get("/google/callback", passport.authenticate("google", { failureRedirect
 });
 
 // Logout
-router.post("/logout", (req, res) => {
+router.post("/logout", async (req, res) => {
+  const currentUser = await getCurrentUserFromRequest(req);
   res.clearCookie("malazone_token");
-  req.logout(() => {
+  req.logout(async () => {
+    if (currentUser) {
+      await writeAuditLog({
+        req,
+        ...getUserActor(currentUser),
+        action: "user_logout",
+        resourceType: "user_session",
+        resourceId: currentUser.id,
+      });
+    }
+
     res.json({
       success: true,
       message: "Logged out successfully",
@@ -347,6 +428,14 @@ router.post("/forgot-password", loginLimiter, async (req, res) => {
     const [users] = await db.execute("SELECT * FROM users WHERE email = ?", [email]);
 
     if (users.length === 0) {
+      await writeAuditLog({
+        req,
+        actorType: "anonymous",
+        actorIdentifier: email,
+        action: "password_reset_requested_unknown",
+        resourceType: "user_account",
+        details: { email },
+      });
       // Return success even if user not found (to prevent email enumeration)
       return res.json({
         success: true,
@@ -419,6 +508,18 @@ router.post("/forgot-password", loginLimiter, async (req, res) => {
       message_am: "በዚህ ኢሜይል መለያ ከነበረ የይለፍ ቃል ለመዳመጥ አገናኝ ልከንልዎታለን。",
       ...(process.env.NODE_ENV === "development" && { resetUrl }),
     });
+
+    await writeAuditLog({
+      req,
+      ...getUserActor(user),
+      action: "password_reset_requested",
+      resourceType: "user_account",
+      resourceId: user.id,
+      details: {
+        email: user.email,
+        expires_at: resetPasswordExpires,
+      },
+    });
   } catch (err) {
     console.error("[Forgot Password Error]", err);
     res.status(500).json({
@@ -455,6 +556,13 @@ router.post("/reset-password/:token", async (req, res) => {
     );
 
     if (users.length === 0) {
+      await writeAuditLog({
+        req,
+        actorType: "anonymous",
+        action: "password_reset_failed",
+        resourceType: "user_account",
+        details: { reason: "invalid_or_expired_token" },
+      });
       return res.status(400).json({
         success: false,
         message: "Invalid or expired reset token",
@@ -475,6 +583,15 @@ router.post("/reset-password/:token", async (req, res) => {
       success: true,
       message: "Password reset successful. You can now log in.",
       message_am: "የይለፍ ቃል መዳመጥ ተሳክቷል። አሁን መግባት ይችላሉ።"
+    });
+
+    await writeAuditLog({
+      req,
+      ...getUserActor(user),
+      action: "password_reset_completed",
+      resourceType: "user_account",
+      resourceId: user.id,
+      details: sanitizeForAudit({ email: user.email }),
     });
   } catch (err) {
     console.error("[Reset Password Error]", err);

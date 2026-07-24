@@ -14,6 +14,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const path = require("path");
+const fs = require("fs");
 const net = require("net");
 const rateLimit = require("express-rate-limit");
 const session = require("express-session");
@@ -29,6 +30,9 @@ const adminRouter = require("./routes/admin");
 const siteRouter = require("./routes/site");
 const g2bRouter = require("./routes/g2b");
 const authRouter = require("./routes/auth");
+const messagesRouter = require("./routes/messages");
+const ratingsRouter = require("./routes/ratings");
+const locationsRouter = require("./routes/locations");
 
 // ── App init (HTTP + Socket.io)
 const app = express();
@@ -147,6 +151,14 @@ io.on("connection", (socket) => {
     }
   });
 
+  // User chat room — join personal room for real-time messages
+  socket.on("join_chat", (userId) => {
+    if (userId) {
+      socket.join(`user_${userId}`);
+      socket.chatUserId = userId;
+    }
+  });
+
   // Relay user interactions to all admin sockets
   socket.on("user_interaction_trigger", (payload) => {
     for (const adminSocket of adminSockets) {
@@ -162,6 +174,9 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+// Make io accessible to routes
+app.set("io", io);
 
 // ── Global rate limiter (protect from abuse on 3G/4G mobile clients)
 const apiLimiter = rateLimit({
@@ -187,6 +202,9 @@ app.use("/api/admin", adminRouter);
 app.use("/api/site", siteRouter);
 app.use("/api/g2b", g2bRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/messages", messagesRouter);
+app.use("/api/ratings", ratingsRouter);
+app.use("/api/locations", locationsRouter);
 
 // ── Root route (Welcome message)
 app.get("/", (req, res) => {
@@ -214,14 +232,17 @@ app.get("/api/health", (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// SERVE REACT FRONTEND IN PRODUCTION
+// SERVE REACT FRONTEND
 // ─────────────────────────────────────────────
-if (NODE_ENV === "production") {
-  const buildPath = path.join(__dirname, "build");
-  app.use(express.static(buildPath));
+const distPath = path.join(__dirname, "dist");
+const buildPath = path.join(__dirname, "build");
+const frontendPath = fs.existsSync(distPath) ? distPath : buildPath;
+
+if (fs.existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
   app.get("*", (req, res) => {
     if (!req.path.startsWith("/api")) {
-      res.sendFile(path.join(buildPath, "index.html"));
+      res.sendFile(path.join(frontendPath, "index.html"));
     }
   });
 }

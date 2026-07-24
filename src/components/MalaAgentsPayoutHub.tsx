@@ -34,7 +34,9 @@ const MalaAgentsPayoutHub: React.FC = () => {
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch("/api/admin/analytics");
+        const response = await fetch("/api/admin/analytics", {
+          credentials: "include",
+        });
         const analytics = await response.json();
         
         // In a full implementation, we'd have a specific /api/admin/agents endpoint
@@ -76,6 +78,7 @@ const MalaAgentsPayoutHub: React.FC = () => {
       const response = await fetch("/api/admin/payout-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ agent_id: agent.id })
       });
       const result = await response.json();

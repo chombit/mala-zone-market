@@ -25,7 +25,7 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024, files: 8 }, // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024, files: 4 },
 });
 
 // ── Elite Image Processing Pipeline
@@ -48,19 +48,26 @@ async function processImage(buffer) {
 // ── Routes
 router.get("/", async (req, res) => {
   try {
-    const { category, location_key, intention, limit = 20, offset = 0 } = req.query;
-    
+    const { category, location_key, intention, city, limit = 20, offset = 0 } = req.query;
+
     let sql = `
-      SELECT l.*, u.full_name as seller_name 
-      FROM listings l 
-      JOIN users u ON l.user_id = u.id 
+      SELECT l.*, u.full_name as seller_name,
+        COALESCE(r.avg_rating, 0) AS avg_rating,
+        COALESCE(r.review_count, 0) AS review_count
+      FROM listings l
+      JOIN users u ON l.user_id = u.id
+      LEFT JOIN (
+        SELECT seller_id, ROUND(AVG(rating), 1) AS avg_rating, COUNT(*) AS review_count
+        FROM ratings GROUP BY seller_id
+      ) r ON r.seller_id = l.user_id
       WHERE l.is_active = 1
     `;
     const params = [];
 
     if (category) { sql += " AND l.category = ?"; params.push(category); }
     if (location_key) { sql += " AND l.location_key = ?"; params.push(location_key); }
-    
+    if (city) { sql += " AND l.location_key LIKE ?"; params.push(`${city}%`); }
+
     sql += " ORDER BY l.is_premium DESC, l.created_at DESC LIMIT ? OFFSET ?";
     params.push(Number(limit), Number(offset));
 
@@ -75,9 +82,15 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const [[listing]] = await db.execute(
-      `SELECT l.*, u.full_name as seller_name 
+      `SELECT l.*, u.full_name as seller_name,
+        COALESCE(r.avg_rating, 0) AS avg_rating,
+        COALESCE(r.review_count, 0) AS review_count
        FROM listings l 
        JOIN users u ON l.user_id = u.id 
+       LEFT JOIN (
+         SELECT seller_id, ROUND(AVG(rating), 1) AS avg_rating, COUNT(*) AS review_count
+         FROM ratings GROUP BY seller_id
+       ) r ON r.seller_id = l.user_id
        WHERE l.id = ?`,
       [id]
     );
@@ -100,7 +113,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", upload.fields([{ name: "images", maxCount: 8 }]), async (req, res) => {
+router.post("/", upload.fields([{ name: "images", maxCount: 4 }]), async (req, res) => {
   try {
     const body = req.body;
     const imageFiles = req.files?.images || [];

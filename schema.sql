@@ -295,17 +295,26 @@ CREATE TABLE IF NOT EXISTS g2b_audits (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'Audit ID',
   listing_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to listings',
   officer_name VARCHAR(255) NOT NULL COMMENT 'Digital signature name',
+  officer_role ENUM('g2b_municipality', 'g2b_transport') NOT NULL COMMENT 'Officer role for access control',
   audit_type ENUM('land', 'vehicle') NOT NULL COMMENT 'Type of verification',
-  status ENUM('verified', 'fraudulent') NOT NULL COMMENT 'Outcome',
-  notes TEXT COMMENT 'Optional notes/findings',
+  workflow_status ENUM('submitted', 'under_review', 'needs_clarification', 'approved', 'rejected', 'fraud_flagged') NOT NULL DEFAULT 'submitted' COMMENT 'Formal workflow state',
+  rejection_reason ENUM('registry_mismatch', 'court_injunction', 'tax_arrears', 'ownership_dispute', 'document_fraud', 'stolen_vehicle', 'crime_flag', 'incomplete_docs', 'other') NULL COMMENT 'Structured rejection reason',
+  notes TEXT COMMENT 'Officer notes and findings',
+  evidence_references JSON COMMENT 'Array of document IDs/URLs referenced in decision',
+  review_scope ENUM('property_review', 'legal_review', 'vehicle_review') NOT NULL COMMENT 'Scope of review based on officer role',
+  decision_timestamp TIMESTAMP NULL COMMENT 'When final decision was made',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Audit timestamp',
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last status change',
 
   FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE,
 
   KEY idx_listing_id (listing_id) COMMENT 'Find audits for a listing',
-  KEY idx_status (status) COMMENT 'Filter by outcome'
+  KEY idx_workflow_status (workflow_status) COMMENT 'Filter by workflow state',
+  KEY idx_officer_role (officer_role) COMMENT 'Filter by officer type',
+  KEY idx_audit_type (audit_type) COMMENT 'Filter by verification type',
+  KEY idx_decision_timestamp (decision_timestamp) COMMENT 'Sort by decision date'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-  COMMENT='G2B Compliance Portal audit records';
+  COMMENT='G2B Compliance Portal audit records with formalizedworkflow';
 
 -- ─────────────────────────────────────────────────────────────
 -- VIEWS (for analytics convenience)

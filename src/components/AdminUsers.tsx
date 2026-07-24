@@ -41,6 +41,7 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
         const response = await fetch(`/api/admin/users/${user.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(updateData)
         });
         const result = await response.json();
@@ -53,6 +54,7 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
         const response = await fetch("/api/admin/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(formData)
         });
         const result = await response.json();
@@ -102,11 +104,18 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
             <label className="text-sm font-semibold text-malazone-navy">Role</label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as "super_admin" | "admin" })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  role: e.target.value as "super_admin" | "admin" | "g2b_municipality" | "g2b_transport"
+                })
+              }
               className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
             >
               <option value="admin">Admin</option>
               <option value="super_admin">Super Admin</option>
+              <option value="g2b_municipality">Municipality</option>
+              <option value="g2b_transport">Transport Bureau</option>
             </select>
           </div>
           <div className="space-y-2">
@@ -148,7 +157,7 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
 };
 
 const AdminUsers: React.FC = () => {
-  const { user: currentUser, deleteAdminUser: localDeleteAdminUser, adminUsers: localAdminUsers, addAdminUser: localAddAdminUser, updateAdminUser: localUpdateAdminUser } = useAdminAuth();
+  const { user: currentUser } = useAdminAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | undefined>();
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
@@ -157,17 +166,16 @@ const AdminUsers: React.FC = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/admin/users");
+      const response = await fetch("/api/admin/users", {
+        credentials: "include",
+      });
       const result = await response.json();
       if (result.success) {
         setAdminUsers(result.users);
-      } else {
-        // Fallback to local storage if API not available
-        setAdminUsers(localAdminUsers);
       }
     } catch (err) {
-      // Fallback to local storage
-      setAdminUsers(localAdminUsers);
+      console.error("Failed to load admin users:", err);
+      setAdminUsers([]);
     } finally {
       setLoading(false);
     }
@@ -182,16 +190,15 @@ const AdminUsers: React.FC = () => {
 
     try {
       const response = await fetch(`/api/admin/users/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        credentials: "include",
       });
       const result = await response.json();
       if (result.success) {
         await loadUsers();
       }
     } catch (err) {
-      // Fallback to local delete
-      localDeleteAdminUser(id);
-      await loadUsers();
+      console.error("Failed to delete admin user:", err);
     }
   };
 
@@ -261,7 +268,13 @@ const AdminUsers: React.FC = () => {
                         : "bg-blue-50 text-blue-700"
                       }`}>
                       <ShieldCheck className="w-3 h-3" />
-                      {adminUser.role === "super_admin" ? "Super Admin" : "Admin"}
+                      {adminUser.role === "super_admin"
+                        ? "Super Admin"
+                        : adminUser.role === "g2b_municipality"
+                          ? "Municipality"
+                          : adminUser.role === "g2b_transport"
+                            ? "Transport Bureau"
+                            : "Admin"}
                     </span>
                   </td>
                   <td className="px-6 py-5">

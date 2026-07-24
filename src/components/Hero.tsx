@@ -128,16 +128,6 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
   });
   const [slides, setSlides] = useState<Slide[]>([]);
 
-  /* Dropdown states */
-  const [isZoneOpen, setIsZoneOpen] = useState(false);
-  const [isLocOpen, setIsLocOpen] = useState(false);
-  const [isIntentOpen, setIsIntentOpen] = useState(false);
-
-  /* Refs for click-away */
-  const zoneRef = useRef<HTMLDivElement>(null);
-  const locRef = useRef<HTMLDivElement>(null);
-  const intentRef = useRef<HTMLDivElement>(null);
-
   // Fetch hero slides from API
   useEffect(() => {
     const fetchSlides = async () => {
@@ -217,16 +207,6 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
     fetchSlides();
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (zoneRef.current && !zoneRef.current.contains(event.target as Node)) setIsZoneOpen(false);
-      if (locRef.current && !locRef.current.contains(event.target as Node)) setIsLocOpen(false);
-      if (intentRef.current && !intentRef.current.contains(event.target as Node)) setIsIntentOpen(false);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   /* Auto-advance slideshow */
   const nextSlide = useCallback(() => {
     if (slides.length > 0) {
@@ -294,7 +274,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
     <section
       id="hero-section"
       className="
-        relative w-full min-h-screen
+        relative w-full min-h-[320px] sm:min-h-screen
         bg-slate-50 dark:bg-slate-950
         flex flex-col overflow-hidden
         transition-colors duration-500
@@ -326,7 +306,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
       </div>
 
       {/* ── Ambient Glow Orbs ─────────────────────────────────────── */}
-      <div className="absolute inset-0 z-[1] overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 z-[1] overflow-hidden pointer-events-none hidden sm:block">
         <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-malazone-green/[0.05] rounded-full blur-[140px] animate-pulse" />
         <div
           className="absolute bottom-[15%] right-[5%] w-[400px] h-[400px] bg-malazone-green/[0.03] rounded-full blur-[120px] animate-pulse"
@@ -345,12 +325,12 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
       />
 
       {/* ── Main Content ─────────────────────────────────────────── */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 sm:px-8 lg:px-12 pt-32 pb-10">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 sm:px-8 lg:px-12 pt-20 sm:pt-32 pb-6 sm:pb-10">
         <div className="w-full max-w-6xl flex flex-col items-center gap-6 sm:gap-7">
 
           {/* ── 1. STRICT PLATFORM BRAND HEADING ── */}
           <h1 
-            className="text-6xl sm:text-7xl lg:text-[8.5rem] font-black leading-[0.85] tracking-tighter uppercase italic text-center animate-fade-in-up mb-5 flex justify-center"
+            className="hidden sm:flex text-6xl sm:text-7xl lg:text-[8.5rem] font-black leading-[0.85] tracking-tighter uppercase italic text-center animate-fade-in-up mb-5 justify-center"
             style={{
               transform: `translate3d(${x * 0.3}px, ${y * 0.3}px, 0)`,
               willChange: 'transform',
@@ -367,7 +347,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
 
           {/* ── 2. LOCALIZED MOTTO SEGREGATION ── */}
           <div 
-            className="flex items-center justify-center gap-3 animate-fade-in-up mb-6"
+            className="hidden sm:flex items-center justify-center gap-3 animate-fade-in-up mb-6"
             style={{
               transform: `translate3d(${x * 0.2}px, ${y * 0.2}px, 0)`,
               willChange: 'transform',
@@ -385,7 +365,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
 
           {/* ── 3. SUB-HEADLINE ── */}
           <p 
-            className="text-sm sm:text-base lg:text-lg font-medium tracking-tight max-w-2xl mx-auto text-center leading-relaxed animate-fade-in-up text-malazone-navy dark:text-slate-400 transition-colors duration-500"
+            className="hidden sm:block text-sm sm:text-base lg:text-lg font-medium tracking-tight max-w-2xl mx-auto text-center leading-relaxed animate-fade-in-up text-malazone-navy dark:text-slate-400 transition-colors duration-500"
             style={{
               transform: `translate3d(${x * 0.15}px, ${y * 0.15}px, 0)`,
               willChange: 'transform',
@@ -395,8 +375,16 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             {t("hero.subtitle")}
           </p>
 
+          {/* ── Mobile Brand (compact) ── */}
+          <div className="flex sm:hidden items-center gap-2 mb-1 animate-fade-in-up">
+            <span className="text-2xl font-black tracking-tighter uppercase italic">
+              <span className="text-malazone-green">MALA</span>
+              <span className="text-malazone-navy dark:text-white">ZONE</span>
+            </span>
+          </div>
+
           {/* ── Inline Search Bar ─────────────────────────────────── */}
-          <div 
+          <div
             className="w-full max-w-4xl animate-fade-in-up relative z-50"
             style={{
               transform: `translate3d(${x * 0.1}px, ${y * 0.1}px, 0)`,
@@ -405,161 +393,36 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             }}
           >
             <div
+              onClick={handleSearch}
               className="
-                flex flex-col sm:flex-row items-stretch
-                rounded-2xl sm:rounded-full
+                flex items-center gap-3
+                rounded-full
                 border transition-all duration-500
                 bg-white dark:bg-slate-900/90
                 border-slate-200 dark:border-white/[0.08]
                 shadow-xl dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)]
                 hover:border-malazone-green/30 dark:hover:border-malazone-green/20
+                cursor-text
               "
             >
-              {/* Zone Select (Custom) */}
-              <div
-                ref={zoneRef}
-                onMouseEnter={() => setIsZoneOpen(true)}
-                onMouseLeave={() => setIsZoneOpen(false)}
-                className={`relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06] first:rounded-t-2xl sm:first:rounded-l-full sm:first:rounded-tr-none ${isZoneOpen ? "z-[60]" : "z-10"}`}
-              >
-                <button
-                  onClick={() => setIsZoneOpen(!isZoneOpen)}
-                  className="w-full h-full px-6 py-4 flex items-center justify-between text-left group rounded-t-2xl sm:rounded-l-full sm:rounded-tr-none"
-                >
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
-                      {t("search.zone")}
-                    </span>
-                    <span className="text-sm font-black text-malazone-navy dark:text-white truncate">
-                      {selectedCategory === "all"
-                        ? t("cat.all" as any)
-                        : t(slides.find(s => s.category_id === selectedCategory)?.pillar_key as any || "cat.all")}
-                    </span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-malazone-navy transition-transform duration-300 ${isZoneOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                {isZoneOpen && (
-                  <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-b-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-1 duration-200">
-                    <button
-                      onClick={() => { setSelectedCategory("all"); setIsZoneOpen(false); }}
-                      className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-malazone-navy dark:text-white transition-colors"
-                    >
-                      {t("cat.all" as any)}
-                    </button>
-                    {slides.map((s, i) => {
-                      const IconComp = ICON_MAP[s.category_id];
-                      return (
-                        <button
-                          key={s.id}
-                          onClick={() => { setSelectedCategory(s.category_id); setIsZoneOpen(false); }}
-                          className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-malazone-navy dark:text-white border-t border-slate-100 dark:border-white/5 transition-colors flex items-center gap-3"
-                        >
-                          {IconComp && <IconComp className="w-3.5 h-3.5 text-malazone-green" />}
-                          {t(s.pillar_key as any)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+              <div className="flex items-center gap-3 flex-1 px-6 py-4">
+                <Search className="w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
+                <span className="text-sm font-medium text-slate-400 dark:text-slate-500 select-none">
+                  {t("search.zone") === "Search Zone" ? "Search houses, land, cars, machinery..." : t("search.zone")}
+                </span>
               </div>
-
-              {/* Location Select (Custom) */}
-              <div
-                ref={locRef}
-                onMouseEnter={() => setIsLocOpen(true)}
-                onMouseLeave={() => setIsLocOpen(false)}
-                className={`relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06] ${isLocOpen ? "z-[60]" : "z-10"}`}
-              >
-                <button
-                  onClick={() => setIsLocOpen(!isLocOpen)}
-                  className="w-full h-full px-6 py-4 flex items-center justify-between text-left"
-                >
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
-                      {t("search.location")}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-malazone-green" />
-                      <span className="text-sm font-black text-malazone-navy dark:text-white truncate">
-                        {t(searchLocation as any)}
-                      </span>
-                    </div>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-malazone-navy transition-transform duration-300 ${isLocOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                {isLocOpen && (
-                  <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-b-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-1 duration-200">
-                    {[
-                      "loc.hawassa",
-                      "loc.yirgalem",
-                      "loc.aleta",
-                      "loc.bensa",
-                      "loc.chuko",
-                    ].map((l, i) => (
-                      <button
-                        key={i}
-                        onClick={() => { setSearchLocation(l); setIsLocOpen(false); }}
-                        className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-malazone-navy dark:text-white border-t first:border-t-0 border-slate-100 dark:border-white/5 transition-colors"
-                      >
-                        {t(l as any)}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Intent Select (Custom) */}
-              <div
-                ref={intentRef}
-                onMouseEnter={() => setIsIntentOpen(true)}
-                onMouseLeave={() => setIsIntentOpen(false)}
-                className={`relative flex-1 group border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-white/[0.06] ${isIntentOpen ? "z-[60]" : "z-10"}`}
-              >
-                <button
-                  onClick={() => setIsIntentOpen(!isIntentOpen)}
-                  className="w-full h-full px-6 py-4 flex items-center justify-between text-left"
-                >
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-malazone-navy dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">
-                      {t("search.intent")}
-                    </span>
-                    <span className="text-sm font-black text-malazone-navy dark:text-white truncate">
-                      {t(searchIntent as any)}
-                    </span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-malazone-navy transition-transform duration-300 ${isIntentOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                {isIntentOpen && (
-                  <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-b-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-1 duration-200">
-                    {["intent.buy", "intent.rent", "intent.hourly"].map((intent, i) => (
-                      <button
-                        key={i}
-                        onClick={() => { setSearchIntent(intent); setIsIntentOpen(false); }}
-                        className="w-full px-5 py-3.5 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-malazone-navy dark:text-white border-t first:border-t-0 border-slate-100 dark:border-white/5 transition-colors"
-                      >
-                        {t(intent as any)}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Search CTA Button */}
               <button
-                onClick={handleSearch}
+                onClick={(e) => { e.stopPropagation(); handleSearch(); }}
                 className="
-                  flex items-center justify-center gap-2.5
-                  px-8 py-4 rounded-b-2xl sm:rounded-b-none sm:rounded-r-full
+                  flex items-center justify-center gap-2
+                  px-6 py-4 rounded-full
                   bg-malazone-green hover:bg-malazone-green/90
                   text-malazone-navy font-black
-                  transition-all duration-300 group
+                  transition-all duration-300 group mr-1
                 "
               >
                 <Search className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
-                <span className="text-xs font-black uppercase tracking-[0.2em] whitespace-nowrap">
+                <span className="text-xs font-black uppercase tracking-[0.2em] whitespace-nowrap hidden sm:inline">
                   {t("search.btn")}
                 </span>
               </button>
@@ -569,7 +432,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
 
           {/* ── Stats Strip ─────────────────────────────────────────── */}
           <div 
-            className="w-full max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 animate-fade-in-up perspective-[1200px]"
+            className="hidden sm:grid w-full max-w-3xl grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 animate-fade-in-up perspective-[1200px]"
             style={{
               transform: `translate3d(${x * 0.05}px, ${y * 0.05}px, 0)`,
               willChange: 'transform',
@@ -635,7 +498,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           </div>
 
           {/* ── Slideshow Dot Indicators ──────────────────────────── */}
-          <div className="flex items-center justify-center gap-2">
+          <div className="hidden sm:flex items-center justify-center gap-2">
             {slides.map((_, i) => (
               <button
                 key={i}
