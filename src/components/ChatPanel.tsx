@@ -131,7 +131,7 @@ const ChatPanel: React.FC = () => {
       {!panelOpen && (
         <button
           onClick={user ? handleOpenConversations : () => window.location.href = '/signin'}
-          className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[999] w-14 h-14 rounded-full bg-[#00A86B] text-white shadow-lg shadow-emerald-500/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+          className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[999] w-14 h-14 rounded-full bg-[#00A86B] text-white shadow-lg shadow-emerald-500/30 hidden md:flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
           title={user ? "Open Chat" : "Sign in to chat"}
         >
           <MessageCircle className="w-6 h-6" />
