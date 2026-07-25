@@ -1,7 +1,7 @@
 /**
  * MalaZoneTestimonials.tsx
  * Malazone.com — Ultra-Modern "Voices of malazone" Testimonials Section
- * Pure Light Theme | 3D Card Physics | Fluid Accent Strips | Corporate Typography
+ * Touch-swipe carousel | 3D Card Physics | Fluid Accent Strips
  * © 2026 Malazone Technologies PLC
  */
 
@@ -125,10 +125,9 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
 
   return (
     <article
-      className="relative flex flex-col bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-white/5 rounded-[28px] p-7 overflow-hidden select-none cursor-default"
+      className="relative flex flex-col bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-white/5 rounded-[28px] p-5 sm:p-7 overflow-hidden select-none cursor-default"
       style={{
         animation: `slideUpCard 0.55s cubic-bezier(0.16,1,0.3,1) ${animationDelay}ms both`,
-        /* 3D card physics: cubic-bezier transition, 12px lift, 2% scale, glowing shadow */
         transition:
           'transform 500ms cubic-bezier(0.16,1,0.3,1), box-shadow 500ms cubic-bezier(0.16,1,0.3,1)',
         transform: isHovered
@@ -141,7 +140,7 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* ── Ambient inner glow on hover ── */}
+      {/* Ambient inner glow on hover */}
       <div
         className="absolute inset-0 rounded-[28px] pointer-events-none transition-opacity duration-500"
         style={{
@@ -150,21 +149,18 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
         }}
       />
 
-      {/* ── Large background quote mark ── */}
+      {/* Large background quote mark */}
       <div
         className="absolute top-4 right-5 pointer-events-none transition-opacity duration-500"
         style={{ opacity: isHovered ? 0.12 : 0.05 }}
       >
-        <Quote
-          className="w-16 h-16"
-          style={{ color: card.accentHex }}
-        />
+        <Quote className="w-12 h-12 sm:w-16 sm:h-16" style={{ color: card.accentHex }} />
       </div>
 
-      {/* ── Avatar circle ── */}
-      <div className="flex justify-center mb-5 relative z-10">
+      {/* Avatar circle */}
+      <div className="flex justify-center mb-4 sm:mb-5 relative z-10">
         <div
-          className="w-[70px] h-[70px] rounded-full bg-[#0B132B] text-3xl flex items-center justify-center shadow-lg border-4 border-white"
+          className="w-14 h-14 sm:w-[70px] sm:h-[70px] rounded-full bg-[#0B132B] text-2xl sm:text-3xl flex items-center justify-center shadow-lg border-3 sm:border-4 border-white"
           style={{
             transition: 'box-shadow 500ms cubic-bezier(0.16,1,0.3,1), transform 500ms cubic-bezier(0.16,1,0.3,1)',
             boxShadow: isHovered
@@ -179,10 +175,10 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
         </div>
       </div>
 
-      {/* ── Name & Role ── */}
+      {/* Name & Role */}
       <div className="text-center space-y-1 relative z-10">
         <h4
-          className="text-sm font-black leading-snug tracking-tight text-[#0B132B] dark:text-white"
+          className="text-xs sm:text-sm font-black leading-snug tracking-tight text-[#0B132B] dark:text-white"
           style={{
             color: isHovered ? card.accentHex : undefined,
             transition: 'color 400ms cubic-bezier(0.16,1,0.3,1)',
@@ -190,28 +186,23 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
         >
           {lang === 'am' ? card.nameAm : card.nameEn}
         </h4>
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] leading-relaxed text-slate-500 dark:text-slate-400">
+        <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.18em] leading-relaxed text-slate-500 dark:text-slate-400">
           {lang === 'am' ? card.roleAm : card.roleEn}
         </p>
       </div>
 
-      {/* ── 5-Star rating row ── */}
-      <div className="flex items-center justify-center gap-1 mt-3 relative z-10">
+      {/* 5-Star rating row */}
+      <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-2 sm:mt-3 relative z-10">
         {[...Array(card.stars)].map((_, si) => (
-          <Star
-            key={si}
-            className="w-3.5 h-3.5 fill-amber-400 text-amber-400"
-            style={{
-              transition: `transform 300ms`,
-            }}
-          />
+          <Star key={si} className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400" />
         ))}
       </div>
     </article>
   );
 };
+
 /* ─────────────────────────────────────────────────────────────
-   Main Component — Continuous Auto-Sliding Infinite Loop Carousel
+   Main Component — Touch-Swipe Infinite Loop Carousel
    ───────────────────────────────────────────────────────────── */
 export function MalaZoneTestimonials() {
   const { language } = useLanguage();
@@ -223,6 +214,13 @@ export function MalaZoneTestimonials() {
   const [reviews, setReviews] = useState(FALLBACK_REVIEWS);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+
+  /* Touch / swipe state */
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchDeltaX = useRef(0);
+  const isSwiping = useRef(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
 
   useEffect(() => {
     fetch('/api/site/testimonials')
@@ -264,28 +262,30 @@ export function MalaZoneTestimonials() {
   }, []);
 
   const totalCards = reviews.length;
-  /* Clone cards at both ends for seamless infinite looping */
   const extendedCards = [...reviews.slice(-perView), ...reviews, ...reviews.slice(0, perView)];
   const cardWidthPercent = 100 / perView;
-  const gapPx = 20;
+  const gapPx = window.innerWidth < 640 ? 12 : 20;
 
-  /* The "real" index 0 in extended array starts at position perView */
-  const getTranslateX = (idx: number) => {
-    return `calc(-${(idx + perView) * cardWidthPercent}% - ${(idx + perView) * gapPx}px)`;
+  const getTranslateX = (idx: number, extraOffset = 0) => {
+    const base = -((idx + perView) * cardWidthPercent + extraOffset);
+    return `calc(${base}% - ${(idx + perView) * gapPx}px)`;
   };
 
   const goTo = useCallback((idx: number, animate = true) => {
     setIsTransitioning(animate);
+    setSwipeOffset(0);
     setCurrent(idx);
   }, []);
 
   const goNext = useCallback(() => {
     setIsTransitioning(true);
+    setSwipeOffset(0);
     setCurrent(prev => prev + 1);
   }, []);
 
   const goPrev = useCallback(() => {
     setIsTransitioning(true);
+    setSwipeOffset(0);
     setCurrent(prev => prev - 1);
   }, []);
 
@@ -308,7 +308,7 @@ export function MalaZoneTestimonials() {
     }
   }, [current, totalCards, isTransitioning]);
 
-  /* ── Auto-slide every 4s, loops continuously ── */
+  /* ── Auto-slide every 4s ── */
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (!isPaused) {
@@ -317,7 +317,51 @@ export function MalaZoneTestimonials() {
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [isPaused, current, goNext]);
 
-  /* Normalize current for dot indicators */
+  /* ── Touch/Swipe handlers ── */
+  const SWIPE_THRESHOLD = 50;
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchDeltaX.current = 0;
+    isSwiping.current = false;
+    setIsTransitioning(false);
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+
+    if (!isSwiping.current && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+      isSwiping.current = true;
+    }
+
+    if (isSwiping.current) {
+      e.preventDefault();
+      touchDeltaX.current = dx;
+      const containerWidth = trackRef.current?.parentElement?.clientWidth || 1;
+      const offsetPercent = (dx / containerWidth) * 100;
+      setSwipeOffset(offsetPercent);
+    }
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    setIsTransitioning(true);
+
+    if (Math.abs(touchDeltaX.current) > SWIPE_THRESHOLD) {
+      if (touchDeltaX.current < 0) {
+        goNext();
+      } else {
+        goPrev();
+      }
+    } else {
+      setSwipeOffset(0);
+    }
+
+    isSwiping.current = false;
+    touchDeltaX.current = 0;
+  }, [goNext, goPrev]);
+
   const normalizedCurrent = ((current % totalCards) + totalCards) % totalCards;
 
   const t = {
@@ -333,18 +377,17 @@ export function MalaZoneTestimonials() {
     },
   }[lang];
 
-  /* Navigation button shared classes */
   const navBtnClass =
-    'flex items-center justify-center w-11 h-11 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 shadow-md text-[#0B132B] dark:text-white transition-all duration-300 hover:border-[#00A86B]/50 hover:text-[#00A86B] hover:shadow-[0_4px_20px_rgba(0,168,107,0.2)] active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A86B]/50';
+    'flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 shadow-md text-[#0B132B] dark:text-white transition-all duration-300 hover:border-[#00A86B]/50 hover:text-[#00A86B] hover:shadow-[0_4px_20px_rgba(0,168,107,0.2)] active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A86B]/50';
 
   return (
     <section
       id="testimonials"
-      className="relative w-full bg-slate-50 dark:bg-slate-950 pt-8 pb-20 sm:pb-24 px-4 sm:px-8 lg:px-16 font-sans antialiased overflow-hidden transition-colors duration-300"
+      className="relative w-full bg-slate-50 dark:bg-slate-950 pt-8 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-8 lg:px-16 font-sans antialiased overflow-hidden transition-colors duration-300"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* ── Soft ambient background blobs ── */}
+      {/* Soft ambient background blobs */}
       <div
         className="absolute -top-16 -left-20 w-72 h-72 rounded-full blur-3xl pointer-events-none hidden md:block"
         style={{ background: 'radial-gradient(circle, rgba(0,168,107,0.08) 0%, transparent 70%)' }}
@@ -353,24 +396,16 @@ export function MalaZoneTestimonials() {
         className="absolute -bottom-16 -right-20 w-80 h-80 rounded-full blur-3xl pointer-events-none hidden md:block"
         style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%)' }}
       />
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full blur-3xl pointer-events-none hidden lg:block"
-        style={{ background: 'radial-gradient(ellipse, rgba(2,132,199,0.04) 0%, transparent 70%)' }}
-      />
 
       <div className="max-w-6xl mx-auto relative z-10">
 
-        {/* ══════════════════════════════════════════════
-            Section Header
-        ══════════════════════════════════════════════ */}
-        <div className="flex flex-col items-center text-center space-y-2.5 mb-10">
-          <h2 className="text-2xl sm:text-3.5xl font-black tracking-tight leading-none flex items-center justify-center text-[#0B132B] dark:text-white">
+        {/* ═══ Section Header ═══ */}
+        <div className="flex flex-col items-center text-center space-y-2 sm:space-y-2.5 mb-8 sm:mb-10">
+          <h2 className="text-xl sm:text-3xl lg:text-3.5xl font-black tracking-tight leading-none flex items-center justify-center text-[#0B132B] dark:text-white">
             {lang === 'en' ? (
               <>
                 <span className="pr-2">Voices of</span>
-                <span style={{ color: '#00A86B' }} className="font-extrabold lowercase">
-                  malazone
-                </span>
+                <span style={{ color: '#00A86B' }} className="font-extrabold lowercase">malazone</span>
               </>
             ) : (
               <>
@@ -385,28 +420,33 @@ export function MalaZoneTestimonials() {
           <div className="w-12 h-[3px] bg-[#00A86B] rounded-full mx-auto mt-2" />
         </div>
 
-        {/* ══════════════════════════════════════════════
-            Continuous Sliding Carousel
-        ══════════════════════════════════════════════ */}
+        {/* ═══ Carousel ═══ */}
         <div className="relative">
 
-          {/* Prev arrow */}
+          {/* Prev arrow — hidden on mobile, touch replaces it */}
           <button
             onClick={goPrev}
             aria-label="Previous testimonials"
-            className={`absolute left-[-20px] sm:left-[-28px] top-1/2 -translate-y-1/2 z-20 ${navBtnClass}`}
+            className={`absolute left-[-16px] sm:left-[-28px] top-1/2 -translate-y-1/2 z-20 ${navBtnClass} hidden sm:flex`}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          {/* Cards sliding track */}
-          <div className="overflow-hidden">
+          {/* Cards sliding track with touch */}
+          <div
+            className="overflow-hidden touch-pan-y"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
             <div
               ref={trackRef}
               className="flex"
               style={{
                 gap: `${gapPx}px`,
-                transform: getTranslateX(current),
+                transform: swipeOffset !== 0
+                  ? getTranslateX(current, swipeOffset)
+                  : getTranslateX(current),
                 transition: isTransitioning
                   ? 'transform 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                   : 'none',
@@ -418,65 +458,57 @@ export function MalaZoneTestimonials() {
                   className="shrink-0"
                   style={{ width: `calc(${cardWidthPercent}% - ${gapPx * (perView - 1) / perView}px)` }}
                 >
-                  <TestimonialCard
-                    card={card}
-                    lang={lang}
-                    animationDelay={0}
-                  />
+                  <TestimonialCard card={card} lang={lang} animationDelay={0} />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Next arrow */}
+          {/* Next arrow — hidden on mobile */}
           <button
             onClick={goNext}
             aria-label="Next testimonials"
-            className={`absolute right-[-20px] sm:right-[-28px] top-1/2 -translate-y-1/2 z-20 ${navBtnClass}`}
+            className={`absolute right-[-16px] sm:right-[-28px] top-1/2 -translate-y-1/2 z-20 ${navBtnClass} hidden sm:flex`}
           >
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
-        {/* ══════════════════════════════════════════════
-            Dot Indicators
-        ══════════════════════════════════════════════ */}
-        <div className="flex items-center justify-center gap-2.5 mt-10">
-          {Array.from({ length: totalCards }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className="rounded-full transition-all duration-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A86B]/50"
+        {/* ═══ Dot Indicators + Progress ═══ */}
+        <div className="flex flex-col items-center gap-4 mt-8 sm:mt-10">
+          <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+            {Array.from({ length: totalCards }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className="rounded-full transition-all duration-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A86B]/50"
+                style={{
+                  width: i === normalizedCurrent ? '28px' : '8px',
+                  height: '8px',
+                  background: i === normalizedCurrent ? '#00A86B' : '#cbd5e1',
+                  boxShadow: i === normalizedCurrent ? '0 0 10px rgba(0,168,107,0.55)' : 'none',
+                  transition: 'all 400ms cubic-bezier(0.16,1,0.3,1)',
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Auto-play Progress Bar */}
+          <div className="w-[140px] sm:w-[180px] h-[2px] bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div
+              key={current}
+              className="h-full rounded-full"
               style={{
-                width: i === normalizedCurrent ? '32px' : '10px',
-                height: '10px',
-                background: i === normalizedCurrent ? '#00A86B' : '#cbd5e1',
-                boxShadow: i === normalizedCurrent ? '0 0 10px rgba(0,168,107,0.55)' : 'none',
-                transition: 'all 400ms cubic-bezier(0.16,1,0.3,1)',
+                background: 'linear-gradient(to right, #00A86B88, #00A86B)',
+                animation: isPaused ? 'none' : 'testimonialsProgress 4s linear forwards',
               }}
             />
-          ))}
-        </div>
-
-        {/* ══════════════════════════════════════════════
-            Auto-play Progress Bar
-        ══════════════════════════════════════════════ */}
-        <div className="mt-5 max-w-[180px] mx-auto h-[2px] bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div
-            key={current}
-            className="h-full rounded-full"
-            style={{
-              background: 'linear-gradient(to right, #00A86B88, #00A86B)',
-              animation: isPaused ? 'none' : 'testimonialsProgress 4s linear forwards',
-            }}
-          />
+          </div>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════
-          Keyframe Animations
-      ══════════════════════════════════════════════ */}
+      {/* Keyframe Animations */}
       <style>{`
         @keyframes testimonialsProgress {
           from { width: 0%; }
@@ -492,8 +524,7 @@ export function MalaZoneTestimonials() {
             transform: translateY(0px) scale(1);
           }
         }
-      `}
-      </style>
+      `}</style>
     </section>
   );
 }

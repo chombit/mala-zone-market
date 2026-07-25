@@ -111,6 +111,7 @@
 
   "cta.call": "ቀጥታ ደውል",
   "cta.whatsapp": "በቴሌግራም",
+  "cta.telegram": "በቴሌግራም",
   "cta.chat": "ሻጭን ያሰነጋቅ",
 
   "badge.verifiedCarta": "ካርታ የተረጋገጠ",
@@ -125,6 +126,8 @@
   "label.condition": "ሁኔታ",
   "label.titleDeed": "ካርታ",
   "label.sqm": "ስፋት",
+  "label.bedrooms": "መኝታ ክፍል",
+  "label.bathrooms": "መታጠቢያ ክፍል",
   "label.billing": "የክፍያ ዘዴ",
 
   "price.etb": "ብር",

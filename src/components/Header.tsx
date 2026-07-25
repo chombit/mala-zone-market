@@ -375,7 +375,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                     transition-all duration-200
                     ${activeCategory === cat.id
                       ? "bg-[#00A86B] text-black"
-                      : "text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 hover:bg-emerald dark:hover:bg-emerald-500/10 hover:text-[#00A86B] dark:hover:text-emerald-400"}
+                      : "text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-[#00A86B] dark:hover:text-emerald-400"}
                   `}
                 >
                   {t(cat.key as any)}

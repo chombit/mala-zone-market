@@ -18,21 +18,21 @@ import Footer from './components/Footer';
 import AboutPage from './components/pages/AboutPage';
 import ContactPage from './components/pages/ContactPage';
 import PrivacyPage from './components/pages/PrivacyPage';
-import { FavoritesProvider } from './contexts/FavoritesContext';
 import { FavoritesSidebar } from './components/FavoritesSidebar';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import BottomNavigation from './components/BottomNavigation';
 import ChatPanel from './components/ChatPanel';
+import BuyerPostListingModal from './components/BuyerPostListingModal';
+import { useAuth } from '@/contexts/AuthContext';
 import { SlidersHorizontal, X } from 'lucide-react';
 
 import GigHubPage from './components/pages/GigHubPage';
 import AgentOnboardPage from './components/pages/AgentOnboardPage';
-import PayoutsPage from './components/pages/PayoutsPage';
 
 import { MalazoneEnterpriseFaq } from './components/MalazoneEnterpriseFaq';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
 
-export type PageView = "home" | "about" | "contact" | "privacy" | "gighub" | "agent-onboard" | "payouts" | "faq";
+export type PageView = "home" | "about" | "contact" | "privacy" | "gighub" | "agent-onboard" | "faq";
 
 const defaultFilters: FilterState = {
   search: "",
@@ -52,7 +52,9 @@ const MainSite: React.FC = () => {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [currentPage, setCurrentPage] = useState<PageView>("home");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
   const { language } = useLanguage();
+  const { isAuthenticated } = useAuth();
 
   /* Sync header category pills → activeZone for the catalog grid */
   const handleCategoryChange = (cat: string) => {
@@ -85,20 +87,19 @@ const MainSite: React.FC = () => {
   };
 
   return (
-    <FavoritesProvider>
-      <div
-        className="
-          min-h-screen
-          bg-slate-50 dark:bg-slate-950
-          text-malazone-navy dark:text-slate-400
-          selection:bg-emerald-500/30
-          selection:text-emerald-900 dark:selection:text-emerald-200
-          transition-colors duration-300
-          pb-20 md:pb-0
-        "
-      >
-        <FavoritesSidebar />
-        <PWAInstallPrompt />
+    <div
+      className="
+        min-h-screen
+        bg-slate-50 dark:bg-slate-950
+        text-malazone-navy dark:text-slate-400
+        selection:bg-emerald-500/30
+        selection:text-emerald-900 dark:selection:text-emerald-200
+        transition-colors duration-300
+        pb-20 md:pb-0
+      "
+    >
+      <FavoritesSidebar />
+      <PWAInstallPrompt />
         {/* Fixed navigation header */}
         <Header
           activeCategory={activeCategory}
@@ -111,7 +112,6 @@ const MainSite: React.FC = () => {
           {currentPage === "privacy" && <PrivacyPage onBack={() => navigateTo("home")} />}
           {currentPage === "gighub" && <GigHubPage onBack={() => navigateTo("home")} />}
           {currentPage === "agent-onboard" && <AgentOnboardPage onBack={() => navigateTo("home")} />}
-          {currentPage === "payouts" && <PayoutsPage onBack={() => navigateTo("home")} />}
           {currentPage === "faq" && <MalazoneEnterpriseFaq onBackToMain={() => navigateTo("home")} currentGlobalLang={language === 'amharic' ? 'am' : 'en'} />}
 
           {currentPage === "home" && (
@@ -203,11 +203,24 @@ const MainSite: React.FC = () => {
         {/* ── Bottom Navigation (Mobile Only) ──────────────────────── */}
         <BottomNavigation 
           activeCategory={activeCategory} 
-          onCategoryChange={handleCategoryChange} 
+          onCategoryChange={handleCategoryChange}
+          onPostClick={() => setShowPostModal(true)}
         />
         <ChatPanel />
+
+        {/* ── Buyer Post Listing Modal ──────────────────────── */}
+        {showPostModal && isAuthenticated && (
+          <BuyerPostListingModal
+            onClose={() => setShowPostModal(false)}
+            onCreated={() => {
+              setShowPostModal(false);
+              // Optionally scroll to listings
+              const el = document.getElementById('listings-catalog');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
+        )}
       </div>
-    </FavoritesProvider>
   );
 };
 

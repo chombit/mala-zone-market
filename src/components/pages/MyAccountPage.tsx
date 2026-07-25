@@ -27,7 +27,7 @@ const MyAccountPage: React.FC = () => {
     { icon: Mail, label: "Email", value: user.email || "—" },
     { icon: Phone, label: isAm ? "ስልክ ቁጥር" : "Phone Number", value: user.phone_number || "—" },
     { icon: Shield, label: isAm ? "የመለያ አይነት" : "Account Type", value: accountTypeLabel },
-    { icon: Calendar, label: isAm ? "ማረፊያ" : "Provider", value: user.provider === "google" ? "Google" : (isAm ? "电子邮件" : "Email") },
+    { icon: Calendar, label: isAm ? "ማረፊያ" : "Provider", value: user.provider === "google" ? "Google" : (isAm ? "ኢሜይል" : "Email") },
   ];
 
   return (

@@ -2,6 +2,8 @@ import React from "react";
 import { X } from "lucide-react";
 import MalaAgentsPayoutHub from "../MalaAgentsPayoutHub";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
+import { Navigate } from "react-router-dom";
 
 interface PayoutsPageProps {
   onBack: () => void;
@@ -9,7 +11,20 @@ interface PayoutsPageProps {
 
 const PayoutsPage: React.FC<PayoutsPageProps> = ({ onBack }) => {
   const { language } = useLanguage();
+  const { isAuthenticated, loading } = useAdminAuth();
   const isAmharic = language === "amharic";
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A86B]"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">

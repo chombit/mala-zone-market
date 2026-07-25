@@ -25,6 +25,8 @@ interface AuthContextValue {
   register: (data: { full_name: string; email: string; password: string; phone_number?: string; account_type?: string }) => Promise<{ success: boolean; message: string; message_am?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateProfile: (data: { full_name: string; phone_number?: string; email?: string }) => Promise<{ success: boolean; message: string }>;
+  changePassword: (data: { current_password: string; new_password: string }) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -140,6 +142,41 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
+  const updateProfile = useCallback(async (data: { full_name: string; phone_number?: string; email?: string }) => {
+    try {
+      const response = await fetch("/api/auth/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include"
+      });
+      const result = await response.json();
+      if (result.success && result.user) {
+        setUser(result.user);
+      }
+      return { success: result.success, message: result.message };
+    } catch (err) {
+      console.error("[Auth UpdateProfile Error]", err);
+      return { success: false, message: "An error occurred" };
+    }
+  }, []);
+
+  const changePassword = useCallback(async (data: { current_password: string; new_password: string }) => {
+    try {
+      const response = await fetch("/api/auth/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include"
+      });
+      const result = await response.json();
+      return { success: result.success, message: result.message };
+    } catch (err) {
+      console.error("[Auth ChangePassword Error]", err);
+      return { success: false, message: "An error occurred" };
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -149,7 +186,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         register,
         logout,
-        refreshUser
+        refreshUser,
+        updateProfile,
+        changePassword,
       }}
     >
       {children}

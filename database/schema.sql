@@ -153,6 +153,25 @@ CREATE TABLE IF NOT EXISTS agent_earnings (
 ) ENGINE=InnoDB;
 
 -- ─────────────────────────────────────────────
+-- AGENT PAYOUT REQUESTS
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS agent_payout_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  agent_id INT NOT NULL,
+  amount_etb DECIMAL(10, 2) NOT NULL,
+  telebirr_phone VARCHAR(20) NOT NULL,
+  status ENUM('pending', 'approved', 'paid', 'rejected') DEFAULT 'pending',
+  admin_note TEXT,
+  processed_by INT NULL,
+  processed_at TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE CASCADE,
+  FOREIGN KEY (processed_by) REFERENCES admin_users(id) ON DELETE SET NULL,
+  INDEX idx_payout_agent (agent_id),
+  INDEX idx_payout_status (status)
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
 -- SITE PROMO BANNER TABLE
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS promo_banners (
@@ -346,4 +365,19 @@ CREATE TABLE IF NOT EXISTS ratings (
   UNIQUE KEY unique_rating_per_listing (rater_id, listing_id),
   INDEX idx_rating_seller (seller_id),
   INDEX idx_rating_created (created_at)
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────
+-- FAVORITES TABLE (User-Saved Listings)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS favorites (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  listing_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_favorite (user_id, listing_id),
+  INDEX idx_fav_user (user_id),
+  INDEX idx_fav_listing (listing_id)
 ) ENGINE=InnoDB;

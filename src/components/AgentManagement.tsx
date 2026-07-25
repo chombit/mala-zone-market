@@ -419,7 +419,7 @@ const AgentManagement: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, sub_city: e.target.value })}
                   className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#00A86B] focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
                 >
-                  <option value="Tabor Sub-City">Tabor Sub-City</option>
+                  <option value="Tabor">Tabor</option>
                   <option value="Lakefront">Lakefront</option>
                   <option value="Piassa">Piassa</option>
                   <option value="Yirgalem">Yirgalem</option>

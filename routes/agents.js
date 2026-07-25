@@ -14,6 +14,8 @@ const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const db = require("../database/db");
+const { requireAdminAuth, requireAdminRoles } = require("../middleware/adminAuth");
+const { requireAgentAuth, issueAgentToken, setAgentAuthCookie, clearAgentAuthCookie } = require("../middleware/agentAuth");
 
 const router = express.Router();
 
@@ -351,7 +353,7 @@ router.get("/stats/program", async (req, res) => {
  * POST /api/agents/status
  * Update agent status (admin only)
  */
-router.post("/status", async (req, res) => {
+router.post("/status", requireAdminAuth, requireAdminRoles("super_admin", "admin"), async (req, res) => {
   try {
     const { agent_id, status } = req.body;
 
@@ -453,6 +455,486 @@ router.post("/listings", upload.array("images", 4), async (req, res) => {
   } catch (err) {
     console.error("[POST /agents/listings]", err);
     res.status(500).json({ success: false, message: "Failed to create listing" });
+  }
+});
+
+// ─────────────────────────────────────────────
+// AGENT AUTH ENDPOINTS
+// ─────────────────────────────────────────────
+
+/**
+ * POST /api/agents/login
+ * Agent login with phone + password (cookie-based session)
+ */
+router.post("/login", async (req, res) => {
+  try {
+    const { phone, password } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({ success: false, message: "Phone number is required" });
+    }
+
+    if (!password) {
+      return res.status(400).json({ success: false, message: "Password is required" });
+    }
+
+    const cleanPhone = phone.replace(/\s/g, "");
+
+    // Look up agent by phone number
+    const [rows] = await db.execute(
+      `SELECT a.id, a.user_id, a.sub_city, a.status, a.earnings_total_etb, a.created_at,
+              u.full_name, u.phone_number
+       FROM agents a
+       JOIN users u ON a.user_id = u.id
+       WHERE u.phone_number = ?
+       LIMIT 1`,
+      [cleanPhone]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ success: false, message: "Agent not found" });
+    }
+
+    const agent = rows[0];
+
+    // Check agent status
+    if (agent.status === "suspended") {
+      return res.status(403).json({ success: false, message: "Account suspended. Contact support." });
+    }
+
+    if (agent.status !== "active") {
+      return res.status(403).json({ success: false, message: "Account pending activation. Please wait for coordinator approval." });
+    }
+
+    // Issue JWT token and set cookie
+    const token = issueAgentToken({
+      agent_id: agent.id,
+      user_id: agent.user_id,
+      phone_number: agent.phone_number,
+    });
+
+    setAgentAuthCookie(res, token);
+
+    res.json({
+      success: true,
+      data: {
+        id: agent.id,
+        user_id: agent.user_id,
+        full_name: agent.full_name,
+        phone_number: agent.phone_number,
+        sub_city: agent.sub_city,
+        status: agent.status,
+        earnings_total_etb: agent.earnings_total_etb,
+        created_at: agent.created_at,
+      },
+    });
+  } catch (err) {
+    console.error("[POST /agents/login]", err);
+    res.status(500).json({ success: false, message: "Login failed" });
+  }
+});
+
+/**
+ * POST /api/agents/logout
+ * Clear agent session cookie
+ */
+router.post("/logout", (req, res) => {
+  clearAgentAuthCookie(res);
+  res.json({ success: true, message: "Logged out" });
+});
+
+/**
+ * GET /api/agents/me
+ * Get authenticated agent's profile (cookie-based)
+ */
+router.get("/me", requireAgentAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      `SELECT a.id, a.user_id, a.sub_city, a.status, a.earnings_total_etb, a.created_at,
+              u.full_name, u.phone_number
+       FROM agents a
+       JOIN users u ON a.user_id = u.id
+       WHERE a.id = ?
+       LIMIT 1`,
+      [req.agent.agent_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Agent not found" });
+    }
+
+    const agent = rows[0];
+
+    // Fetch recent listings for stats
+    const [listings] = await db.execute(
+      `SELECT id, title_en, title_am, category, price, price_suffix, is_active, created_at, view_count
+       FROM listings
+       WHERE user_id = ?
+       ORDER BY created_at DESC
+       LIMIT 10`,
+      [agent.user_id]
+    );
+
+    const activeListings = listings.filter((l) => l.is_active).length;
+    const totalViews = listings.reduce((sum, l) => sum + (l.view_count || 0), 0);
+
+    res.json({
+      success: true,
+      data: {
+        id: agent.id,
+        user_id: agent.user_id,
+        full_name: agent.full_name,
+        phone_number: agent.phone_number,
+        sub_city: agent.sub_city,
+        status: agent.status,
+        earnings_total_etb: agent.earnings_total_etb,
+        created_at: agent.created_at,
+        recent_listings: listings,
+        stats: {
+          total_listings: listings.length,
+          active_listings: activeListings,
+          total_views: totalViews,
+        },
+      },
+    });
+  } catch (err) {
+    console.error("[GET /agents/me]", err);
+    res.status(500).json({ success: false, message: "Failed to fetch agent profile" });
+  }
+});
+
+/**
+ * GET /api/agents/me/listings
+ * Get authenticated agent's own listings (cookie-based)
+ */
+router.get("/me/listings", requireAgentAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      `SELECT id, title_en, title_am, category, price, price_suffix, is_active, view_count, created_at
+       FROM listings
+       WHERE user_id = ?
+       ORDER BY created_at DESC`,
+      [req.agent.user_id]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("[GET /agents/me/listings]", err);
+    res.status(500).json({ success: false, message: "Failed to fetch listings" });
+  }
+});
+
+/**
+ * GET /api/agents/listings/:id
+ * Get a single listing for edit form (ownership required)
+ */
+router.get("/listings/:id", requireAgentAuth, async (req, res) => {
+  try {
+    const [[listing]] = await db.execute(
+      `SELECT id, title_en, title_am, category, price, price_suffix,
+              location_key, description_en, description_am, whatsapp, images, is_active
+       FROM listings
+       WHERE id = ? AND user_id = ?`,
+      [req.params.id, req.agent.user_id]
+    );
+
+    if (!listing) {
+      return res.status(404).json({ success: false, message: "Listing not found or access denied" });
+    }
+
+    if (listing.images && typeof listing.images === "string") {
+      listing.images = JSON.parse(listing.images);
+    }
+
+    res.json({ success: true, data: listing });
+  } catch (err) {
+    console.error("[GET /agents/listings/:id]", err);
+    res.status(500).json({ success: false, message: "Failed to fetch listing" });
+  }
+});
+
+/**
+ * PUT /api/agents/listings/:id
+ * Update a listing (ownership required, optional new images)
+ */
+router.put("/listings/:id", requireAgentAuth, upload.array("images", 4), async (req, res) => {
+  try {
+    const listingId = req.params.id;
+
+    // Verify ownership
+    const [[existing]] = await db.execute(
+      "SELECT id, images FROM listings WHERE id = ? AND user_id = ?",
+      [listingId, req.agent.user_id]
+    );
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Listing not found or access denied" });
+    }
+
+    const { title_en, title_am, category, price, price_suffix, location_key, description_en, description_am, whatsapp, existing_images } = req.body;
+
+    // Process new images if uploaded
+    const newImageFiles = req.files || [];
+    const newImageUrls = await Promise.all(newImageFiles.map(f => processImage(f.buffer)));
+
+    // Merge with existing images (sent as JSON string from frontend)
+    let finalImages;
+    try {
+      const kept = existing_images ? JSON.parse(existing_images) : JSON.parse(existing.images || "[]");
+      finalImages = [...kept, ...newImageUrls].slice(0, 4);
+    } catch {
+      finalImages = newImageUrls.length > 0 ? newImageUrls.slice(0, 4) : JSON.parse(existing.images || "[]");
+    }
+
+    const locationLabels = {
+      hawassa_piassa: { en: "Piassa, Hawassa", am: "ፒያሳ፣ ሀዋሳ" },
+      hawassa_tabor: { en: "Tabor, Hawassa", am: "ታቦር፣ ሀዋሳ" },
+      hawassa_lakefront: { en: "Lakefront, Hawassa", am: "የሐይቅ ጫፍ፣ ሀዋሳ" },
+      yirgalem: { en: "Yirgalem", am: "ይርጋለም" },
+      bensa: { en: "Bensa", am: "በንሳ" },
+      chuko: { en: "Chuko", am: "ጭকቆ" },
+      aleta_wondo: { en: "Aleta Wondo", am: "አለታ ወንዶ" },
+    };
+    const loc = locationLabels[location_key] || { en: "Hawassa", am: "ሀዋሳ" };
+
+    await db.execute(
+      `UPDATE listings SET
+        title_en = COALESCE(?, title_en),
+        title_am = COALESCE(?, title_am),
+        category = COALESCE(?, category),
+        price = COALESCE(?, price),
+        price_suffix = COALESCE(?, price_suffix),
+        location_key = COALESCE(?, location_key),
+        location_label_en = ?,
+        location_label_am = ?,
+        description_en = ?,
+        description_am = ?,
+        whatsapp = COALESCE(?, whatsapp),
+        images = ?
+       WHERE id = ? AND user_id = ?`,
+      [
+        title_en || null, title_am || null, category || null,
+        price ? Number(price) : null, price_suffix || null,
+        location_key || null, loc.en, loc.am,
+        description_en || null, description_am || null,
+        whatsapp || null,
+        JSON.stringify(finalImages),
+        listingId, req.agent.user_id,
+      ]
+    );
+
+    res.json({ success: true, message: "Listing updated successfully" });
+  } catch (err) {
+    console.error("[PUT /agents/listings/:id]", err);
+    res.status(500).json({ success: false, message: "Failed to update listing" });
+  }
+});
+
+/**
+ * DELETE /api/agents/listings/:id
+ * Soft-delete a listing (ownership required)
+ */
+router.delete("/listings/:id", requireAgentAuth, async (req, res) => {
+  try {
+    const listingId = req.params.id;
+
+    const [[existing]] = await db.execute(
+      "SELECT id FROM listings WHERE id = ? AND user_id = ?",
+      [listingId, req.agent.user_id]
+    );
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Listing not found or access denied" });
+    }
+
+    await db.execute("UPDATE listings SET is_active = 0 WHERE id = ?", [listingId]);
+
+    res.json({ success: true, message: "Listing deleted successfully" });
+  } catch (err) {
+    console.error("[DELETE /agents/listings/:id]", err);
+    res.status(500).json({ success: false, message: "Failed to delete listing" });
+  }
+});
+
+/**
+ * PUT /api/agents/me/profile
+ * Update authenticated agent's profile (name, sub_city)
+ */
+router.put("/me/profile", requireAgentAuth, async (req, res) => {
+  try {
+    const { full_name, sub_city } = req.body;
+
+    if (!full_name || full_name.trim().length < 3) {
+      return res.status(422).json({ success: false, message: "full_name must be at least 3 characters" });
+    }
+
+    if (!sub_city || sub_city.trim().length === 0) {
+      return res.status(422).json({ success: false, message: "sub_city is required" });
+    }
+
+    // Update user name
+    await db.execute("UPDATE users SET full_name = ? WHERE id = ?", [full_name.trim(), req.agent.user_id]);
+
+    // Update agent sub_city
+    await db.execute("UPDATE agents SET sub_city = ? WHERE id = ?", [sub_city.trim(), req.agent.agent_id]);
+
+    // Return updated profile
+    const [[agent]] = await db.execute(
+      `SELECT a.id, a.user_id, a.sub_city, a.status, a.earnings_total_etb, a.created_at,
+              u.full_name, u.phone_number
+       FROM agents a
+       JOIN users u ON a.user_id = u.id
+       WHERE a.id = ?`,
+      [req.agent.agent_id]
+    );
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      data: agent,
+    });
+  } catch (err) {
+    console.error("[PUT /agents/me/profile]", err);
+    res.status(500).json({ success: false, message: "Failed to update profile" });
+  }
+});
+
+/**
+ * GET /api/agents/me/earnings
+ * Get authenticated agent's earnings history with summary
+ */
+router.get("/me/earnings", requireAgentAuth, async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 10));
+    const offset = (page - 1) * limit;
+
+    // Fetch earnings with listing context
+    const [earnings] = await db.execute(
+      `SELECT ae.id, ae.amount_etb, ae.transaction_type, ae.status, ae.created_at,
+              l.title_en, l.title_am, l.category
+       FROM agent_earnings ae
+       JOIN listings l ON ae.listing_id = l.id
+       WHERE ae.agent_id = ?
+       ORDER BY ae.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [req.agent.agent_id, limit, offset]
+    );
+
+    // Get total count for pagination
+    const [[{ total }]] = await db.execute(
+      "SELECT COUNT(*) AS total FROM agent_earnings WHERE agent_id = ?",
+      [req.agent.agent_id]
+    );
+
+    // Summary stats
+    const [[summary]] = await db.execute(
+      `SELECT
+        COALESCE(SUM(amount_etb), 0) AS total_earned,
+        COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_etb ELSE 0 END), 0) AS total_paid,
+        COALESCE(SUM(CASE WHEN status = 'pending_approval' THEN amount_etb ELSE 0 END), 0) AS total_pending
+       FROM agent_earnings
+       WHERE agent_id = ?`,
+      [req.agent.agent_id]
+    );
+
+    res.json({
+      success: true,
+      data: earnings,
+      summary: {
+        total_earned: Number(summary.total_earned),
+        total_paid: Number(summary.total_paid),
+        total_pending: Number(summary.total_pending),
+      },
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.error("[GET /agents/me/earnings]", err);
+    res.status(500).json({ success: false, message: "Failed to fetch earnings" });
+  }
+});
+
+// ─────────────────────────────────────────────
+// PAYOUT REQUESTS
+// ─────────────────────────────────────────────
+
+/**
+ * POST /api/agents/payout/request
+ * Agent requests payout of earned commission via TeleBirr
+ */
+router.post("/payout/request", requireAgentAuth, async (req, res) => {
+  try {
+    const { amount_etb, telebirr_phone } = req.body;
+
+    if (!amount_etb || !telebirr_phone) {
+      return res.status(400).json({ success: false, message: "amount_etb and telebirr_phone are required" });
+    }
+
+    const amount = Number(amount_etb);
+    if (amount <= 0) {
+      return res.status(422).json({ success: false, message: "Amount must be greater than 0" });
+    }
+
+    // Check agent has sufficient balance
+    const [[agent]] = await db.execute(
+      "SELECT earnings_total_etb FROM agents WHERE id = ?",
+      [req.agent.agent_id]
+    );
+
+    if (!agent || Number(agent.earnings_total_etb) < amount) {
+      return res.status(422).json({
+        success: false,
+        message: `Insufficient balance. Available: ${agent ? Number(agent.earnings_total_etb).toLocaleString() : 0} ETB`,
+      });
+    }
+
+    // Deduct from agent balance and create payout request
+    await db.execute(
+      "UPDATE agents SET earnings_total_etb = earnings_total_etb - ? WHERE id = ?",
+      [amount, req.agent.agent_id]
+    );
+
+    const [result] = await db.execute(
+      `INSERT INTO agent_payout_requests (agent_id, amount_etb, telebirr_phone, status)
+       VALUES (?, ?, ?, 'pending')`,
+      [req.agent.agent_id, amount, telebirr_phone]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Payout request submitted. Processing within 48 hours.",
+      data: { id: result.insertId, amount_etb: amount, status: 'pending' },
+    });
+  } catch (err) {
+    console.error("[POST /agents/payout/request]", err);
+    res.status(500).json({ success: false, message: "Failed to submit payout request" });
+  }
+});
+
+/**
+ * GET /api/agents/payout/history
+ * Agent views their payout request history
+ */
+router.get("/payout/history", requireAgentAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      `SELECT id, amount_etb, telebirr_phone, status, admin_note, created_at, processed_at
+       FROM agent_payout_requests
+       WHERE agent_id = ?
+       ORDER BY created_at DESC
+       LIMIT 50`,
+      [req.agent.agent_id]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("[GET /agents/payout/history]", err);
+    res.status(500).json({ success: false, message: "Failed to fetch payout history" });
   }
 });
 

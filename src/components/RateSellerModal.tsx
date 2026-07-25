@@ -86,7 +86,7 @@ const RateSellerModal: React.FC<RateSellerModalProps> = ({
 
   const ratingLabels = [
     "",
-    isAm ? "እጅግ አ很差" : "Terrible",
+    isAm ? "እጅግ መጥፎ" : "Terrible",
     isAm ? "መጥፎ" : "Poor",
     isAm ? "መከከል" : "Average",
     isAm ? "ጥሩ" : "Good",

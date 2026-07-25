@@ -33,6 +33,12 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
     setError(null);
 
+    if (!/^(09|07)\d{8}$/.test(formData.phone)) {
+      setError(isAm ? "দযা ትክክለኛ ስልክ ቁጥር ያስገቡ (09XXXXXXXX ወይም 07XXXXXXXX)" : "Please enter a valid Ethiopian phone number (09XXXXXXXX or 07XXXXXXXX)");
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/agents/register", {
         method: "POST",

@@ -1,7 +1,7 @@
 /**
  * AgentAuthContext.tsx
  * Malazone.com — Agent Authentication Context
- * Phone-based authentication for Mala-Agents
+ * Cookie-based session authentication for Mala-Agents
  * © 2026 Malazone Technologies PLC
  */
 
@@ -22,8 +22,8 @@ interface AgentAuthContextType {
   agent: Agent | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (phone: string) => Promise<void>;
-  logout: () => void;
+  login: (phone: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   refreshAgent: () => Promise<void>;
 }
 
@@ -45,41 +45,40 @@ export const AgentAuthProvider: React.FC<AgentAuthProviderProps> = ({ children }
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for existing agent session on mount
+  // Check for existing agent session on mount (cookie-based)
   useEffect(() => {
     const checkAgentSession = async () => {
-      const storedPhone = localStorage.getItem('agent_phone');
-      if (storedPhone) {
-        try {
-          const response = await fetch(`/api/agents/${storedPhone}`);
-          const data = await response.json();
-          if (data.success && data.data) {
-            setAgent(data.data);
-          } else {
-            localStorage.removeItem('agent_phone');
-          }
-        } catch (error) {
-          console.error('Failed to check agent session:', error);
-          localStorage.removeItem('agent_phone');
+      try {
+        const response = await fetch('/api/agents/me', { credentials: 'include' });
+        const data = await response.json();
+        if (data.success && data.data) {
+          setAgent(data.data);
         }
+      } catch (error) {
+        // No valid session — that's fine
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAgentSession();
   }, []);
 
-  const login = async (phone: string) => {
+  const login = async (phone: string, password: string) => {
     try {
       const cleanPhone = phone.replace(/\s/g, '');
-      const response = await fetch(`/api/agents/${cleanPhone}`);
+      const response = await fetch('/api/agents/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ phone: cleanPhone, password }),
+      });
       const data = await response.json();
-      
+
       if (data.success && data.data) {
         setAgent(data.data);
-        localStorage.setItem('agent_phone', cleanPhone);
       } else {
-        throw new Error(data.message || 'Agent not found');
+        throw new Error(data.message || 'Login failed');
       }
     } catch (error) {
       console.error('Agent login failed:', error);
@@ -87,22 +86,27 @@ export const AgentAuthProvider: React.FC<AgentAuthProviderProps> = ({ children }
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch('/api/agents/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      // Logout even if server call fails
+    }
     setAgent(null);
-    localStorage.removeItem('agent_phone');
   };
 
   const refreshAgent = async () => {
-    if (agent?.phone_number) {
-      try {
-        const response = await fetch(`/api/agents/${agent.phone_number}`);
-        const data = await response.json();
-        if (data.success && data.data) {
-          setAgent(data.data);
-        }
-      } catch (error) {
-        console.error('Failed to refresh agent data:', error);
+    try {
+      const response = await fetch('/api/agents/me', { credentials: 'include' });
+      const data = await response.json();
+      if (data.success && data.data) {
+        setAgent(data.data);
       }
+    } catch (error) {
+      console.error('Failed to refresh agent data:', error);
     }
   };
 

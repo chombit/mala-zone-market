@@ -1027,4 +1027,84 @@ router.delete("/translations/:id", requireAdminRoles("super_admin"), async (req,
 });
 
 
+// ─────────────────────────────────────────────
+// AGENT PAYOUT REQUEST MANAGEMENT
+// ─────────────────────────────────────────────
+
+/**
+ * GET /api/admin/payout-requests
+ * List agent payout requests (admin only)
+ */
+router.get("/payout-requests", requireAdminAuth, async (req, res) => {
+  try {
+    const { status = "" } = req.query;
+    let sql = `
+      SELECT pr.id, pr.amount_etb, pr.telebirr_phone, pr.status, pr.admin_note,
+             pr.processed_at, pr.created_at,
+             a.id AS agent_id, u.full_name AS agent_name, u.phone_number AS agent_phone, a.sub_city
+      FROM agent_payout_requests pr
+      JOIN agents a ON pr.agent_id = a.id
+      JOIN users u ON a.user_id = u.id
+    `;
+    const params = [];
+
+    if (status) {
+      sql += " WHERE pr.status = ?";
+      params.push(status);
+    }
+
+    sql += " ORDER BY pr.created_at DESC LIMIT 100";
+
+    const [rows] = await db.execute(sql, params);
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("[GET /admin/payout-requests]", err);
+    res.status(500).json({ success: false, message: "Failed to fetch payout requests" });
+  }
+});
+
+/**
+ * POST /api/admin/payout-requests/:id/process
+ * Approve, pay, or reject a payout request (admin only)
+ */
+router.post("/payout-requests/:id/process", requireAdminAuth, requireAdminRoles("super_admin", "admin"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, admin_note } = req.body;
+
+    if (!["approved", "paid", "rejected"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status. Must be: approved, paid, or rejected" });
+    }
+
+    const [[request]] = await db.execute(
+      "SELECT * FROM agent_payout_requests WHERE id = ?",
+      [id]
+    );
+
+    if (!request) {
+      return res.status(404).json({ success: false, message: "Payout request not found" });
+    }
+
+    // If rejecting, restore agent earnings
+    if (status === "rejected" && request.status !== "rejected") {
+      await db.execute(
+        "UPDATE agents SET earnings_total_etb = earnings_total_etb + ? WHERE id = ?",
+        [Number(request.amount_etb), request.agent_id]
+      );
+    }
+
+    await db.execute(
+      `UPDATE agent_payout_requests
+       SET status = ?, admin_note = ?, processed_by = ?, processed_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [status, admin_note || null, req.adminUser.id, id]
+    );
+
+    res.json({ success: true, message: `Payout request ${status}` });
+  } catch (err) {
+    console.error("[POST /admin/payout-requests/:id/process]", err);
+    res.status(500).json({ success: false, message: "Failed to process payout request" });
+  }
+});
+
 module.exports = router;

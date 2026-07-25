@@ -33,6 +33,7 @@ const authRouter = require("./routes/auth");
 const messagesRouter = require("./routes/messages");
 const ratingsRouter = require("./routes/ratings");
 const locationsRouter = require("./routes/locations");
+const favoritesRouter = require("./routes/favorites");
 
 // ── App init (HTTP + Socket.io)
 const app = express();
@@ -205,6 +206,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/messages", messagesRouter);
 app.use("/api/ratings", ratingsRouter);
 app.use("/api/locations", locationsRouter);
+app.use("/api/favorites", favoritesRouter);
 
 // ── Root route (Welcome message)
 app.get("/", (req, res) => {

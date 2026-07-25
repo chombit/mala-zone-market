@@ -12,6 +12,7 @@ import {
   Edit3, 
   Trash2, 
   EyeOff, 
+  Eye, 
   ShieldCheck, 
   Star,
   Loader2,
@@ -62,6 +63,23 @@ const ListingManagementHub: React.FC = () => {
       }
     } catch (err) {
       alert("Delete failed");
+    }
+  };
+
+  const handleToggleVisibility = async (listing: any) => {
+    try {
+      const response = await fetch(`/api/admin/listings/${listing.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ is_active: !listing.is_active }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        fetchListings();
+      }
+    } catch (err) {
+      alert("Toggle visibility failed");
     }
   };
 
@@ -199,9 +217,11 @@ const ListingManagementHub: React.FC = () => {
                         <Trash2 className="w-4 h-4" />
                       </button>
                       <button 
+                        onClick={() => handleToggleVisibility(listing)}
                         className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-malazone-navy hover:bg-slate-100 hover:text-malazone-navy transition-all"
+                        title={listing.is_active !== false ? "Hide listing" : "Show listing"}
                       >
-                        <EyeOff className="w-4 h-4" />
+                        {listing.is_active !== false ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                   </td>

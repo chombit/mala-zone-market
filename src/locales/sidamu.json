@@ -111,6 +111,7 @@
 
   "cta.call": "Haadhii Gamtee",
   "cta.whatsapp": "Telegram",
+  "cta.telegram": "Telegram",
   "cta.chat": "Nagaa Haasifii",
 
   "badge.verifiedCarta": "Kaartaa Mirkaneesse",
@@ -125,6 +126,8 @@
   "label.condition": "Haala",
   "label.titleDeed": "Kaartaa",
   "label.sqm": "Baafata",
+  "label.bedrooms": "Baqcuu Gunnaa",
+  "label.bathrooms": "Baayyee Dhaqaa",
   "label.billing": "Mee'ee Kaffii",
 
   "price.etb": "Birr",

@@ -14,6 +14,7 @@ const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const db = require("../database/db");
+const { requireUserAuth } = require("../middleware/userAuth");
 
 const router = express.Router();
 
@@ -173,6 +174,76 @@ router.post("/", upload.fields([{ name: "images", maxCount: 4 }]), async (req, r
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Upload failed" });
+  }
+});
+
+// ─────────────────────────────────────────────
+// BUYER-AUTHENTICATED ENDPOINTS
+// ─────────────────────────────────────────────
+
+router.post("/buyer", requireUserAuth, upload.fields([{ name: "images", maxCount: 4 }]), async (req, res) => {
+  try {
+    const body = req.body;
+    const imageFiles = req.files?.images || [];
+    const imageUrls = await Promise.all(imageFiles.map(f => processImage(f.buffer)));
+
+    if (!body.title_en || !body.title_am || !body.category) {
+      return res.status(400).json({ success: false, message: "title_en, title_am, and category are required" });
+    }
+
+    const [result] = await db.execute(
+      `INSERT INTO listings (
+        user_id, title_am, title_en, category, price, price_suffix,
+        location_key, location_label_am, location_label_en,
+        phone, whatsapp, images, is_active, is_premium,
+        description_am, description_en, view_count, is_verified
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?, 0, 0)`,
+      [
+        req.user.id, body.title_am, body.title_en, body.category,
+        Number(body.price) || 0, body.price_suffix || "fixed",
+        body.location_key || "hawassa_piassa",
+        body.location_label_am || "", body.location_label_en || "",
+        req.user.phone_number || "", body.whatsapp || req.user.phone_number || "",
+        JSON.stringify(imageUrls),
+        body.description_am || null, body.description_en || null,
+      ]
+    );
+
+    res.status(201).json({ success: true, id: result.insertId });
+  } catch (err) {
+    console.error("[POST /listings/buyer]", err);
+    res.status(500).json({ success: false, message: "Failed to create listing" });
+  }
+});
+
+router.get("/mine", requireUserAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      `SELECT id, title_en, title_am, category, price, price_suffix, is_active, view_count, created_at
+       FROM listings WHERE user_id = ? ORDER BY created_at DESC`,
+      [req.user.id]
+    );
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("[GET /listings/mine]", err);
+    res.status(500).json({ success: false, message: "Failed to fetch listings" });
+  }
+});
+
+router.delete("/:id", requireUserAuth, async (req, res) => {
+  try {
+    const [[existing]] = await db.execute(
+      "SELECT id FROM listings WHERE id = ? AND user_id = ?",
+      [req.params.id, req.user.id]
+    );
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Listing not found or access denied" });
+    }
+    await db.execute("UPDATE listings SET is_active = 0 WHERE id = ?", [req.params.id]);
+    res.json({ success: true, message: "Listing deleted" });
+  } catch (err) {
+    console.error("[DELETE /listings/:id]", err);
+    res.status(500).json({ success: false, message: "Failed to delete listing" });
   }
 });
 

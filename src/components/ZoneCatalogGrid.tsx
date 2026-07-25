@@ -386,7 +386,7 @@ const ListingCard: React.FC<{
               <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2 group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
                 <Building2 className="w-4.5 h-4.5 text-blue-500" />
                 <div>
-                  <p className="text-[9px] text-slate-400 uppercase">Bedrooms</p>
+                  <p className="text-[9px] text-slate-400 uppercase">{t("label.bedrooms")}</p>
                   <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.bedrooms}</p>
                 </div>
               </div>
@@ -395,7 +395,7 @@ const ListingCard: React.FC<{
               <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5 border border-slate-100 dark:border-white/5 flex items-center gap-2 group-hover:bg-[#00A86B]/5 group-hover:border-[#00A86B]/20 transition-all duration-300">
                 <CheckCircle2 className="w-4.5 h-4.5 text-[#00A86B]" />
                 <div>
-                  <p className="text-[9px] text-slate-400 uppercase">Bathrooms</p>
+                  <p className="text-[9px] text-slate-400 uppercase">{t("label.bathrooms")}</p>
                   <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{item.bathrooms}</p>
                 </div>
               </div>
@@ -445,7 +445,7 @@ const ListingCard: React.FC<{
               className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-[#00A86B] to-emerald-600 text-white text-xs sm:text-sm font-extrabold uppercase tracking-wider hover:from-emerald-600 hover:to-emerald-700 transition-all duration-400 hover:scale-[1.03] active:scale-[0.97] shadow-lg hover:shadow-2xl hover:shadow-emerald-500/40"
             >
               <Send className="w-4.5 h-4.5" />
-              {t("cta.whatsapp")}
+              {t("cta.telegram")}
             </button>
           </div>
         </div>
@@ -816,7 +816,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#2CA5E0] hover:scale-[1.02] active:scale-[0.98] text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-[0_6px_15px_rgba(36,161,222,0.3)] group/tg font-sans"
                     >
                       <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      {t("cta.whatsapp")}
+                      {t("cta.telegram")}
                     </button>
                   </div>
                   {item.sellerUserId && (

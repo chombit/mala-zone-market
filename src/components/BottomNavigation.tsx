@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { Home, Search, Heart, User, LayoutGrid, Plus, X, Building2, Car, Music, Hotel, Truck, Smartphone } from 'lucide-react';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface BottomNavigationProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
+  onPostClick?: () => void;
 }
 
 const CATEGORIES = [
@@ -18,9 +21,11 @@ const CATEGORIES = [
   { id: 'electronics', icon: Smartphone, labelKey: 'cat.electronics' as const, color: '#EC4899' },
 ];
 
-const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeCategory, onCategoryChange }) => {
+const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeCategory, onCategoryChange, onPostClick }) => {
   const { setSidebarOpen } = useFavorites();
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [showCategories, setShowCategories] = useState(false);
 
   const navItems = [
@@ -37,8 +42,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeCategory, onC
     } else if (id === 'category') {
       setShowCategories(true);
     } else if (id === 'post') {
-      const el = document.getElementById('listings-catalog');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      if (isAuthenticated) {
+        onPostClick?.();
+      } else {
+        navigate('/signin');
+      }
     } else if (id === 'profile') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {

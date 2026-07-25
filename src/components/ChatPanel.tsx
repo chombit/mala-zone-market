@@ -31,6 +31,11 @@ const ChatPanel: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  /* ── Draggable button state ── */
+  const [btnPos, setBtnPos] = useState<{ x: number; y: number } | null>(null);
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number; moved: boolean } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
   const activeConversation = conversations.find(
     (c) => c.partner_id === activePartnerId && c.listing_id === activeListingId
   );

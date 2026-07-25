@@ -16,6 +16,7 @@ const nodemailer = require("nodemailer");
 const db = require("../database/db");
 const rateLimit = require("express-rate-limit");
 const { getUserActor, sanitizeForAudit, writeAuditLog } = require("../utils/auditLogger");
+const { requireUserAuth } = require("../middleware/userAuth");
 
 const router = express.Router();
 
@@ -599,6 +600,154 @@ router.post("/reset-password/:token", async (req, res) => {
       success: false,
       message: "Internal server error",
       message_am: "የውስጥ ሰርቨር ስህተት"
+    });
+  }
+});
+
+// ─────────────────────────────────────────────
+// PROFILE MANAGEMENT
+// ─────────────────────────────────────────────
+
+// Update Profile
+router.put("/profile", requireUserAuth, async (req, res) => {
+  try {
+    const { full_name, phone_number, email } = req.body;
+    const userId = req.user.id;
+
+    if (!full_name || full_name.trim().length < 2) {
+      return res.status(422).json({
+        success: false,
+        message: "Full name must be at least 2 characters",
+        message_am: "ሙሉ ስም ቢያንስ 2 ቁምፊ መሆን አለበት",
+      });
+    }
+
+    // Check email uniqueness if changed
+    if (email && email !== req.user.email) {
+      const [[existing]] = await db.execute(
+        "SELECT id FROM users WHERE email = ? AND id != ?",
+        [email, userId]
+      );
+      if (existing) {
+        return res.status(409).json({
+          success: false,
+          message: "Email is already in use by another account",
+          message_am: "ኢሜይሉ በሌላ መለያ ተጠቀโม ነው",
+        });
+      }
+    }
+
+    // Check phone uniqueness if changed
+    if (phone_number && phone_number !== req.user.phone_number) {
+      const cleanPhone = phone_number.replace(/\s/g, "");
+      const [[existing]] = await db.execute(
+        "SELECT id FROM users WHERE phone_number = ? AND id != ?",
+        [cleanPhone, userId]
+      );
+      if (existing) {
+        return res.status(409).json({
+          success: false,
+          message: "Phone number is already in use",
+          message_am: "ስልክ ቁጥሩ ቀድሞ ተጠቀሞ ነው",
+        });
+      }
+    }
+
+    await db.execute(
+      "UPDATE users SET full_name = ?, phone_number = ?, email = ? WHERE id = ?",
+      [full_name.trim(), phone_number || req.user.phone_number, email || req.user.email, userId]
+    );
+
+    // Return updated user
+    const [[updatedUser]] = await db.execute("SELECT * FROM users WHERE id = ?", [userId]);
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      message_am: "መገለጫ በተሳካ ሁኔታ ተስተካክሏል",
+      user: sanitizeUser(updatedUser),
+    });
+
+    await writeAuditLog({
+      req,
+      ...getUserActor(req.user),
+      action: "user_profile_updated",
+      resourceType: "user_account",
+      resourceId: userId,
+      details: sanitizeForAudit({ full_name, email, phone_number }),
+    });
+  } catch (err) {
+    console.error("[PUT /auth/profile]", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      message_am: "የውስጥ ሰርቨር ስህተት",
+    });
+  }
+});
+
+// Change Password
+router.put("/password", requireUserAuth, async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+    const userId = req.user.id;
+
+    if (!current_password || !new_password) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password and new password are required",
+        message_am: "የአሁን መለያ ቃል እና አዲስ መለያ ቃል ያስፈልጋሉ",
+      });
+    }
+
+    if (new_password.length < 6) {
+      return res.status(422).json({
+        success: false,
+        message: "New password must be at least 6 characters",
+        message_am: "አዲስ መለያ ቃል ቢያንስ 6 ቁምፊ መሆን አለበት",
+      });
+    }
+
+    // Verify current password
+    if (!req.user.password_hash) {
+      return res.status(400).json({
+        success: false,
+        message: "This account uses social login. Password change not available.",
+        message_am: "ይህ መለያ ማህበራዊ መግባት ይጠቀማል። የመለያ ቃል ለመቀየር አይችልም።",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(current_password, req.user.password_hash);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+        message_am: "የአሁን መለያ ቃል ትክክል አይደለም",
+      });
+    }
+
+    const password_hash = await bcrypt.hash(new_password, 12);
+    await db.execute("UPDATE users SET password_hash = ? WHERE id = ?", [password_hash, userId]);
+
+    res.json({
+      success: true,
+      message: "Password changed successfully",
+      message_am: "መለያ ቃል በተሳካ ሁኔታ ተቀይጧል",
+    });
+
+    await writeAuditLog({
+      req,
+      ...getUserActor(req.user),
+      action: "user_password_changed",
+      resourceType: "user_account",
+      resourceId: userId,
+    });
+  } catch (err) {
+    console.error("[PUT /auth/password]", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      message_am: "የውስጥ ሰርቨር ስህተት",
     });
   }
 });

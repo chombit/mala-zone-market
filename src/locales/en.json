@@ -111,6 +111,7 @@
 
   "cta.call": "Direct Call",
   "cta.whatsapp": "Telegram",
+  "cta.telegram": "Telegram",
   "cta.chat": "Message Seller",
 
   "badge.verifiedCarta": "Verified Carta",
@@ -125,6 +126,8 @@
   "label.condition": "Condition",
   "label.titleDeed": "Title Deed",
   "label.sqm": "Footprint",
+  "label.bedrooms": "Bedrooms",
+  "label.bathrooms": "Bathrooms",
   "label.billing": "Billing Track",
 
   "price.etb": "ETB",
