@@ -274,7 +274,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
     <section
       id="hero-section"
       className="
-        relative w-full min-h-[220px] sm:min-h-screen
+        relative w-full min-h-[200px] sm:min-h-[420px] lg:min-h-[480px]
         bg-slate-50 dark:bg-slate-950
         flex flex-col overflow-hidden
         transition-colors duration-500
@@ -325,12 +325,12 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
       />
 
       {/* ── Main Content ─────────────────────────────────────────── */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 sm:px-8 lg:px-12 pt-20 sm:pt-32 pb-6 sm:pb-10">
-        <div className="w-full max-w-6xl flex flex-col items-center gap-6 sm:gap-7">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 sm:px-8 lg:px-12 pt-14 sm:pt-20 pb-5 sm:pb-8">
+        <div className="w-full max-w-6xl flex flex-col items-center gap-4 sm:gap-5">
 
           {/* ── 1. STRICT PLATFORM BRAND HEADING ── */}
           <h1 
-            className="hidden sm:flex text-6xl sm:text-7xl lg:text-[8.5rem] font-black leading-[0.85] tracking-tighter uppercase italic text-center animate-fade-in-up mb-5 justify-center"
+            className="hidden sm:flex text-6xl sm:text-7xl lg:text-[8.5rem] font-black leading-[0.85] tracking-tighter uppercase italic text-center animate-fade-in-up mb-3 justify-center"
             style={{
               transform: `translate3d(${x * 0.3}px, ${y * 0.3}px, 0)`,
               willChange: 'transform',
@@ -347,7 +347,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
 
           {/* ── 2. LOCALIZED MOTTO SEGREGATION ── */}
           <div 
-            className="hidden sm:flex items-center justify-center gap-3 animate-fade-in-up mb-6"
+            className="hidden sm:flex items-center justify-center gap-3 animate-fade-in-up mb-4"
             style={{
               transform: `translate3d(${x * 0.2}px, ${y * 0.2}px, 0)`,
               willChange: 'transform',
@@ -465,7 +465,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                 key={i}
                 style={{ animationDelay: `${i * 0.12}s` }}
                 className="
-                  relative flex flex-col items-center gap-1.5 sm:gap-2 py-5 sm:py-6
+                  relative flex flex-col items-center gap-1.5 sm:gap-2 py-3 sm:py-4
                   rounded-2xl backdrop-blur-md
                   bg-white/70 dark:bg-white/[0.04]
                   border border-slate-200 dark:border-white/[0.06]
