@@ -675,7 +675,18 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   crossOrigin="anonymous"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                {/* View Details Button - Always Visible on Mobile, Hover on Desktop */}
+                <div className="absolute inset-0 flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 sm:bg-black/30">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); trackEvent('visit', item); navigate(`/listing/${item.id}`); }}
+                    className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/95 dark:bg-slate-900/95 rounded-xl text-xs sm:text-sm font-black text-slate-900 dark:text-white hover:bg-[#00A86B] hover:text-white shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-white/20 backdrop-blur-md"
+                  >
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span>{language === "amharic" ? "ዝርዝር" : "View Details"}</span>
+                  </button>
+                </div>
 
                 {/* Image Count Badge */}
                 {item.images && item.images.length > 1 && (
@@ -694,7 +705,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                   </span>
                 </div>
 
-                {/* Action Buttons: Premium Star, Favorite, Share */}
+                {/* Action Buttons: Premium Star, Favorite */}
                 <div className="absolute top-3 right-3 flex flex-col gap-1.5">
                   {item.isPremium && (
                     <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg">
@@ -707,17 +718,6 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                     aria-label={isFavorite(item.id) ? "Remove from favorites" : "Add to favorites"}
                   >
                     <Heart className={`w-4 h-4 ${isFavorite(item.id) ? 'fill-red-500 text-red-500' : 'text-slate-600 dark:text-slate-300'}`} />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleShare(item); }}
-                    className="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
-                    aria-label="Share listing"
-                  >
-                    {copiedId === item.id ? (
-                      <Check className="w-4 h-4 text-emerald-500" />
-                    ) : (
-                      <Share2 className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                    )}
                   </button>
                 </div>
               </div>

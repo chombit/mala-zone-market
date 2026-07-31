@@ -53,15 +53,12 @@ const BottomNavigation: React.FC = () => {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
-      style={{
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
-      }}
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10 shadow-[0_-2px_10px_rgba(0,0,0,0.08)]"
       aria-label="Main"
     >
       {/* Navigation with right space reserved for Tawk.to */}
       <div className="pr-20">
-        <ul className="grid grid-cols-4 gap-0 px-1 py-1.5">
+        <ul className="grid grid-cols-4 gap-0 px-2 py-1.5">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = active === tab.id;
@@ -71,7 +68,7 @@ const BottomNavigation: React.FC = () => {
                   type="button"
                   onClick={() => handle(tab.id)}
                   className={`
-                    relative flex flex-col items-center justify-center w-full py-2 px-1 rounded-lg
+                    relative flex flex-col items-center justify-center w-full py-1 px-1 rounded-lg
                     transition-all duration-200 active:scale-95
                     ${isActive
                       ? 'text-[#00A86B] bg-emerald-50 dark:bg-emerald-500/10'
@@ -81,14 +78,14 @@ const BottomNavigation: React.FC = () => {
                   aria-label={tab.label}
                 >
                   <div className="relative">
-                    <Icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                    <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                     {tab.badge != null && tab.badge > 0 && (
                       <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
                         {tab.badge > 9 ? '9+' : tab.badge}
                       </span>
                     )}
                   </div>
-                  <span className={`mt-1 text-[9px] font-bold leading-tight ${isActive ? 'text-[#00A86B]' : ''}`}>
+                  <span className={`mt-0.5 text-[10px] font-bold leading-tight ${isActive ? 'text-[#00A86B]' : ''}`}>
                     {t(tab.labelKey as any)}
                   </span>
                 </button>

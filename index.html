@@ -46,7 +46,42 @@
     s1.setAttribute('crossorigin','*');
     s0.parentNode.insertBefore(s1,s0);
     })();
+    
+    // Position Tawk.to widget at bottom aligned with navigation
+    Tawk_API.onLoad = function(){
+      // Adjust widget position to align with bottom nav
+      setTimeout(function() {
+        var tawkWidget = document.querySelector('.tawk-min-container');
+        if (tawkWidget) {
+          tawkWidget.style.bottom = '4px';
+          tawkWidget.style.right = '12px';
+        }
+      }, 500);
+    };
     </script>
+    <style>
+      /* Position Tawk.to widget at bottom - Premium Style */
+      .tawk-min-container {
+        bottom: 4px !important;
+        right: 12px !important;
+      }
+      
+      /* On mobile screens, align perfectly with bottom navigation */
+      @media (max-width: 1023px) {
+        .tawk-min-container {
+          bottom: 4px !important;
+          right: 12px !important;
+          z-index: 99 !important;
+        }
+      }
+      
+      /* Premium shadow for bottom nav */
+      @media (max-width: 1023px) {
+        body {
+          padding-bottom: 0 !important;
+        }
+      }
+    </style>
     <!--End of Tawk.to Script-->
   </body>
 </html>

@@ -53,25 +53,25 @@ const SimpleHeader: React.FC = () => {
           className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-white/10 shadow-lg"
         >
           {/* Top Row: Menu, Logo, Language, Login */}
-          <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 max-w-7xl mx-auto border-b border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900">
+          <div className="flex items-center justify-between px-4 sm:px-4 py-3.5 sm:py-3 max-w-7xl mx-auto border-b border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900">
         
         {/* Left: Hamburger Menu */}
         <button
           onClick={() => setShowMobileMenu(!showMobileMenu)}
-          className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0"
+          className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0"
           aria-label="Menu"
         >
           {showMobileMenu ? (
-            <X className="w-6 h-6 text-slate-700 dark:text-slate-300" />
+            <X className="w-7 h-7 text-slate-700 dark:text-slate-300" />
           ) : (
-            <Menu className="w-6 h-6 text-slate-700 dark:text-slate-300" />
+            <Menu className="w-7 h-7 text-slate-700 dark:text-slate-300" />
           )}
         </button>
 
         {/* Center: MALAZONE Logo */}
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-0 font-black text-lg sm:text-xl tracking-tight hover:opacity-80 transition-opacity flex-shrink-0"
+          className="flex items-center gap-0 font-black text-xl sm:text-xl tracking-tight hover:opacity-80 transition-opacity flex-shrink-0"
         >
           <span className="text-[#00A86B]">MALA</span>
           <span className="text-slate-900 dark:text-white">ZONE</span>
@@ -83,10 +83,10 @@ const SimpleHeader: React.FC = () => {
           {/* Language Toggle */}
           <button
             onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:border-[#00A86B] dark:hover:border-[#00A86B] transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-white/10 hover:border-[#00A86B] dark:hover:border-[#00A86B] transition-colors"
           >
-            <Globe className="w-4 h-4 text-[#00A86B]" />
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{currentLang}</span>
+            <Globe className="w-5 h-5 text-[#00A86B]" />
+            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{currentLang}</span>
           </button>
 
           {/* Login/Profile Button */}
@@ -94,10 +94,10 @@ const SimpleHeader: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:border-[#00A86B] dark:hover:border-[#00A86B] transition-colors"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-white/10 hover:border-[#00A86B] dark:hover:border-[#00A86B] transition-colors"
               >
-                <User className="w-4 h-4 text-[#00A86B]" />
-                <span className="hidden sm:inline text-xs font-bold text-slate-700 dark:text-slate-300">
+                <User className="w-5 h-5 text-[#00A86B]" />
+                <span className="hidden sm:inline text-sm font-bold text-slate-700 dark:text-slate-300">
                   {user.name?.split(' ')[0] || 'User'}
                 </span>
               </button>
@@ -145,37 +145,13 @@ const SimpleHeader: React.FC = () => {
           ) : (
             <button
               onClick={() => navigate('/signin')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00A86B] hover:bg-emerald-600 text-white transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#00A86B] hover:bg-emerald-600 text-white transition-colors"
             >
-              <LogIn className="w-4 h-4" />
-              <span className="text-xs font-bold">Login</span>
+              <LogIn className="w-5 h-5" />
+              <span className="text-sm font-bold">Login</span>
             </button>
           )}
         </div>
-      </div>
-
-      {/* Bottom Row: Search Bar */}
-      <div className="px-3 sm:px-4 py-2 max-w-7xl mx-auto bg-white dark:bg-slate-900">
-        <form onSubmit={handleSearch} className="relative flex items-center gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={language === 'amharic' ? 'ቤቶች፣ መሬቶች፣ መኪናዎች ይፈልጉ...' : 'Search houses, land, cars, machinery...'}
-              className="w-full pl-9 pr-3 py-2 sm:py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00A86B] focus:border-transparent transition-all"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="p-2 sm:p-2.5 bg-[#00A86B] hover:bg-emerald-600 text-white rounded-lg transition-colors flex-shrink-0"
-            aria-label="Filters"
-          >
-            <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-        </form>
       </div>
 
       {/* Mobile Menu Dropdown */}

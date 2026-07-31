@@ -491,7 +491,7 @@ const ListingDetailsContent = () => {
       <SimpleHeader />
 
       {/* Main Content - Add padding-top for fixed header */}
-      <div className="pt-[120px] pb-20 px-4 sm:px-6 lg:px-12">
+      <div className="pt-[80px] pb-20 px-4 sm:px-6 lg:px-12">
         <div className="max-w-6xl mx-auto space-y-3">
           
           {/* Top Premium Navigation Utility Bar - Compact ID and Explore */}

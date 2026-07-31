@@ -180,7 +180,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div className="mx-6 h-px bg-slate-700/50" />
 
         {/* Bottom bar — social icons + copyright */}
-        <div className="bg-slate-900/80 border-t border-slate-700/50 px-6 pt-5 pb-4">
+        <div className="bg-slate-900/80 border-t border-slate-700/50 px-6 pt-5 pb-0">
           {/* Social icons row - Larger icons */}
           <div className="flex items-center justify-center gap-3 mb-2">
             {[
@@ -203,9 +203,9 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             ))}
           </div>
 
-          {/* Copyright - minimal space */}
-          <div className="flex items-center justify-center pt-2">
-            <p className="text-slate-400 text-sm font-semibold leading-snug text-center">
+          {/* Copyright - flush with bottom nav */}
+          <div className="flex items-center justify-center pt-2 pb-1">
+            <p className="text-slate-400 text-xs font-semibold leading-none text-center">
               {f.copyright}
             </p>
           </div>
