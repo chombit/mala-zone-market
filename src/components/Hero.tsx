@@ -78,11 +78,11 @@ const useAnimatedCounter = (target: number, duration: number = 2000) => {
     const animate = (timestamp: number) => {
       if (!startTimeRef.current) startTimeRef.current = timestamp;
       const progress = Math.min((timestamp - startTimeRef.current) / duration, 1);
-      
+
       // Easing function for smooth animation
       const easeOutQuart = 1 - Math.pow(1 - progress, 4);
       const currentCount = Math.floor(easeOutQuart * target);
-      
+
       if (currentCount !== countRef.current) {
         countRef.current = currentCount;
         setCount(currentCount);
@@ -118,6 +118,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
   };
   const [activeSlide, setActiveSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [showMorePillMenu, setShowMorePillMenu] = useState(false);
   const [searchLocation, setSearchLocation] = useState("loc.hawassa");
   const [searchIntent, setSearchIntent] = useState("intent.buy");
   const [stats, setStats] = useState<Stats>({
@@ -274,10 +275,11 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
     <section
       id="hero-section"
       className="
-        relative w-full min-h-[200px] sm:min-h-[420px] lg:min-h-[480px]
+        relative w-full min-h-[220px] sm:min-h-[420px] lg:min-h-[480px]
         bg-slate-50 dark:bg-slate-950
-        flex flex-col overflow-hidden
+        flex flex-col
         transition-colors duration-500
+        mb-8 sm:mb-0
       "
     >
       {/* ── Background Carousel ──────────────────────────────────── */}
@@ -329,7 +331,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
         <div className="w-full max-w-6xl flex flex-col items-center gap-4 sm:gap-5">
 
           {/* ── 1. STRICT PLATFORM BRAND HEADING ── */}
-          <h1 
+          <h1
             className="hidden sm:flex text-6xl sm:text-7xl lg:text-[8.5rem] font-black leading-[0.85] tracking-tighter uppercase italic text-center animate-fade-in-up mb-3 justify-center"
             style={{
               transform: `translate3d(${x * 0.3}px, ${y * 0.3}px, 0)`,
@@ -346,7 +348,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           </h1>
 
           {/* ── 2. LOCALIZED MOTTO SEGREGATION ── */}
-          <div 
+          <div
             className="hidden sm:flex items-center justify-center gap-3 animate-fade-in-up mb-4"
             style={{
               transform: `translate3d(${x * 0.2}px, ${y * 0.2}px, 0)`,
@@ -364,7 +366,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           </div>
 
           {/* ── 3. SUB-HEADLINE ── */}
-          <p 
+          <p
             className="hidden sm:block text-sm sm:text-base lg:text-lg font-medium tracking-tight max-w-2xl mx-auto text-center leading-relaxed animate-fade-in-up text-malazone-navy dark:text-slate-400 transition-colors duration-500"
             style={{
               transform: `translate3d(${x * 0.15}px, ${y * 0.15}px, 0)`,
@@ -376,8 +378,8 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
           </p>
 
           {/* ── Mobile Brand (compact) ── */}
-          <div className="flex sm:hidden items-center gap-2 mb-1 animate-fade-in-up">
-            <span className="text-2xl font-black tracking-tighter uppercase italic">
+          <div className="flex sm:hidden items-center justify-center w-full absolute inset-0 pointer-events-none z-10">
+            <span className="text-4xl font-black tracking-tighter uppercase italic drop-shadow-md">
               <span className="text-malazone-green">MALA</span>
               <span className="text-malazone-navy dark:text-white">ZONE</span>
             </span>
@@ -385,7 +387,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
 
           {/* ── Inline Search Bar ─────────────────────────────────── */}
           <div
-            className="w-full max-w-4xl animate-fade-in-up relative z-50"
+            className="w-full max-w-4xl animate-fade-in-up relative z-50 mt-16 sm:mt-0 px-4 sm:px-0 absolute sm:relative bottom-[-24px] sm:bottom-auto left-0 sm:left-auto"
             style={{
               transform: `translate3d(${x * 0.1}px, ${y * 0.1}px, 0)`,
               willChange: 'transform',
@@ -405,97 +407,256 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                 cursor-text
               "
             >
-              <div className="flex items-center gap-3 flex-1 px-6 py-4">
+              <div className="flex items-center gap-3 flex-1 pl-6 pr-2 py-2 sm:py-4">
                 <Search className="w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
-                <span className="text-sm font-medium text-slate-400 dark:text-slate-500 select-none">
+                <span className="text-sm font-medium text-slate-400 dark:text-slate-500 select-none line-clamp-1">
                   {t("search.zone") === "Search Zone" ? "Search houses, land, cars, machinery..." : t("search.zone")}
                 </span>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); handleSearch(); }}
                 className="
-                  flex items-center justify-center gap-2
-                  px-6 py-4 rounded-full
+                  flex items-center justify-center
+                  w-12 h-12 sm:w-auto sm:px-6 sm:py-4 rounded-full
                   bg-malazone-green hover:bg-malazone-green/90
                   text-malazone-navy font-black
-                  transition-all duration-300 group mr-1
+                  transition-all duration-300 group mr-2 sm:mr-1 shrink-0
                 "
               >
-                <Search className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
-                <span className="text-xs font-black uppercase tracking-[0.2em] whitespace-nowrap hidden sm:inline">
+                <Search className="w-5 h-5 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="text-xs font-black uppercase tracking-[0.2em] whitespace-nowrap hidden sm:inline ml-2">
                   {t("search.btn")}
                 </span>
               </button>
             </div>
           </div>
 
-
-          {/* ── Stats Strip ─────────────────────────────────────────── */}
-          <div 
-            className="hidden sm:grid w-full max-w-3xl grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 animate-fade-in-up perspective-[1200px]"
+          {/* ── 4. Professional Interactive Category Pills (Matching Screenshot) ── */}
+          <div
+            className="hidden sm:block w-full max-w-4xl animate-fade-in-up mt-2 px-2"
             style={{
-              transform: `translate3d(${x * 0.05}px, ${y * 0.05}px, 0)`,
+              transform: `translate3d(${x * 0.08}px, ${y * 0.08}px, 0)`,
               willChange: 'transform',
               transition: 'transform 0.1s ease-out'
             }}
           >
-            {[
-              {
-                label: t("stats.clients"),
-                val: `${(stats.clients || 1003).toLocaleString()}+`,
-                icon: <Users className="w-4 h-4" />,
-              },
-              {
-                label: t("stats.listings"),
-                val: `${(stats.listings || 2547).toLocaleString()}+`,
-                icon: <ListChecks className="w-4 h-4" />,
-              },
-              {
-                label: t("stats.electronics"),
-                val: `${(stats.electronics || 5890).toLocaleString()}+`,
-                icon: <Smartphone className="w-4 h-4" />,
-              },
-              {
-                label: t("stats.trade"),
-                val: `${stats.trade_success_rate || 100}%`,
-                icon: <TrendingUp className="w-4 h-4" />,
-              },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                style={{ animationDelay: `${i * 0.12}s` }}
-                className="
-                  relative flex flex-col items-center gap-1.5 sm:gap-2 py-3 sm:py-4
-                  rounded-2xl backdrop-blur-md
-                  bg-white/70 dark:bg-white/[0.04]
-                  border border-slate-200 dark:border-white/[0.06]
-                  hover:border-[#00A86B]/40
-                  [transform-style:preserve-3d] transform-gpu
-                  hover:[transform:perspective(1200px)_rotateY(-12deg)_rotateX(6deg)_translateZ(32px)]
-                  hover:shadow-[0_32px_56px_rgba(0,168,107,0.25)]
-                  hover:ring-1 hover:ring-[#00A86B]/20
-                  hover:bg-white/90 dark:hover:bg-white/[0.08]
-                  hover:backdrop-blur-2xl
-                  shadow-sm dark:shadow-none
-                  transition-all duration-500 ease-out group cursor-default
-                  animate-fade-in-up
-                  active:scale-[0.97]
-                "
-              >
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-malazone-green/10 flex items-center justify-center text-malazone-green dark:text-malazone-green animate-float group-hover:animate-none group-hover:bg-[#00A86B] group-hover:text-white group-hover:scale-125 group-hover:-rotate-6 group-hover:shadow-[0_6px_16px_rgba(0,168,107,0.3)] transition-all duration-500">
-                  {stat.icon}
-                </div>
-                <span className="text-xl sm:text-2xl lg:text-3xl font-black leading-none tracking-tighter text-malazone-navy dark:text-white group-hover:text-[#00A86B] group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-500">
-                  {stat.val}
-                </span>
-                <span className="text-[10px] sm:text-[11px] font-bold leading-relaxed tracking-wider uppercase text-center px-1 text-malazone-navy dark:text-slate-400 group-hover:text-[#00A86B] group-hover:tracking-[0.2em] transition-all duration-500 font-sans antialiased">
-                  {stat.label}
-                </span>
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#00A86B]/60 rounded-full group-hover:w-8 transition-all duration-500" />
-                <span className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/60 via-transparent to-[#00A86B]/5 dark:from-white/[0.02] dark:to-[#00A86B]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-              </div>
-            ))}
+            <div className="grid grid-cols-6 gap-2 sm:gap-3">
+              {[
+                {
+                  id: "buy",
+                  type: "intent",
+                  value: "buy",
+                  icon: (props: any) => (
+                    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+                    </svg>
+                  ),
+                  iconBg: "bg-blue-50/90 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
+                  activeBg: "ring-2 ring-blue-500 bg-blue-100/80 dark:bg-blue-900/60",
+                  labelKey: "cat.buy",
+                  fallback: "Buy"
+                },
+                {
+                  id: "rent",
+                  type: "intent",
+                  value: "rent",
+                  icon: (props: any) => (
+                    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                  ),
+                  iconBg: "bg-emerald-50/90 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30",
+                  activeBg: "ring-2 ring-emerald-500 bg-emerald-100/80 dark:bg-emerald-900/60",
+                  labelKey: "cat.rent",
+                  fallback: "Rent"
+                },
+                {
+                  id: "property",
+                  type: "category",
+                  value: "property",
+                  icon: (props: any) => (
+                    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                  ),
+                  iconBg: "bg-teal-50/90 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400 border-teal-100 dark:border-teal-900/30",
+                  activeBg: "ring-2 ring-teal-500 bg-teal-100/80 dark:bg-teal-900/60",
+                  labelKey: "nav.cat1",
+                  fallback: "Property"
+                },
+                {
+                  id: "electronics",
+                  type: "category",
+                  value: "electronics",
+                  icon: Smartphone,
+                  iconBg: "bg-indigo-50/90 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30",
+                  activeBg: "ring-2 ring-indigo-500 bg-indigo-100/80 dark:bg-indigo-900/60",
+                  labelKey: "nav.cat6",
+                  fallback: "Electronics"
+                },
+                {
+                  id: "motors",
+                  type: "category",
+                  value: "motors",
+                  icon: Car,
+                  iconBg: "bg-amber-50/90 text-orange-600 dark:bg-amber-950/40 dark:text-orange-400 border-amber-100 dark:border-amber-900/30",
+                  activeBg: "ring-2 ring-orange-500 bg-amber-100/80 dark:bg-amber-900/60",
+                  labelKey: "nav.cat2",
+                  fallback: "Vehicles"
+                },
+                {
+                  id: "more",
+                  type: "more",
+                  value: "all",
+                  icon: (props: any) => (
+                    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  ),
+                  iconBg: "bg-purple-50/90 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border-purple-100 dark:border-purple-900/30",
+                  activeBg: "ring-2 ring-purple-500 bg-purple-100/80 dark:bg-purple-900/60",
+                  labelKey: "cat.more",
+                  fallback: "More"
+                }
+              ].map((pill) => {
+                const IconComponent = pill.icon;
+                const isSelected =
+                  pill.type === "intent"
+                    ? searchIntent === `intent.${pill.value}`
+                    : pill.type === "category"
+                      ? selectedCategory === pill.value
+                      : false;
+
+                const handleClick = () => {
+                  if (pill.type === "intent") {
+                    setSearchIntent(`intent.${pill.value}`);
+                    onFilterChange("intent", pill.value);
+                  } else if (pill.type === "category") {
+                    setSelectedCategory(pill.value);
+                    onCategoryChange(pill.value);
+                  } else {
+                    setSelectedCategory("all");
+                    onCategoryChange("all");
+                  }
+                  // Scroll smoothly to grid catalog
+                  const grid = document.getElementById("listings-catalog");
+                  if (grid) grid.scrollIntoView({ behavior: "smooth" });
+                };
+
+                return (
+                  <div
+                    key={pill.id}
+                    className="relative w-full group/more"
+                    onMouseEnter={() => pill.type === "more" && setShowMorePillMenu(true)}
+                    onMouseLeave={() => pill.type === "more" && setShowMorePillMenu(false)}
+                  >
+                    <button
+                      onClick={(e) => {
+                        if (pill.type === "more") {
+                          e.stopPropagation();
+                          setShowMorePillMenu(!showMorePillMenu);
+                        } else {
+                          setShowMorePillMenu(false);
+                          handleClick();
+                        }
+                      }}
+                      className="
+                        flex flex-col items-center justify-between
+                        bg-white/95 dark:bg-slate-900/90
+                        backdrop-blur-md
+                        border border-slate-200/80 dark:border-white/10
+                        rounded-2xl sm:rounded-3xl
+                        py-2.5 sm:py-3.5 px-1 sm:px-2
+                        shadow-md hover:shadow-xl
+                        hover:-translate-y-1 hover:border-slate-300 dark:hover:border-white/20
+                        transition-all duration-300 group
+                        w-full cursor-pointer
+                      "
+                    >
+                      {/* Icon Card Bubble */}
+                      <div
+                        className={`
+                          w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl
+                          flex items-center justify-center
+                          border transition-all duration-300
+                          group-hover:scale-105
+                          ${pill.iconBg}
+                          ${isSelected || (pill.type === "more" && showMorePillMenu) ? pill.activeBg : ""}
+                        `}
+                      >
+                        <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:rotate-6" />
+                      </div>
+
+                      {/* Label */}
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 mt-2 text-center line-clamp-1 group-hover:text-malazone-green transition-colors">
+                        {t(pill.labelKey) || pill.fallback}
+                      </span>
+                    </button>
+
+                    {/* Popover / Dropdown Menu for Rest Categories (Opens in clean side space) */}
+                    {pill.type === "more" && (
+                      <div
+                        className={`
+                          absolute left-0 sm:left-auto sm:right-0 top-full sm:top-auto sm:bottom-0 sm:translate-x-[102%] pt-3 sm:pt-0 pl-0 sm:pl-3 w-56 sm:w-64 z-[100]
+                          transition-all duration-200 origin-top-left sm:origin-bottom-left
+                          ${showMorePillMenu
+                            ? "opacity-100 scale-100 pointer-events-auto"
+                            : "opacity-0 scale-95 pointer-events-none group-hover/more:opacity-100 group-hover/more:scale-100 group-hover/more:pointer-events-auto"
+                          }
+                        `}
+                      >
+                        <div
+                          className="
+                            bg-white dark:bg-slate-900
+                            rounded-2xl shadow-2xl
+                            border border-slate-200 dark:border-white/10
+                            p-2.5 animate-in fade-in slide-in-from-left-2 duration-200
+                          "
+                        >
+                          <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-3 py-1.5 border-b border-slate-100 dark:border-white/5 mb-1">
+                            {t("cat.title") || "Select Category"}
+                          </div>
+                          {[
+                            { id: "stay", labelKey: "nav.cat3", fallback: "Stays", icon: Hotel },
+                            { id: "ceremony", labelKey: "nav.cat4", fallback: "Events", icon: Music },
+                            { id: "heavy", labelKey: "nav.cat5", fallback: "Machinery", icon: Truck },
+                            { id: "all", labelKey: "cat.all", fallback: "All Categories", icon: Compass },
+                          ].map((item) => {
+                            const ItemIcon = item.icon;
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => {
+                                  setSelectedCategory(item.id);
+                                  onCategoryChange(item.id);
+                                  setShowMorePillMenu(false);
+                                  const grid = document.getElementById("listings-catalog");
+                                  if (grid) grid.scrollIntoView({ behavior: "smooth" });
+                                }}
+                                className="
+                                  flex items-center gap-3 w-full px-3 py-2.5 rounded-xl
+                                  text-xs font-bold text-slate-700 dark:text-slate-200
+                                  hover:bg-emerald-50 dark:hover:bg-emerald-950/40
+                                  hover:text-malazone-green dark:hover:text-emerald-400
+                                  transition-all duration-150 cursor-pointer text-left
+                                "
+                              >
+                                <ItemIcon className="w-4 h-4 text-malazone-green" />
+                                <span>{t(item.labelKey) || item.fallback}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
+
+
+
 
           {/* ── Slideshow Dot Indicators ──────────────────────────── */}
           <div className="hidden sm:flex items-center justify-center gap-2">

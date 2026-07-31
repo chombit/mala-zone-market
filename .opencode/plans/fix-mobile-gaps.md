@@ -11,7 +11,6 @@
 - Left side (60%): badge, title, subtitle, verified tag, CTA button
 - Right side (40%): full-height image
 - Background: dark navy, rounded-2xl
-
 New structure:
 ```tsx
 <div className="bg-[#0B132B] rounded-2xl overflow-hidden h-[200px] flex">

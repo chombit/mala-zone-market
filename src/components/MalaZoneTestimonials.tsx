@@ -125,17 +125,14 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
 
   return (
     <article
-      className="relative flex flex-col bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-white/5 rounded-[28px] p-5 sm:p-7 overflow-hidden select-none cursor-default"
+      className="relative flex flex-col bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-white/5 rounded-2xl p-4 sm:p-7 overflow-hidden select-none cursor-default"
       style={{
         animation: `slideUpCard 0.55s cubic-bezier(0.16,1,0.3,1) ${animationDelay}ms both`,
-        transition:
-          'transform 500ms cubic-bezier(0.16,1,0.3,1), box-shadow 500ms cubic-bezier(0.16,1,0.3,1)',
-        transform: isHovered
-          ? 'translateY(-12px) scale(1.02)'
-          : 'translateY(0px) scale(1)',
+        transition: 'transform 500ms cubic-bezier(0.16,1,0.3,1), box-shadow 500ms cubic-bezier(0.16,1,0.3,1)',
+        transform: isHovered ? 'translateY(-8px) scale(1.02)' : 'translateY(0px) scale(1)',
         boxShadow: isHovered
-          ? `0 28px 60px rgba(0,0,0,0.10), 0 8px 24px rgba(${card.accentRgb},0.18)`
-          : '0 4px 24px rgba(0,0,0,0.06)',
+          ? `0 20px 40px rgba(0,0,0,0.10), 0 6px 16px rgba(${card.accentRgb},0.18)`
+          : '0 2px 12px rgba(0,0,0,0.06)',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -158,9 +155,9 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
       </div>
 
       {/* Avatar circle */}
-      <div className="flex justify-center mb-4 sm:mb-5 relative z-10">
+      <div className="flex justify-center mb-3 sm:mb-5 relative z-10">
         <div
-          className="w-14 h-14 sm:w-[70px] sm:h-[70px] rounded-full bg-[#0B132B] text-2xl sm:text-3xl flex items-center justify-center shadow-lg border-3 sm:border-4 border-white"
+          className="w-10 h-10 sm:w-[70px] sm:h-[70px] rounded-full bg-[#0B132B] text-lg sm:text-3xl flex items-center justify-center shadow-md border-2 sm:border-4 border-white"
           style={{
             transition: 'box-shadow 500ms cubic-bezier(0.16,1,0.3,1), transform 500ms cubic-bezier(0.16,1,0.3,1)',
             boxShadow: isHovered
@@ -176,9 +173,9 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
       </div>
 
       {/* Name & Role */}
-      <div className="text-center space-y-1 relative z-10">
+      <div className="text-center space-y-0.5 relative z-10">
         <h4
-          className="text-xs sm:text-sm font-black leading-snug tracking-tight text-[#0B132B] dark:text-white"
+          className="text-[11px] sm:text-sm font-black leading-snug tracking-tight text-[#0B132B] dark:text-white"
           style={{
             color: isHovered ? card.accentHex : undefined,
             transition: 'color 400ms cubic-bezier(0.16,1,0.3,1)',
@@ -192,9 +189,9 @@ const TestimonialCard: React.FC<CardProps> = ({ card, lang, animationDelay }) =>
       </div>
 
       {/* 5-Star rating row */}
-      <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-2 sm:mt-3 relative z-10">
+      <div className="flex items-center justify-center gap-0.5 mt-1.5 sm:mt-3 relative z-10">
         {[...Array(card.stars)].map((_, si) => (
-          <Star key={si} className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400" />
+          <Star key={si} className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400" />
         ))}
       </div>
     </article>
@@ -365,16 +362,8 @@ export function MalaZoneTestimonials() {
   const normalizedCurrent = ((current % totalCards) + totalCards) % totalCards;
 
   const t = {
-    am: {
-      titlePart1: 'የማላዞን',
-      titlePart2: 'እውነተኛ ድምፆች',
-      subText: 'ወኪሎች፣ ሻጮች፣ እና ዓለምአቀፍ ባለሀብቶች ምስክርነት።',
-    },
-    en: {
-      titlePart1: 'Voices of',
-      titlePart2: 'malazone',
-      subText: 'Real feedback from certified agents, asset owners, and diaspora investors.',
-    },
+    am: { heading: 'ምስክርነቶች' },
+    en: { heading: 'Testimonials' },
   }[lang];
 
   const navBtnClass =
@@ -383,47 +372,28 @@ export function MalaZoneTestimonials() {
   return (
     <section
       id="testimonials"
-      className="relative w-full bg-slate-50 dark:bg-slate-950 pt-8 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-8 lg:px-16 font-sans antialiased overflow-hidden transition-colors duration-300"
+      className="relative w-full bg-slate-50 dark:bg-slate-950 pt-2 pb-4 font-sans antialiased overflow-hidden transition-colors duration-300"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Soft ambient background blobs */}
-      <div
-        className="absolute -top-16 -left-20 w-72 h-72 rounded-full blur-3xl pointer-events-none hidden md:block"
-        style={{ background: 'radial-gradient(circle, rgba(0,168,107,0.08) 0%, transparent 70%)' }}
-      />
-      <div
-        className="absolute -bottom-16 -right-20 w-80 h-80 rounded-full blur-3xl pointer-events-none hidden md:block"
-        style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%)' }}
-      />
-
       <div className="max-w-6xl mx-auto relative z-10">
 
-        {/* ═══ Section Header ═══ */}
-        <div className="flex flex-col items-center text-center space-y-2 sm:space-y-2.5 mb-8 sm:mb-10">
-          <h2 className="text-xl sm:text-3xl lg:text-3.5xl font-black tracking-tight leading-none flex items-center justify-center text-[#0B132B] dark:text-white">
+        {/* ═══ Section Header — compact ═══ */}
+        <div className="flex flex-col items-center text-center gap-1.5 mb-5 px-4">
+          <h2 className="text-base sm:text-2xl lg:text-3xl font-black tracking-tight text-[#0B132B] dark:text-white">
             {lang === 'en' ? (
-              <>
-                <span className="pr-2">Voices of</span>
-                <span style={{ color: '#00A86B' }} className="font-extrabold lowercase">malazone</span>
-              </>
+              <><span className="pr-1.5">Testimonials</span></>
             ) : (
-              <>
-                <span className="pr-2">የማላዞን</span>
-                <span style={{ color: '#00A86B' }} className="font-extrabold">እውነተኛ ድምፆች</span>
-              </>
+              <span>ምስክርነቶች</span>
             )}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 font-bold leading-relaxed max-w-xl mx-auto pt-0.5">
-            {t.subText}
-          </p>
-          <div className="w-12 h-[3px] bg-[#00A86B] rounded-full mx-auto mt-2" />
+          <div className="w-8 h-[2px] bg-[#00A86B] rounded-full" />
         </div>
 
         {/* ═══ Carousel ═══ */}
         <div className="relative">
 
-          {/* Prev arrow — hidden on mobile, touch replaces it */}
+          {/* Prev arrow — desktop only */}
           <button
             onClick={goPrev}
             aria-label="Previous testimonials"
@@ -434,7 +404,7 @@ export function MalaZoneTestimonials() {
 
           {/* Cards sliding track with touch */}
           <div
-            className="overflow-hidden touch-pan-y"
+            className="overflow-hidden touch-pan-y px-4"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -464,7 +434,7 @@ export function MalaZoneTestimonials() {
             </div>
           </div>
 
-          {/* Next arrow — hidden on mobile */}
+          {/* Next arrow — desktop only */}
           <button
             onClick={goNext}
             aria-label="Next testimonials"
@@ -474,55 +444,34 @@ export function MalaZoneTestimonials() {
           </button>
         </div>
 
-        {/* ═══ Dot Indicators + Progress ═══ */}
-        <div className="flex flex-col items-center gap-4 mt-8 sm:mt-10">
-          <div className="flex items-center justify-center gap-2 sm:gap-2.5">
-            {Array.from({ length: totalCards }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                className="rounded-full transition-all duration-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A86B]/50"
-                style={{
-                  width: i === normalizedCurrent ? '28px' : '8px',
-                  height: '8px',
-                  background: i === normalizedCurrent ? '#00A86B' : '#cbd5e1',
-                  boxShadow: i === normalizedCurrent ? '0 0 10px rgba(0,168,107,0.55)' : 'none',
-                  transition: 'all 400ms cubic-bezier(0.16,1,0.3,1)',
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Auto-play Progress Bar */}
-          <div className="w-[140px] sm:w-[180px] h-[2px] bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-            <div
-              key={current}
-              className="h-full rounded-full"
+        {/* ═══ Dot indicators ═══ */}
+        <div className="flex items-center justify-center gap-1.5 mt-4">
+          {Array.from({ length: totalCards }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Slide ${i + 1}`}
+              className="rounded-full transition-all duration-300 focus:outline-none"
               style={{
-                background: 'linear-gradient(to right, #00A86B88, #00A86B)',
-                animation: isPaused ? 'none' : 'testimonialsProgress 4s linear forwards',
+                width: i === normalizedCurrent ? '20px' : '6px',
+                height: '6px',
+                background: i === normalizedCurrent ? '#00A86B' : '#cbd5e1',
+                boxShadow: i === normalizedCurrent ? '0 0 8px rgba(0,168,107,0.5)' : 'none',
+                transition: 'all 300ms cubic-bezier(0.16,1,0.3,1)',
               }}
             />
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Keyframe Animations */}
       <style>{`
         @keyframes testimonialsProgress {
           from { width: 0%; }
           to   { width: 100%; }
         }
         @keyframes slideUpCard {
-          from {
-            opacity: 0;
-            transform: translateY(28px) scale(0.97);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0px) scale(1);
-          }
+          from { opacity: 0; transform: translateY(20px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0px) scale(1); }
         }
       `}</style>
     </section>

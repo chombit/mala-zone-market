@@ -22,6 +22,7 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  ArrowRight,
   Heart,
   Share2,
   Check,
@@ -255,12 +256,12 @@ const ListingCard: React.FC<{
   return (
     <article
       ref={tiltRef}
-      style={{ 
+      style={{
         ...tiltStyle,
         animationDelay: `${index * 0.1}s`,
         opacity: gridVisible ? 1 : 0,
-        transform: gridVisible 
-          ? tiltStyle.transform 
+        transform: gridVisible
+          ? tiltStyle.transform
           : 'translateY(20px)',
         transition: `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`
       }}
@@ -473,7 +474,9 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   const { openChat } = useChat();
   const [currentPage, setCurrentPage] = useState(1);
   const { ref: gridRef, isVisible: gridVisible } = useScrollReveal({ threshold: 0.1 });
-  const { listings, loading } = useListings(currentCity?.key);
+  // Use filters.city if set, otherwise fallback to currentCity
+  const cityFilter = filters.city || currentCity?.key;
+  const { listings, loading } = useListings(cityFilter);
 
   const requireAuth = useCallback((action: () => void) => {
     if (!isAuthenticated) {
@@ -485,6 +488,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
+    setShowAll(false); // Reset showAll when filters change
   }, [activeZone, filters]);
 
   /* ── Filter Logic ── */
@@ -496,9 +500,23 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
       // 2. Keyword Search
       if (filters.search) {
         const s = filters.search.toLowerCase();
-        const inTitleEn = item.titleEn.toLowerCase().includes(s);
-        const inTitleAm = item.titleAm.toLowerCase().includes(s);
-        if (!inTitleEn && !inTitleAm) return false;
+        const inTitleEn   = item.titleEn.toLowerCase().includes(s);
+        const inTitleAm   = item.titleAm.toLowerCase().includes(s);
+        const inDescEn    = item.descriptionEn?.toLowerCase().includes(s) ?? false;
+        const inDescAm    = item.descriptionAm?.toLowerCase().includes(s) ?? false;
+        const inLocation  = item.locationTag.toLowerCase().includes(s);
+        const inLocKey    = item.locationKey.toLowerCase().includes(s);
+        const inSeller    = item.sellerName?.toLowerCase().includes(s) ?? false;
+        const inPlate     = item.plateCode?.toLowerCase().includes(s) ?? false;
+        const inFuel      = item.fuelTag?.toLowerCase().includes(s) ?? false;
+        const inCondition = item.condition?.toLowerCase().includes(s) ?? false;
+        const inZone      = item.zone.toLowerCase().includes(s);
+        const inPrice     = String(item.price).includes(s);
+        if (
+          !inTitleEn && !inTitleAm && !inDescEn && !inDescAm &&
+          !inLocation && !inLocKey && !inSeller &&
+          !inPlate && !inFuel && !inCondition && !inZone && !inPrice
+        ) return false;
       }
 
       // 3. Region Filter
@@ -550,7 +568,12 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   // Reset to page 1 whenever filters/zone change
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
-  const visibleListings = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+  
+  // State to control "See All" mode
+  const [showAll, setShowAll] = useState(false);
+  const visibleListings = showAll 
+    ? filtered 
+    : filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
 
   const goToPage = (page: number) => {
     if (page < 1 || page > totalPages) return;
@@ -560,6 +583,10 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
   };
 
   const handleToggleFavorite = (item: ListingItem) => {
+    if (!isAuthenticated) {
+      navigate("/signin");
+      return;
+    }
     toggleFavorite(item);
   };
 
@@ -567,7 +594,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
     const url = `${window.location.origin}/listing/${item.id}`;
     const title = language === 'amharic' ? item.titleAm : item.titleEn;
     if (navigator.share) {
-      navigator.share({ title, url }).catch(() => {});
+      navigator.share({ title, url }).catch(() => { });
     } else {
       try {
         await navigator.clipboard.writeText(url);
@@ -583,23 +610,45 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
     <section
       id="zone-catalog-section"
       ref={gridRef}
-      className={`flex-1 min-w-0 transition-all duration-700 ease-out ${
-        gridVisible 
-          ? 'animate-fade-in-up opacity-100 translate-y-0' 
+      className={`flex-1 min-w-0 transition-all duration-700 ease-out ${gridVisible
+          ? 'animate-fade-in-up opacity-100 translate-y-0'
           : 'opacity-0 translate-y-8'
-      }`}
+        }`}
     >
       {/* ── Section Heading ── */}
-      <div className="mb-8">
-        <h2 className="text-3xl sm:text-4xl font-sans font-black text-slate-900 dark:text-white tracking-tight leading-snug transition-colors duration-300">
-          {language === "amharic" ? (
-            <>የተረጋገጡ የ <span className="text-[#00A86B] lowercase font-bold tracking-normal">malazone</span> ይፋዊ ማህደሮች</>
-          ) : (
-            <><span className="text-[#00A86B] lowercase font-bold tracking-normal">malazone</span> Verified Ledgers</>
-          )}
-        </h2>
+      <div className="mb-8 flex items-start justify-between">
+        <div className="flex-1">
+          <h2 className="text-3xl sm:text-4xl font-sans font-black text-slate-900 dark:text-white tracking-tight leading-snug transition-colors duration-300">
+            {language === "amharic" ? (
+              <>የተረጋገጡ የ <span className="text-[#00A86B] lowercase font-bold tracking-normal">malazone</span> ይፋዊ ማህደሮች</>
+            ) : (
+              <>Featured <span className="text-[#00A86B] font-black tracking-normal">Listings</span></>
+            )}
+          </h2>
 
-        <div className="w-14 h-1 bg-[#00A86B] rounded-full mt-4 opacity-90 shadow-[0_2px_10px_rgba(0,168,107,0.3)]" />
+          <div className="w-14 h-1 bg-[#00A86B] rounded-full mt-4 opacity-90 shadow-[0_2px_10px_rgba(0,168,107,0.3)]" />
+        </div>
+
+        {/* See All / Show Less Button */}
+        {filtered.length > ITEMS_PER_PAGE && (
+          <button
+            onClick={() => {
+              setShowAll(!showAll);
+              if (!showAll) {
+                // When showing all, scroll to top of catalog
+                const el = document.getElementById("zone-catalog-section");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              } else {
+                // When collapsing, reset to page 1
+                setCurrentPage(1);
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#00A86B] hover:text-emerald-600 transition-colors group mt-2"
+          >
+            <span>{showAll ? (language === "amharic" ? "አሳንስ" : "Show Less") : (language === "amharic" ? "ሁሉንም አሳይ" : "See All")}</span>
+            <ArrowRight className={`w-4 h-4 transition-transform duration-300 ${showAll ? 'rotate-180' : 'group-hover:translate-x-1'}`} />
+          </button>
+        )}
       </div>
 
       {/* ── Card Grid ── */}
@@ -609,7 +658,7 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
             <article
               key={item.id}
               onClick={() => { trackEvent('visit', item); navigate(`/listing/${item.id}`); }}
-              style={{ 
+              style={{
                 animationDelay: `${index * 0.1}s`,
                 opacity: gridVisible ? 1 : 0,
                 transform: gridVisible ? 'translateY(0)' : 'translateY(20px)',
@@ -819,15 +868,6 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
                       {t("cta.telegram")}
                     </button>
                   </div>
-                  {item.sellerUserId && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); openChat(item.sellerUserId!, item.sellerName || "Seller", Number(item.id)); }}
-                      className="mt-2.5 w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-[#00A86B]/40 text-[#00A86B] dark:text-emerald-400 hover:bg-[#00A86B]/5 dark:hover:bg-emerald-950/20 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm font-sans"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      {t("cta.chat") || "Message Seller"}
-                    </button>
-                  )}
                 </div>
               </div>
             </article>
@@ -841,40 +881,58 @@ const ZoneCatalogGrid: React.FC<ZoneCatalogGridProps> = ({
       )}
 
       {/* ── Numbered Pagination ── */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-10 flex-wrap">
+      {!showAll && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1.5 mt-10 w-full overflow-hidden">
           {/* Prev */}
           <button
             onClick={() => goToPage(safePage - 1)}
             disabled={safePage === 1}
-            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-0.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
-            {language === "amharic" ? "የቀደመ" : "Prev"}
+            <span className="hidden sm:inline">{language === "amharic" ? "የቀደመ" : "Prev"}</span>
           </button>
 
-          {/* Page Numbers */}
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => goToPage(page)}
-              className={`min-w-[42px] h-[42px] px-3 rounded-xl border text-sm font-black transition-all ${
-                page === safePage
-                  ? "bg-[#00A86B] border-[#00A86B] text-white shadow-[0_4px_16px_rgba(0,168,107,0.35)] scale-105"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B]"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
+          {/* Page Numbers — smart windowing: show max 5 pages around current */}
+          {(() => {
+            const window = 2;
+            let start = Math.max(1, safePage - window);
+            let end   = Math.min(totalPages, safePage + window);
+            // Shift window so we always show 5 if possible
+            if (end - start < 4) {
+              if (start === 1) end = Math.min(totalPages, start + 4);
+              else start = Math.max(1, end - 4);
+            }
+            const pages: (number | "…")[] = [];
+            if (start > 1)          { pages.push(1); if (start > 2) pages.push("…"); }
+            for (let p = start; p <= end; p++) pages.push(p);
+            if (end < totalPages)   { if (end < totalPages - 1) pages.push("…"); pages.push(totalPages); }
+            return pages.map((page, idx) =>
+              page === "…" ? (
+                <span key={`ellipsis-${idx}`} className="w-7 text-center text-slate-400 text-sm select-none">…</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page as number)}
+                  className={`w-9 h-9 rounded-xl border text-sm font-black transition-all shrink-0 ${
+                    page === safePage
+                      ? "bg-[#00A86B] border-[#00A86B] text-white shadow-[0_4px_12px_rgba(0,168,107,0.35)] scale-105"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B]"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            );
+          })()}
 
           {/* Next */}
           <button
             onClick={() => goToPage(safePage + 1)}
             disabled={safePage === totalPages}
-            className="flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-0.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:border-[#00A86B] hover:text-[#00A86B] transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
           >
-            {language === "amharic" ? "ቀጣዩ" : "Next"}
+            <span className="hidden sm:inline">{language === "amharic" ? "ቀጣዩ" : "Next"}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>

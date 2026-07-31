@@ -102,55 +102,9 @@ const ChatPanel: React.FC = () => {
 
   return (
     <>
-      {/* Toast Notification */}
-      {toast && (
-        <div
-          onClick={() => {
-            dismissToast();
-            openChat(0, "");
-          }}
-          className="fixed bottom-36 md:bottom-20 right-4 md:right-6 z-[999] max-w-[320px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-4 cursor-pointer animate-slide-in-right transition-opacity"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#00A86B] to-emerald-400 flex items-center justify-center text-white text-sm font-bold shrink-0">
-              {toast.senderName.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-900 dark:text-white">{toast.senderName}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{toast.message}</p>
-            </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                dismissToast();
-              }}
-              className="p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
-            >
-              <X className="w-3.5 h-3.5 text-slate-400" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Floating Chat Button */}
-      {!panelOpen && (
-        <button
-          onClick={user ? handleOpenConversations : () => window.location.href = '/signin'}
-          className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[999] w-14 h-14 rounded-full bg-[#00A86B] text-white shadow-lg shadow-emerald-500/30 hidden md:flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-          title={user ? "Open Chat" : "Sign in to chat"}
-        >
-          <MessageCircle className="w-6 h-6" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
-          )}
-        </button>
-      )}
-
-      {/* Chat Panel */}
+      {/* Chat Panel - Full screen on mobile, floating on desktop */}
       <div
-        className={`fixed bottom-0 right-0 md:bottom-6 md:right-6 z-[1000] w-full md:w-[400px] h-[85vh] md:h-[600px] bg-white dark:bg-slate-900 md:rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-300 ${
+        className={`fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-[110] w-full md:w-[400px] h-full md:h-[600px] bg-white dark:bg-slate-900 md:rounded-2xl shadow-2xl border-0 md:border border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-300 ${
           panelOpen ? "translate-x-0" : "translate-x-full pointer-events-none"
         }`}
       >

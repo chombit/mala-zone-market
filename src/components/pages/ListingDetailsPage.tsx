@@ -14,7 +14,6 @@ import {
   X,
   Share2,
   Copy,
-  Printer,
   Check,
   MessageCircle
 } from 'lucide-react';
@@ -22,7 +21,7 @@ import type { ListingItem } from '../ZoneCatalogGrid';
 import { FALLBACK_LISTINGS } from '../ZoneCatalogGrid';
 import { useSocketTracker } from '../../hooks/useSocketTracker';
 import { useLanguage } from '../../contexts/ZoneLanguageContext';
-import Header from '../Header';
+import SimpleHeader from '../SimpleHeader';
 import Footer from '../Footer';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useChat } from '../../contexts/ChatContext';
@@ -172,36 +171,47 @@ function SpecsGrid({ listing, currentGlobalLang }: SpecsGridProps) {
   const t = buildSpecs();
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 p-6 sm:p-8 rounded-[32px] shadow-sm text-left select-none font-sans antialiased">
-      <div className="space-y-5">
-        <div className="border-b border-slate-100 dark:border-white/5 pb-3 flex items-center space-x-2">
-          <div className="w-1.5 h-4 bg-[#00A86B] rounded-full" />
-          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider font-sans">
+    <div className="w-full bg-gradient-to-br from-white via-slate-50/30 to-emerald-50/20 dark:from-slate-900 dark:via-slate-850 dark:to-slate-800 border-2 border-slate-200/80 dark:border-emerald-500/20 rounded-2xl shadow-xl overflow-hidden">
+      {/* Premium Header */}
+      <div className="bg-gradient-to-r from-[#00A86B]/10 to-emerald-500/10 dark:from-[#00A86B]/20 dark:to-emerald-600/20 px-4 py-3 sm:px-6 sm:py-4 border-b-2 border-[#00A86B]/30">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-1 h-5 sm:w-1.5 sm:h-6 bg-gradient-to-b from-[#00A86B] via-emerald-500 to-emerald-600 rounded-full shadow-lg shadow-[#00A86B]/30" />
+          <h3 className="text-xs sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-wide">
             {t.sectionTitle}
           </h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs font-bold text-slate-700 dark:text-slate-300">
+      </div>
+
+      {/* 2-Column Premium Grid - Fixed Layout (Mobile & Desktop) */}
+      <div className="p-4 sm:p-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {t.specs.map((item, idx) => (
             <div
               key={idx}
-              className="
-                bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-white/5 p-5 rounded-2xl
-                flex flex-col space-y-1.5 transition-all duration-300
-                hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm
-              "
+              className="group relative overflow-hidden bg-gradient-to-br from-white to-slate-50/80 dark:from-slate-800 dark:to-slate-900/80 border-2 border-slate-200/60 dark:border-white/10 rounded-lg sm:rounded-xl p-3 sm:p-5 transition-all duration-300 hover:border-[#00A86B] hover:shadow-lg hover:shadow-[#00A86B]/10 hover:-translate-y-1 cursor-default"
             >
-              <span className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider block leading-relaxed">
-                {item.label}
-              </span>
-              <span className="text-slate-900 dark:text-white font-black text-xs sm:text-[13px] tracking-tight truncate flex items-center gap-1">
-                {item.label.includes('ደረጃ') || item.label.includes('Rating') ? (
-                  <span className="text-amber-500 flex items-center gap-1">
-                    <Star className="size-3.5 fill-current" /> {item.val}
-                  </span>
-                ) : (
-                  <span className="font-sans">{item.val}</span>
-                )}
-              </span>
+              {/* Premium hover overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#00A86B]/0 via-emerald-500/0 to-emerald-600/0 group-hover:from-[#00A86B]/5 group-hover:via-emerald-500/5 group-hover:to-emerald-600/5 transition-all duration-500" />
+              
+              {/* Content */}
+              <div className="relative z-10 space-y-1.5 sm:space-y-2">
+                <div className="text-[9px] sm:text-[11px] uppercase font-extrabold text-slate-400 dark:text-slate-500 tracking-[0.12em] sm:tracking-[0.15em] leading-tight">
+                  {item.label}
+                </div>
+                <div className="text-slate-900 dark:text-white font-black text-xs sm:text-base leading-tight">
+                  {item.label.includes('ደረጃ') || item.label.includes('Rating') ? (
+                    <div className="flex items-center gap-1 sm:gap-2 text-amber-500">
+                      <Star className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-current" />
+                      <span className="text-xs sm:text-base">{item.val}</span>
+                    </div>
+                  ) : (
+                    <span className="block text-xs sm:text-base">{item.val}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Corner accent */}
+              <div className="absolute top-0 right-0 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-bl from-[#00A86B]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
           ))}
         </div>
@@ -378,8 +388,7 @@ const ListingDetailsContent = () => {
   // Full page translation dictionary
   const t = {
     am: {
-      btnBack: "ወደ መነሻ ገጽ ተመለስ",
-      btnOtherZones: "ሌሎች የንግድ ዞኖች",
+      btnOtherZones: "አስስ",
       idLabel: `ኮድ: ${listing.id.toUpperCase()}`,
       verifiedBadge: listing.isVerified ? "🛡️ ሊብሬ የተረጋገጠ ማህደር" : "📋 መደበኛ ማህደር",
       title: listing.titleAm,
@@ -405,9 +414,8 @@ const ListingDetailsContent = () => {
       viewOnMap: "በካርታ ላይ ይመልከቱ",
     },
     en: {
-      btnBack: "Back to Homepage",
-      btnOtherZones: "Explore Other Zones",
-      idLabel: `ID: ${listing.id.toUpperCase()}`,
+      btnOtherZones: "Explore",
+      idLabel: `Code: ${listing.id.toUpperCase()}`,
       verifiedBadge: listing.isVerified ? "🛡️ Libre Record Verified" : "📋 Standard Listing",
       title: listing.titleEn,
       priceLabel: "Master Price Registry",
@@ -434,6 +442,10 @@ const ListingDetailsContent = () => {
   }[currentGlobalLang];
 
   const handleToggleFavorite = () => {
+    if (!user) {
+      navigate("/signin");
+      return;
+    }
     toggleFavorite(listing);
     setIsFavoriteLocal(!isFavoriteLocal);
   };
@@ -460,10 +472,6 @@ const ListingDetailsContent = () => {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleViewOnMap = () => {
     const query = encodeURIComponent(`${listing.locationTag}, Hawassa, Ethiopia`);
     window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
@@ -479,39 +487,27 @@ const ListingDetailsContent = () => {
 
   return (
     <section className="bg-slate-50 dark:bg-slate-950 text-[#0B132B] dark:text-slate-200 min-h-screen transition-colors duration-300">
-      {/* Header */}
-      <div className="sticky top-0 z-50">
-        <Header activeCategory="all" onCategoryChange={() => {}} />
-      </div>
+      {/* Simplified Header */}
+      <SimpleHeader />
 
-      {/* Main Content */}
-      <div className="pt-40 pb-12 px-4 sm:px-8 lg:px-16">
-        <div className="max-w-6xl mx-auto space-y-6">
+      {/* Main Content - Add padding-top for fixed header */}
+      <div className="pt-[120px] pb-20 px-4 sm:px-6 lg:px-12">
+        <div className="max-w-6xl mx-auto space-y-3">
           
-          {/* Top Premium Navigation Utility Bar */}
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-[32px] border border-slate-200/80 dark:border-white/5 shadow-md dark:shadow-slate-900/50">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center justify-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg w-full lg:w-auto"
-            >
-              <ChevronLeft className="size-5 text-[#00A86B]" />
-              <span>{t.btnBack}</span>
-            </button>
+          {/* Top Premium Navigation Utility Bar - Compact ID and Explore */}
+          <div className="flex items-center justify-between gap-2 bg-white dark:bg-slate-900 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-white/5 shadow-sm">
             
-            <div className="flex items-center space-x-3">
-              <span className="bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-2xl border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-500 dark:text-slate-400 font-mono">
-                {t.idLabel}
-              </span>
-              <span className="text-[#00A86B] text-base font-black tracking-tight">
-                malazone
-              </span>
-            </div>
+            {/* Left: Code Badge */}
+            <span className="bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-500 dark:text-slate-400 font-mono">
+              {t.idLabel}
+            </span>
 
+            {/* Right: Explore Button */}
             <button
               onClick={() => navigate('/')}
-              className="flex items-center justify-center space-x-2 border-2 border-slate-200 dark:border-white/10 hover:border-[#00A86B] bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-950/30 w-full lg:w-auto"
+              className="flex items-center gap-1.5 border border-slate-200 dark:border-white/10 hover:border-[#00A86B] bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-bold text-xs uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
             >
-              <Grid className="size-5 text-[#00A86B]" />
+              <Grid className="w-3.5 h-3.5 text-[#00A86B]" />
               <span>{t.btnOtherZones}</span>
             </button>
           </div>
@@ -610,42 +606,21 @@ const ListingDetailsContent = () => {
                 )}
               </div>
 
-              {/* Quick Action Buttons */}
-              <div className="flex flex-wrap gap-3">
+              {/* Quick Action Buttons - Premium Styled */}
+              <div className="flex gap-2">
                 <button
                   onClick={handleCopyLink}
-                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border-2 border-slate-200 dark:border-white/10 hover:border-[#00A86B] text-slate-800 dark:text-slate-300 py-2.5 px-4 rounded-xl transition-all duration-300 hover:shadow-md cursor-pointer font-bold text-xs uppercase tracking-wide"
                 >
-                  {copySuccess ? <Check className="size-4 text-emerald-500" /> : <Copy className="size-4" />}
-                  <span className="font-bold text-xs uppercase">{copySuccess ? t.copied : t.copyLink}</span>
+                  {copySuccess ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                  <span>{copySuccess ? t.copied : t.copyLink}</span>
                 </button>
                 <button
                   onClick={handleShare}
-                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border-2 border-slate-200 dark:border-white/10 hover:border-[#00A86B] text-slate-800 dark:text-slate-300 py-2.5 px-4 rounded-xl transition-all duration-300 hover:shadow-md cursor-pointer font-bold text-xs uppercase tracking-wide"
                 >
-                  <Share2 className="size-4" />
-                  <span className="font-bold text-xs uppercase">{t.share}</span>
-                </button>
-                <button
-                  onClick={handleToggleFavorite}
-                  className={`flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer ${isFavoriteLocal ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-800/30' : ''}`}
-                >
-                  <Heart className={`size-4 ${isFavoriteLocal ? 'fill-rose-500 text-rose-500' : 'text-slate-500'}`} />
-                  <span className={`font-bold text-xs uppercase ${isFavoriteLocal ? 'text-rose-600' : ''}`}>{t.btnFavorite}</span>
-                </button>
-                <button
-                  onClick={handlePrint}
-                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-                >
-                  <Printer className="size-4" />
-                  <span className="font-bold text-xs uppercase">{t.print}</span>
-                </button>
-                <button
-                  onClick={handleViewOnMap}
-                  className="flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-300 py-3 px-4 rounded-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-                >
-                  <MapPin className="size-4" />
-                  <span className="font-bold text-xs uppercase">{t.viewOnMap}</span>
+                  <Share2 className="w-4 h-4" />
+                  <span>{t.share}</span>
                 </button>
               </div>
 
@@ -792,22 +767,6 @@ const ListingDetailsContent = () => {
                     <Send className="size-5 -ml-1 translate-y-[1px]" />
                     <span className="font-black tracking-wider uppercase text-xs">{t.btnTelegram}</span>
                   </a>
-
-                  {listing.sellerUserId && (
-                    <button
-                      onClick={() =>
-                        openChat(
-                          listing.sellerUserId!,
-                          listing.sellerName || "Seller",
-                          Number(listing.id)
-                        )
-                      }
-                      className="w-full bg-white dark:bg-slate-900 border border-[#00A86B] text-[#00A86B] dark:text-emerald-400 py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-950/20 shadow-sm"
-                    >
-                      <MessageCircle className="size-4" />
-                      <span className="font-black tracking-wider uppercase text-xs">Message Seller</span>
-                    </button>
-                  )}
 
                   <button
                     onClick={handleToggleFavorite}

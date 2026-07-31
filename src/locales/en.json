@@ -20,12 +20,13 @@
   "geo.aletaWondo": "Aleta Wondo Zone",
   "geo.chuko": "Chuko Zone",
 
-  "nav.cat1": "House & Land",
-  "nav.cat2": "Car Sale & Rent",
-  "nav.cat3": "Hotels & Guest Houses",
-  "nav.cat4": "Wedding & DJ Gear",
-  "nav.cat5": "Heavy Machineries",
+  "nav.cat1": "Property",
+  "nav.cat2": "Vehicles",
+  "nav.cat3": "Stays",
+  "nav.cat4": "Events",
+  "nav.cat5": "Machinery",
   "nav.cat6": "Electronics",
+  "nav.more": "More",
   "nav.agentBtn": "Mala-Agent Zone",
 
   "hero.tagline": "The Zone of Smart Solutions",
@@ -36,7 +37,12 @@
   "search.intent": "Intent",
   "search.btn": "Find Solution",
   "cat.all": "All Zones",
+  "cat.buy": "Buy",
+  "cat.rent": "Rent",
   "cat.property": "Property",
+  "cat.electronics": "Electronics",
+  "cat.vehicle": "Vehicle",
+  "cat.more": "More",
   "cat.motors": "Motors",
   "cat.stay": "Stay",
   "cat.ceremony": "Ceremony",
@@ -112,6 +118,42 @@
   "cta.call": "Direct Call",
   "cta.whatsapp": "Telegram",
   "cta.telegram": "Telegram",
+
+  "cat.land": "Land",
+  "cat.cars": "Cars",
+  "cat.machinery": "Machinery",
+
+  "mobile.search": "Search houses, land, cars, machinery...",
+  "mobile.locationPlaceholder": "Current Location",
+
+  "home.featured": "FEATURED",
+  "home.featuredPrice": "Starting from {price}",
+  "home.verifiedDev": "Verified Developer",
+  "home.exploreNow": "Explore Now",
+
+  "home.featuredListings": "Featured listings",
+  "home.seeAll": "See all",
+  "home.verified": "Verified",
+  "home.beds": "Beds",
+  "home.baths": "Baths",
+  "home.sqm": "m²",
+
+  "home.premiumProjects": "Premium projects",
+  "home.premiumBadge": "+ PREMIUM",
+  "home.downPct": "20% Down Payment",
+  "home.flexPlan": "Flexible Payment Plan",
+  "home.primeLoc": "Prime Location",
+  "home.viewProject": "View Project",
+
+  "home.browseByLoc": "Browse by location",
+  "home.listingsCount": "{count} Listings",
+
+  "bn.home": "Home",
+  "bn.search": "Search",
+  "bn.post": "Post",
+  "bn.saved": "Saved",
+  "bn.profile": "Profile",
+
   "cta.chat": "Message Seller",
 
   "badge.verifiedCarta": "Verified Carta",
@@ -145,7 +187,7 @@
   "banner.recruitment": "A great work opportunity for brokers, agents, and youth! Onboard vehicle showrooms, heavy machinery, hotels, guest houses, wedding gear, and land holdings in Hawassa, Yirgalem, Aleta Wondo, Bensa/Daye, Chuko, and other local zones into Malazone's legal sales zone. Earn high income paid out directly via Telebirr every day! (Mala-Agents Zone)",
   "banner.cta": "Apply as Mala-Agent",
 
-  "auth.signin": "Sign In",
+  "auth.signin": "Login / Signup",
   "auth.signup": "Sign Up",
   "auth.signout": "Sign Out",
   "auth.signoutConfirm": "Are you sure you want to sign out?",

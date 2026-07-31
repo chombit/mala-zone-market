@@ -247,4 +247,25 @@ router.delete("/:id", requireUserAuth, async (req, res) => {
   }
 });
 
+// Get listing count by location
+router.get("/count", async (req, res) => {
+  try {
+    const { location } = req.query;
+    
+    let query = "SELECT COUNT(*) as count FROM listings WHERE 1=1";
+    const params = [];
+
+    if (location) {
+      query += " AND location_key LIKE ?";
+      params.push(`${location}%`);
+    }
+
+    const [[result]] = await db.execute(query, params);
+    res.json({ success: true, count: result.count });
+  } catch (err) {
+    console.error("[GET /listings/count] Error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;

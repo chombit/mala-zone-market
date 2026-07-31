@@ -102,16 +102,29 @@ const SignIn: React.FC = () => {
           </div>
 
           <div className="w-full max-w-sm space-y-6">
-            {/* Mobile-Only Logo */}
-            <div className="lg:hidden text-center">
-              <img
-                src={LogoImg}
-                alt="Malazone Official Logo"
-                className="h-20 object-contain mx-auto mb-2"
-              />
-              <h2 className="text-2xl font-black text-slate-900">
-                {t("auth.welcomeBack")}
-              </h2>
+            {/* Mobile-Only: Back to Home + Logo */}
+            <div className="lg:hidden">
+              {/* Back to Home */}
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center gap-1.5 text-slate-500 hover:text-[#00A86B] transition-colors text-sm font-semibold mb-4"
+                aria-label="Back to home"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                Back to Home
+              </button>
+              <div className="text-center">
+                <img
+                  src={LogoImg}
+                  alt="Malazone Official Logo"
+                  className="h-20 object-contain mx-auto mb-2"
+                />
+                <h2 className="text-2xl font-black text-slate-900">
+                  {t("auth.welcomeBack")}
+                </h2>
+              </div>
             </div>
 
             {/* Form Header */}

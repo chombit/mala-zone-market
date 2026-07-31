@@ -1,12 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Mail, Phone, Shield, Calendar, User } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Shield, Calendar, User, MessageCircle, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import { useChat } from "@/contexts/ChatContext";
 
 const MyAccountPage: React.FC = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
+  const { conversations, unreadCount } = useChat();
   const navigate = useNavigate();
 
   const isAm = language === "amharic";
@@ -41,6 +43,62 @@ const MyAccountPage: React.FC = () => {
           <ArrowLeft className="w-4 h-4" />
           {isAm ? "ወደ ዋና ገጽ ተመለስ" : "Back to Home"}
         </button>
+
+        {/* Quick Actions - Messages & Notifications */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          {/* Message Seller */}
+          <button
+            onClick={() => {
+              // Open chat panel or navigate to messages
+              window.dispatchEvent(new CustomEvent('openChatPanel'));
+            }}
+            className="relative bg-gradient-to-br from-[#00A86B] to-emerald-600 hover:from-emerald-600 hover:to-[#00A86B] text-white rounded-2xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <div className="flex flex-col items-center gap-2">
+              <div className="relative">
+                <MessageCircle className="w-7 h-7" strokeWidth={2.5} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-black uppercase tracking-wide">
+                  {isAm ? "መልዕክቶች" : "Messages"}
+                </p>
+                <p className="text-xs opacity-90">
+                  {isAm ? `${conversations.length} ውይይቶች` : `${conversations.length} chats`}
+                </p>
+              </div>
+            </div>
+          </button>
+
+          {/* Notifications */}
+          <button
+            onClick={() => {
+              // Navigate to notifications page or open notifications
+              alert(isAm ? "የማሳወቂያ ገጽ በቅርቡ ይመጣል" : "Notifications page coming soon");
+            }}
+            className="relative bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-2 border-slate-200 dark:border-white/10 hover:border-[#00A86B] rounded-2xl p-4 transition-all duration-300 hover:shadow-lg"
+          >
+            <div className="flex flex-col items-center gap-2">
+              <div className="relative">
+                <Bell className="w-7 h-7 text-slate-700 dark:text-slate-300" strokeWidth={2.5} />
+                {/* Notification badge - example */}
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-black uppercase tracking-wide text-slate-900 dark:text-white">
+                  {isAm ? "ማሳወቂያዎች" : "Notifications"}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {isAm ? "አዲስ 3" : "3 new"}
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
 
         {/* Avatar Card */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 text-center mb-6">

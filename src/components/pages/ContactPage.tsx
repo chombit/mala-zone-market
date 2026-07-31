@@ -6,7 +6,6 @@
 
 import React, { useState } from "react";
 import {
-  X,
   MapPin,
   Phone,
   Mail,
@@ -21,6 +20,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import SimpleHeader from "../SimpleHeader";
 
 const t = {
   en: {
@@ -204,20 +204,11 @@ const ContactPage: React.FC<ContactPageProps> = ({ onBack }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-      {/* ── Back Button Bar ── */}
-      <div className="relative z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-end">
-          <button
-            onClick={onBack}
-            className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all duration-300"
-            title={d.backBtn}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+      {/* Simplified Header */}
+      <SimpleHeader />
 
-      <div className="max-w-6xl mx-auto px-6 py-16 space-y-24">
+      {/* Add padding-top for fixed header */}
+      <div className="pt-[120px] pb-12 max-w-6xl mx-auto px-6 space-y-24">
 
         {/* ── Hero ── */}
         <section className="text-center space-y-8 animate-fade-in-up">

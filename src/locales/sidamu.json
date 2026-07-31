@@ -26,6 +26,7 @@
   "nav.cat4": "Boqqonnaa fi Geerarsa",
   "nav.cat5": "Meeshinii Caaqqala Dhaabbanee",
   "nav.cat6": "Elektirooniksii",
+  "nav.more": "Wole",
   "nav.agentBtn": "Littii Ajannaa MALA",
 
   "hero.tagline": "Littii Ajaaqa Amansiisaa fi Furmaata",
@@ -36,7 +37,12 @@
   "search.intent": "Farmaajo",
   "search.btn": "Furmaata Argadhu",
   "cat.all": "Littii Hundi",
-  "cat.property": "Meelee",
+  "cat.buy": "Hira",
+  "cat.rent": "Kira",
+  "cat.property": "Meelee / Mana",
+  "cat.electronics": "Elektirooniksii",
+  "cat.vehicle": "Kootaalee",
+  "cat.more": "Wole",
   "cat.motors": "Kootaalee",
   "cat.stay": "Hagamtaa",
   "cat.ceremony": "Maqaajii",
@@ -112,6 +118,42 @@
   "cta.call": "Haadhii Gamtee",
   "cta.whatsapp": "Telegram",
   "cta.telegram": "Telegram",
+
+  "cat.land": "Laafee",
+  "cat.cars": "Kootaalee",
+  "cat.machinery": "Meeshinii",
+
+  "mobile.search": "Mana, laafee, kootaalee, meeshinii caaqqala... filadhuu",
+  "mobile.locationPlaceholder": "Naannoo Ammee",
+
+  "home.featured": "GATII HAALA HAA",
+  "home.featuredPrice": "Gaararii {price} irratti argama",
+  "home.verifiedDev": "Gosa Ijaarsa Mirkaneesse",
+  "home.exploreNow": "Amma Illaalchi",
+
+  "home.featuredListings": "Gabaabiyyii Sirreessituu",
+  "home.seeAll": "Hundi Illaalchi",
+  "home.verified": "Mirkaneesse",
+  "home.beds": "Ganda Mana",
+  "home.baths": "Bikiltu",
+  "home.sqm": "Kaaramiitaa²",
+
+  "home.premiumProjects": "Gosa Ijaarsaa Gaarii",
+  "home.premiumBadge": "+ GATII GAARII",
+  "home.downPct": "20% Uumaa Gaarii",
+  "home.flexPlan": "Falmii Gaarii Ganna-gannaa",
+  "home.primeLoc": "Naannoo Gaarii",
+  "home.viewProject": "Gosa Illaalchi",
+
+  "home.browseByLoc": "Naannootti Sirreessi",
+  "home.listingsCount": "{count} Gabaabiyyii",
+
+  "bn.home": "Manaa",
+  "bn.search": "Fili",
+  "bn.post": "Ijaaruu",
+  "bn.saved": "Dargaggoo",
+  "bn.profile": "Nagaya Kotti",
+
   "cta.chat": "Nagaa Haasifii",
 
   "badge.verifiedCarta": "Kaartaa Mirkaneesse",

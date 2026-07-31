@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { ArrowRight, Sparkles, ShoppingBag, ShieldCheck, Zap, Play, Building2, Car, Hotel, PartyPopper, Tractor, Smartphone, PhoneCall, CheckCircle2, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
+import { useNavigate } from 'react-router-dom';
 import AgentRegistrationModal from './AgentRegistrationModal';
 
 export function MalaAgentsUnified() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const currentGlobalLang = language === 'amharic' ? 'am' : 'en';
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -23,7 +25,7 @@ export function MalaAgentsUnified() {
       card2Desc: "ከማዘጋጃ ቤትና ከትራንስፖርት ቢሮ ጋር የተቆራኘ የተረጋገጠ አሰራር።",
       card3Title: "ፈጣን ቀጥተኛ ግብይት",
       card3Desc: "ከባለቤቶች ጋር በቀጥታ ይገናኙ — ያለ ውዥንብር ግብይት ያጠናቅቁ።",
-      btnCTA: "ንብረትዎን አሁኑኑ ይመዝግቡ",
+      btnCTA: "አሁኑኑ ይመዝግቡ",
       socialProof: "ባለቤቶች ንብረታቸውን በስኬት መዝግበዋል",
       videoTitle: "የአጠቃቀም ማብሪያ ቪዲዮ",
       videoSub: "MALAZONE USER GUIDE",
@@ -40,7 +42,7 @@ export function MalaAgentsUnified() {
       card2Desc: "Secure operations synchronized with regional transit and municipality registries.",
       card3Title: "Fast Direct Transactions",
       card3Desc: "Connect directly with owners — finalize deals with zero middleman confusion.",
-      btnCTA: "Register Your Property Now",
+      btnCTA: "Register Now",
       socialProof: "Property Owners Registered Successfully",
       videoTitle: "malazone User Guide",
       videoSub: "MALAZONE USER GUIDE",
@@ -71,14 +73,14 @@ export function MalaAgentsUnified() {
   ];
 
   return (
-    <section className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-10 pb-6 px-6 sm:px-12 lg:px-20 w-full text-left font-sans antialiased select-none overflow-hidden transition-colors duration-300">
-      <div className="max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+    <section className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-4 pb-2 px-6 sm:px-8 lg:px-16 w-full text-left font-sans antialiased select-none overflow-hidden transition-colors duration-300">
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center">
 
         {/* 🟢 LEFT COLUMN: Content & Value Propositions */}
         <div className="lg:col-span-6 space-y-5">
 
           {/* Heading */}
-          <h2 className="text-4xl sm:text-5xl font-black text-[#00A86B] tracking-tight leading-[1.1]">
+          <h2 className="text-3xl sm:text-4xl font-black text-[#00A86B] tracking-tight leading-[1.1]">
             {t.heading}
           </h2>
 
@@ -87,122 +89,179 @@ export function MalaAgentsUnified() {
             {t.subMotto}
           </p>
 
-          {/* Feature Rows */}
-          <div className="space-y-3 pt-1">
-            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 px-5 py-4 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 group">
-              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-[#00A86B] shrink-0">
-                <ShoppingBag className="size-5" />
+          {/* CSS Animation for Mobile Marquee */}
+          <style>{`
+            @keyframes mobile-marquee {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-mobile-marquee {
+              animation: mobile-marquee 15s linear infinite;
+            }
+          `}</style>
+          
+          {/* Feature Rows - Desktop Stack */}
+          <div className="hidden sm:block space-y-3 pt-1">
+            {[
+              { icon: <ShoppingBag className="size-5" />, title: t.card1Title, desc: t.card1Desc },
+              { icon: <ShieldCheck className="size-5" />, title: t.card2Title, desc: t.card2Desc },
+              { icon: <Zap className="size-5" />, title: t.card3Title, desc: t.card3Desc }
+            ].map((feature, idx) => (
+              <div key={idx} className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 px-5 py-4 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 group">
+                <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-[#00A86B] shrink-0">
+                  {feature.icon}
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">{feature.title}</h4>
+                  <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{feature.desc}</p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">{t.card1Title}</h4>
-                <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{t.card1Desc}</p>
-              </div>
-            </div>
+            ))}
+          </div>
 
-            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 px-5 py-4 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 group">
-              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-[#00A86B] shrink-0">
-                <ShieldCheck className="size-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">{t.card2Title}</h4>
-                <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{t.card2Desc}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 px-5 py-4 rounded-2xl shadow-sm hover:border-[#00A86B]/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 group">
-              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-[#00A86B] shrink-0">
-                <Zap className="size-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">{t.card3Title}</h4>
-                <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{t.card3Desc}</p>
-              </div>
+          {/* Feature Rows - Mobile Auto-Looping Marquee */}
+          <div className="sm:hidden w-[100vw] -ml-6 overflow-hidden relative pt-2 pb-1">
+            <div className="flex w-max animate-mobile-marquee hover:[animation-play-state:paused]">
+              {[
+                { icon: <ShoppingBag className="size-5" />, title: t.card1Title, desc: t.card1Desc },
+                { icon: <ShieldCheck className="size-5" />, title: t.card2Title, desc: t.card2Desc },
+                { icon: <Zap className="size-5" />, title: t.card3Title, desc: t.card3Desc },
+                { icon: <ShoppingBag className="size-5" />, title: t.card1Title, desc: t.card1Desc },
+                { icon: <ShieldCheck className="size-5" />, title: t.card2Title, desc: t.card2Desc },
+                { icon: <Zap className="size-5" />, title: t.card3Title, desc: t.card3Desc }
+              ].map((feature, idx) => (
+                <div key={idx} className="w-[85vw] max-w-[320px] flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 px-5 py-4 rounded-2xl mx-2 shrink-0 shadow-sm">
+                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-[#00A86B] shrink-0">
+                    {feature.icon}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">{feature.title}</h4>
+                    <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{feature.desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* CTA & SOCIAL PROOF */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-3 border-t border-slate-100 dark:border-white/5">
+          {/* CTA Button - Centered with Premium Design */}
+          <div className="flex justify-center pt-6 border-t border-slate-100 dark:border-white/5">
             <button
-              onClick={() => setShowRegistration(true)}
-              className="bg-[#00A86B] hover:bg-emerald-600 text-black font-black text-xs uppercase tracking-wider px-7 py-4 rounded-2xl transition-all shadow-md shadow-emerald-500/10 flex items-center space-x-2 group cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              onClick={() => navigate('/signin')}
+              className="
+                relative group
+                bg-gradient-to-r from-[#00A86B] to-emerald-600 
+                hover:from-emerald-600 hover:to-[#00A86B]
+                text-white font-black text-sm uppercase tracking-widest
+                px-10 py-4 rounded-2xl
+                shadow-lg shadow-emerald-500/30
+                hover:shadow-2xl hover:shadow-emerald-500/50
+                transform hover:-translate-y-1 active:translate-y-0
+                transition-all duration-300
+                flex items-center gap-3
+                border-2 border-emerald-400/20
+                overflow-hidden
+              "
             >
-              <span>{t.btnCTA}</span>
-              <ArrowRight className="size-4 group-hover:translate-x-1.5 transition-transform duration-300" />
+              {/* Animated background shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+              
+              {/* Content */}
+              <span className="relative z-10 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                {t.btnCTA}
+              </span>
+              <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
             </button>
-
-            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-2xl shadow-inner flex items-center gap-2 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-              <CheckCircle2 className="size-4 text-[#00A86B]" />
-              <span>{t.socialProof}</span>
-            </div>
           </div>
 
         </div>
 
         {/* 🟢 RIGHT COLUMN: The Orbit UI */}
-        <div className="lg:col-span-6 flex flex-col items-center justify-center relative w-full pt-10 lg:pt-0">
+        <div className="lg:col-span-6 flex flex-col items-center justify-center relative w-full pt-6 lg:pt-0">
 
-          <div className="relative w-[260px] h-[260px] sm:w-[340px] sm:h-[340px] flex items-center justify-center">
+          {/* CSS for auto-rotating orbit icons */}
+          <style>{`
+            @keyframes orbit-rotate {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+            .orbit-rings-container {
+              animation: orbit-rotate 40s linear infinite;
+            }
+            .orbit-icon {
+              animation: orbit-rotate 40s linear infinite reverse;
+            }
+          `}</style>
 
-            {/* Outer rings (Dashed borders) */}
-            <div className="absolute inset-[-25px] sm:inset-[-30px] rounded-full border-[1px] border-dashed border-[#00A86B]/15 animate-[spin_240s_linear_infinite_reverse]"></div>
-            <div className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-[#00A86B]/20 animate-[spin_120s_linear_infinite]"></div>
-            <div className="absolute inset-[40px] sm:inset-[45px] rounded-full border-[1px] border-dashed border-[#00A86B]/15 animate-[spin_180s_linear_infinite_reverse]"></div>
+          {/* Wrapper to hold both rotating and static elements */}
+          <div className="relative w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] flex items-center justify-center">
 
-            {/* Orbiting Icons */}
-            {malazoneOrbits.map((item) => (
-              <div
-                key={item.id}
-                onMouseEnter={() => setHoveredLabel({ am: item.am, en: item.en })}
-                onMouseLeave={() => setHoveredLabel(null)}
-                className={`
-                  absolute ${item.pos} w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] rounded-full bg-white dark:bg-slate-900 
-                  border border-slate-100 dark:border-slate-800 text-[#00A86B] flex items-center justify-center 
-                  shadow-[0_4px_20px_rgba(0,0,0,0.06)] cursor-pointer
-                  transition-[transform,background-color,box-shadow,color,border-color] duration-300 ease-out
-                  hover:bg-[#00A86B] hover:text-white hover:scale-110 hover:border-transparent
-                  hover:shadow-[0_0_24px_rgba(0,168,107,0.45)] group z-20
-                  will-change-transform
-                `}
-              >
-                {item.icon}
-              </div>
-            ))}
+            {/* Rotating container for rings and icons */}
+            <div className="absolute inset-0 orbit-rings-container">
+              {/* Outer rings (Dashed borders) with enhanced glow */}
+              <div className="absolute inset-[-28px] sm:inset-[-35px] rounded-full border-[1px] border-dashed border-[#00A86B]/20 shadow-[0_0_30px_rgba(0,168,107,0.1)]"></div>
+              <div className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-[#00A86B]/25 shadow-[0_0_40px_rgba(0,168,107,0.15)]"></div>
+              <div className="absolute inset-[45px] sm:inset-[55px] rounded-full border-[1px] border-dashed border-[#00A86B]/20 shadow-[0_0_30px_rgba(0,168,107,0.1)]"></div>
 
-            {/* Pulsing Central Play Trigger Box */}
-            <div className="absolute inset-0 m-auto w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] rounded-full flex items-center justify-center z-30 pointer-events-none">
+              {/* Orbiting Icons - counter-rotate to stay upright */}
+              {malazoneOrbits.map((item) => (
+                <div
+                  key={item.id}
+                  onMouseEnter={() => setHoveredLabel({ am: item.am, en: item.en })}
+                  onMouseLeave={() => setHoveredLabel(null)}
+                  onClick={() => setHoveredLabel({ am: item.am, en: item.en })}
+                  onTouchStart={() => setHoveredLabel({ am: item.am, en: item.en })}
+                  className={`
+                    orbit-icon
+                    absolute ${item.pos} w-[44px] h-[44px] sm:w-[52px] sm:h-[52px] rounded-full 
+                    bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800
+                    border-2 border-slate-200/80 dark:border-slate-700/50 text-[#00A86B] flex items-center justify-center 
+                    shadow-[0_8px_24px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,168,107,0.1)] cursor-pointer
+                    transition-all duration-300 ease-out
+                    hover:bg-gradient-to-br hover:from-[#00A86B] hover:to-[#059669] hover:text-white hover:scale-125 hover:border-transparent
+                    hover:shadow-[0_0_40px_rgba(0,168,107,0.6),0_8px_32px_rgba(0,168,107,0.3)] 
+                    hover:z-30 group z-20
+                    will-change-transform
+                    backdrop-blur-sm
+                    active:scale-125 active:bg-gradient-to-br active:from-[#00A86B] active:to-[#059669] active:text-white
+                  `}
+                >
+                  {item.icon}
+                </div>
+              ))}
+            </div>
+
+            {/* Static Central Play Button - OUTSIDE rotating container */}
+            <div className="absolute inset-0 m-auto w-[170px] h-[170px] sm:w-[220px] sm:h-[220px] rounded-full flex items-center justify-center z-30 pointer-events-none">
               <div className="absolute inset-0 rounded-full border-2 border-[#00A86B]/40 animate-ping z-0 pointer-events-none" style={{ animationDuration: '3s' }} />
               <div className="absolute inset-2 sm:inset-4 rounded-full border border-[#00A86B]/30 animate-ping z-0 pointer-events-none" style={{ animationDuration: '3s', animationDelay: '1.5s' }} />
               <button
                 onClick={() => setIsPlaying(true)}
-                className="relative w-full h-full rounded-full bg-[#1e293b] bg-[radial-gradient(circle_at_40%_35%,#1e293b,#0f172a)] hover:bg-none hover:bg-[#00A86B] text-white flex flex-col items-center justify-center shadow-[0_15px_50px_rgba(15,23,42,0.4),inset_0_0_40px_rgba(0,0,0,0.5)] hover:scale-[1.02] hover:shadow-[0_0_80px_rgba(0,168,107,0.4),inset_0_0_40px_rgba(0,0,0,0.2)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer group border-[1px] border-white/5 hover:border-transparent z-10 pointer-events-auto"
+                className="relative w-full h-full rounded-full bg-[#1e293b] bg-[radial-gradient(circle_at_40%_35%,#1e293b,#0f172a)] hover:bg-none hover:bg-[#00A86B] text-white flex flex-col items-center justify-center shadow-[0_15px_50px_rgba(15,23,42,0.4),inset_0_0_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] hover:scale-[1.04] hover:shadow-[0_0_80px_rgba(0,168,107,0.5),inset_0_0_40px_rgba(0,0,0,0.2)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer group border-[1px] border-white/10 hover:border-[#00A86B]/30 z-10 pointer-events-auto backdrop-blur-sm"
               >
                 {/* Green Play Button (Inverts to white on hover) */}
-                <div className="w-[56px] h-[56px] sm:w-[70px] sm:h-[70px] rounded-full bg-gradient-to-b from-[#00A86B] to-[#059669] group-hover:from-white group-hover:to-slate-50 flex items-center justify-center shadow-[0_4px_30px_rgba(0,168,107,0.5)] group-hover:shadow-[0_4px_30px_rgba(255,255,255,0.4)] mb-2 sm:mb-3 group-hover:scale-110 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
-                  <Play className="w-[24px] h-[24px] sm:w-[32px] sm:h-[32px] fill-white text-white group-hover:fill-[#00A86B] group-hover:text-[#00A86B] ml-1 transition-colors duration-300" />
+                <div className="w-[52px] h-[52px] sm:w-[65px] sm:h-[65px] rounded-full bg-gradient-to-b from-[#00A86B] to-[#059669] group-hover:from-white group-hover:to-slate-50 flex items-center justify-center shadow-[0_4px_30px_rgba(0,168,107,0.6)] group-hover:shadow-[0_4px_40px_rgba(255,255,255,0.5)] mb-2 sm:mb-2.5 group-hover:scale-110 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                  <Play className="w-[22px] h-[22px] sm:w-[30px] sm:h-[30px] fill-white text-white group-hover:fill-[#00A86B] group-hover:text-[#00A86B] ml-1 transition-colors duration-300" />
                 </div>
-                <p className="text-[#00A86B] group-hover:text-white font-black text-xs sm:text-base tracking-wide mb-0.5 transition-colors duration-300">{formatText(t.videoTitle, 'group-hover:text-white')}</p>
-                <p className="text-[#00A86B]/70 group-hover:text-white/90 font-bold text-[6px] sm:text-[8px] tracking-[0.15em] sm:tracking-[0.2em] uppercase transition-colors duration-300">{formatText(t.videoSub, 'group-hover:text-white/90')}</p>
+                <p className="text-[#00A86B] group-hover:text-white font-black text-xs sm:text-sm tracking-wide mb-0.5 transition-colors duration-300">{formatText(t.videoTitle, 'group-hover:text-white')}</p>
+                <p className="text-[#00A86B]/70 group-hover:text-white/90 font-bold text-[7px] sm:text-[8px] tracking-[0.12em] sm:tracking-[0.18em] uppercase transition-colors duration-300">{formatText(t.videoSub, 'group-hover:text-white/90')}</p>
               </button>
             </div>
 
           </div>
 
-          {/* Interactive Hover Metadata Box */}
-          <div className="h-[60px] mt-12 sm:mt-16 w-full flex justify-center items-center">
-            {hoveredLabel ? (
-              <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div className="inline-flex items-center gap-2 mb-1">
-                  <Sparkles className="w-3.5 h-3.5 text-[#00A86B]" />
-                  <p className="text-sm font-black text-[#00A86B]">{currentGlobalLang === 'am' ? hoveredLabel.am : hoveredLabel.en}</p>
+          {/* Interactive Hover Metadata Box - Only show when hovering, no placeholder text */}
+          <div 
+            className="h-[50px] sm:h-[60px] mt-6 sm:mt-8 w-full flex justify-center items-center px-4"
+            onClick={() => setHoveredLabel(null)}
+          >
+            {hoveredLabel && (
+              <div className="text-center animate-in fade-in slide-in-from-bottom-3 duration-300 max-w-md">
+                <div className="inline-flex items-center gap-2 mb-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00A86B]/10 to-emerald-500/5 border border-[#00A86B]/20 backdrop-blur-sm shadow-lg shadow-[#00A86B]/10">
+                  <Sparkles className="w-4 h-4 text-[#00A86B] animate-pulse" />
+                  <p className="text-sm sm:text-base font-black text-[#00A86B]">{currentGlobalLang === 'am' ? hoveredLabel.am : hoveredLabel.en}</p>
                 </div>
-                <p className="text-xs font-bold text-malazone-navy dark:text-slate-300">{currentGlobalLang === 'am' ? hoveredLabel.en : hoveredLabel.am}</p>
-              </div>
-            ) : (
-              <div className="text-center flex items-center justify-center gap-2 animate-in fade-in duration-300">
-                <Sparkles className="w-4 h-4 text-[#00A86B]/60" />
-                <p className="text-[13px] font-bold italic text-malazone-navy dark:text-slate-400">
-                  {t.hoverPlaceholder}
-                </p>
+                <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 mt-1">{currentGlobalLang === 'am' ? hoveredLabel.en : hoveredLabel.am}</p>
               </div>
             )}
           </div>

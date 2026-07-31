@@ -21,11 +21,12 @@
   "geo.chuko": "የጩቆ ዞን",
 
   "nav.cat1": "ቤትና መሬት",
-  "nav.cat2": "መኪና መግዣና ኪራይ",
-  "nav.cat3": "ሆቴልና ጌስት ሃውስ",
-  "nav.cat4": "የሰርግና የደግስ ዕቃዎች",
-  "nav.cat5": "ከባድ ማሽነሪዎች",
+  "nav.cat2": "ተሽከርካሪዎች",
+  "nav.cat3": "ማረፊያዎች",
+  "nav.cat4": "ዝግጅቶች",
+  "nav.cat5": "ማሽኖችና መሣሪያዎች",
   "nav.cat6": "ኤሌክትሮኒክስ",
+  "nav.more": "ተጨማሪ",
   "nav.agentBtn": "የወኪል ወጣቶች ዞን",
 
   "hero.tagline": "የብልሃት እና የመፍትሔ ዞን",
@@ -36,7 +37,13 @@
   "search.intent": "የፍላጎት አይነት",
   "search.btn": "መላ አግኝ (ፈልግ)",
   "cat.all": "ሁሉም ዞኖች",
-  "cat.property": "ንብረት",
+  "cat.buy": "ለመግዛት",
+  "cat.rent": "ለመከራየት",
+  "cat.property": "ቤትና መሬት",
+  "cat.electronics": "ኤሌክትሮኒክስ",
+  "cat.vehicle": "ተሽከርካሪዎች",
+  "cat.more": "ተጨማሪ",
+  "cat.property_short": "ንብረት",
   "cat.motors": "መኪና",
   "cat.stay": "ማረፊያ",
   "cat.ceremony": "ሰርግ",
@@ -112,6 +119,42 @@
   "cta.call": "ቀጥታ ደውል",
   "cta.whatsapp": "በቴሌግራም",
   "cta.telegram": "በቴሌግራም",
+
+  "cat.land": "መሬት",
+  "cat.cars": "መኪናዎች",
+  "cat.machinery": "ማሽኖች",
+
+  "mobile.search": "ቤትና መሬት፣ መኪና፣ ከባድ ማሽን፣ የሐይግ ሱሪ ይፈልጉ...",
+  "mobile.locationPlaceholder": "የአሁኑ መገኛ",
+
+  "home.featured": "ተመራጭ",
+  "home.featuredPrice": "ከ{price} ጀምሮ",
+  "home.verifiedDev": "የተረጋገጠ ግንባታ ሀዋስ",
+  "home.exploreNow": "አሁኑ ይመልከቱ",
+
+  "home.featuredListings": "ተመራጭ ማስታወቂያዎች",
+  "home.seeAll": "ሁሉንም ይመልከቱ",
+  "home.verified": "ተረጋገጠ",
+  "home.beds": "መኝታ ቤቶች",
+  "home.baths": "ጠብታ",
+  "home.sqm": "ካ.ሜ.²",
+
+  "home.premiumProjects": "ፕሪሚየም ፕሮጀክቶች",
+  "home.premiumBadge": "+ ፕሪሚየም",
+  "home.downPct": "20% የመጀመሪያ ክፍያ",
+  "home.flexPlan": "ተለዋጭ የክፍያ እቅድ",
+  "home.primeLoc": "ምርጥ መገኛ",
+  "home.viewProject": "ፕሮጀክቱን ይመልከቱ",
+
+  "home.browseByLoc": "በመገኛ ይሹ",
+  "home.listingsCount": "{count} ማስታወቂያዎች",
+
+  "bn.home": "መነሻ",
+  "bn.search": "ፍለጋ",
+  "bn.post": "አስገቢ",
+  "bn.saved": "ተቀምጡት",
+  "bn.profile": "መገለጫ",
+
   "cta.chat": "ሻጭን ያሰነጋቅ",
 
   "badge.verifiedCarta": "ካርታ የተረጋገጠ",
@@ -145,7 +188,7 @@
   "banner.recruitment": "ለደላላዎች፣ ለወኪሎችና ለወጣቶች የቀረበ ታላቅ የስራ መላ! በሐዋሳ፣ በይርጋለም፣ በአሌታ ወንዶ፣ በቤንሳ/ዳዬ፣ በጩቆ እና በሌሎችም የአካባቢው ዞኖች ያሉ የመኪና ማሳያዎችን፣ ከባድ ማሽነሪዎችን፣ ሆቴሎችን፣ ጌስት ሃውሶችን፣ የሰርግ ዕቃዎችን እና የመሬት ይዞታዎችን በመላዞን ህጋዊ የሽያጭ ዞን ላይ በመመዝገብ በየቀኑ ከፍተኛ ገቢ በቴሌብር በቀጥታ ያግኙ! (Mala-Agents Zone)",
   "banner.cta": "የመላ-ወኪል ሁን",
 
-  "auth.signin": "ግባ",
+  "auth.signin": "መግቢያ / መመዝገብ",
   "auth.signup": "መመዝገብ",
   "auth.signout": "ወጣ",
   "auth.signoutConfirm": "መውጣት መፈለግዎ እርግጠኛ ነዎት?",

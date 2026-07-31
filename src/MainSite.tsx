@@ -11,9 +11,8 @@ import Hero from './components/Hero';
 import ZoneFilterSidebar, { ActiveZone, FilterState } from './components/ZoneFilterSidebar';
 import ZoneCatalogGrid from './components/ZoneCatalogGrid';
 import { MalaAgentsUnified } from './components/MalaAgentsUnified';
-import TrendingListings from './components/TrendingListings';
 import CategoryGrid from './components/CategoryGrid';
-import { MalaZoneTestimonials } from './components/MalaZoneTestimonials';
+import { BrowseByLocation } from './components/BrowseByLocation';
 import Footer from './components/Footer';
 import AboutPage from './components/pages/AboutPage';
 import ContactPage from './components/pages/ContactPage';
@@ -24,10 +23,11 @@ import BottomNavigation from './components/BottomNavigation';
 import ChatPanel from './components/ChatPanel';
 import BuyerPostListingModal from './components/BuyerPostListingModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import GigHubPage from './components/pages/GigHubPage';
 import AgentOnboardPage from './components/pages/AgentOnboardPage';
+import MobileHomeHeader from './components/MobileHomeHeader';
 
 import { MalazoneEnterpriseFaq } from './components/MalazoneEnterpriseFaq';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
@@ -56,9 +56,20 @@ const MainSite: React.FC = () => {
   const { language } = useLanguage();
   const { isAuthenticated } = useAuth();
 
-  /* Sync header category pills → activeZone for the catalog grid */
+  /* Sync header category pills → activeZone & filters for the catalog grid */
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
+    if (cat === "intent_buy") {
+      setFilters((prev) => ({ ...prev, intent: "buy" }));
+      setActiveZone("all");
+      return;
+    }
+    if (cat === "intent_rent") {
+      setFilters((prev) => ({ ...prev, intent: "rent" }));
+      setActiveZone("all");
+      return;
+    }
+
     const zoneMap: Record<string, ActiveZone> = {
       all: "all",
       property: "house",
@@ -100,127 +111,166 @@ const MainSite: React.FC = () => {
     >
       <FavoritesSidebar />
       <PWAInstallPrompt />
-        {/* Fixed navigation header */}
+
+      {/* ── Desktop header (hidden on mobile — MobileHomeHeader takes over) ── */}
+      <div className="hidden lg:block">
         <Header
           activeCategory={activeCategory}
           onCategoryChange={handleCategoryChange}
         />
+      </div>
 
-        <div className="pt-[110px] sm:pt-[140px]">
-          {currentPage === "about" && <AboutPage onBack={() => navigateTo("home")} />}
-          {currentPage === "contact" && <ContactPage onBack={() => navigateTo("home")} />}
-          {currentPage === "privacy" && <PrivacyPage onBack={() => navigateTo("home")} />}
-          {currentPage === "gighub" && <GigHubPage onBack={() => navigateTo("home")} />}
-          {currentPage === "agent-onboard" && <AgentOnboardPage onBack={() => navigateTo("home")} />}
-          {currentPage === "faq" && <MalazoneEnterpriseFaq onBackToMain={() => navigateTo("home")} currentGlobalLang={language === 'amharic' ? 'am' : 'en'} />}
-
-          {currentPage === "home" && (
-            <main>
-          {/* Full-bleed hero carousel + search */}
-          <Hero
-            onCategoryChange={handleCategoryChange}
-            onFilterChange={(key, value) => handleFilterChange(key as keyof FilterState, value)}
-          />
-
-          {/* ── Mobile Trending Cards ──────────────────────── */}
-          <TrendingListings />
-
-          {/* ── Mobile Category Grid ──────────────────────── */}
-          <CategoryGrid
-            onCategoryChange={handleCategoryChange}
-            onFilterClick={() => setShowMobileFilters(true)}
-          />
-
-          {/* ── Split-Screen Catalog Section ──────────────────────── */}
-          <div
-            id="listings-catalog"
-            className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-12 pb-4"
+      {/* ── Mobile: minimal sticky top bar for sub-pages (about, contact, etc.) ── */}
+      {currentPage !== "home" && (
+        <div className="lg:hidden sticky top-0 z-[150] bg-[#0B132B] flex items-center gap-3 px-4 py-3 shadow-md">
+          <button
+            onClick={() => navigateTo("home")}
+            className="text-white/70 hover:text-white transition-colors text-sm font-bold"
+            aria-label="Back to home"
           >
+            ← Back
+          </button>
+          <span className="text-[#00A86B] font-black text-lg tracking-tight">MALA</span>
+          <span className="text-white font-black text-lg tracking-tight -ml-1">ZONE</span>
+        </div>
+      )}
 
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Desktop: Always show sidebar | Mobile: Show as modal */}
-              <div className="hidden lg:block">
-                <ZoneFilterSidebar
-                  activeZone={activeZone}
-                  filters={filters}
-                  onFilterChange={handleFilterChange}
-                  onReset={handleReset}
-                />
-              </div>
+      <div className="pt-0 lg:pt-[84px]">
+        {currentPage === "about" && <AboutPage onBack={() => navigateTo("home")} />}
+        {currentPage === "contact" && <ContactPage onBack={() => navigateTo("home")} />}
+        {currentPage === "privacy" && <PrivacyPage onBack={() => navigateTo("home")} />}
+        {currentPage === "gighub" && <GigHubPage onBack={() => navigateTo("home")} />}
+        {currentPage === "agent-onboard" && <AgentOnboardPage onBack={() => navigateTo("home")} />}
+        {currentPage === "faq" && <MalazoneEnterpriseFaq onBackToMain={() => navigateTo("home")} currentGlobalLang={language === 'amharic' ? 'am' : 'en'} />}
 
-              {/* Mobile Filter Modal */}
-              {showMobileFilters && (
-                <>
-                  <div
-                    className="fixed inset-0 bg-black/50 z-50 lg:hidden"
-                    onClick={() => setShowMobileFilters(false)}
-                  />
-                  <div className="fixed inset-y-0 left-0 right-0 z-50 lg:hidden overflow-y-auto">
-                    <div className="bg-white dark:bg-slate-900 p-4 min-h-screen">
-                      <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Filters</h2>
-                        <button
-                          onClick={() => setShowMobileFilters(false)}
-                          className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                        >
-                          <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                        </button>
-                      </div>
-                      <ZoneFilterSidebar
-                        activeZone={activeZone}
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
-                        onReset={handleReset}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+        {currentPage === "home" && (
+          <main>
+            {/* ── Mobile Home Header (navy bar + search + hero carousel + category row) ── */}
+            <MobileHomeHeader
+              onCategoryChange={handleCategoryChange}
+              onFilterClick={() => setShowMobileFilters(true)}
+              onSearchChange={(val) => handleFilterChange("search", val)}
+              searchValue={filters.search}
+            />
 
-              <ZoneCatalogGrid
-                activeZone={activeZone}
-                filters={filters}
+            {/* ── Desktop-only: full hero carousel + search ── */}
+            <div className="hidden lg:block">
+              <Hero
+                onCategoryChange={handleCategoryChange}
+                onFilterChange={(key, value) => handleFilterChange(key as keyof FilterState, value)}
               />
             </div>
-          </div>
 
-          {/* ── Mala-Agents Recruitment Banner ───────────────────── */}
-          <div id="agents">
-            <MalaAgentsUnified />
-          </div>
+            {/* ── Desktop Category Grid (desktop has nav pills; mobile has MobileHomeHeader row) ── */}
+            <div className="hidden lg:block">
+              <CategoryGrid
+                onCategoryChange={handleCategoryChange}
+                onFilterClick={() => setShowMobileFilters(true)}
+              />
+            </div>
 
-          {/* ── Testimonials Section ──────────────────────────────── */}
-          <div id="testimonials">
-            <MalaZoneTestimonials />
-          </div>
-        </main>
-        )}
-        </div>
+            {/* ── Split-Screen Catalog Section ──────────────────────── */}
+            <div
+              id="listings-catalog"
+              className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-12 pb-0"
+            >
 
-        {/* ── Global Footer ─────────────────────── */}
-        <Footer onNavigate={navigateTo} />
-        
-        {/* ── Bottom Navigation (Mobile Only) ──────────────────────── */}
-        <BottomNavigation 
-          activeCategory={activeCategory} 
-          onCategoryChange={handleCategoryChange}
-          onPostClick={() => setShowPostModal(true)}
-        />
-        <ChatPanel />
+              <div className="flex flex-col lg:flex-row gap-8">
+                {/* Desktop: Always show sidebar | Mobile: Show as modal */}
+                <div className="hidden lg:block">
+                  <ZoneFilterSidebar
+                    activeZone={activeZone}
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    onReset={handleReset}
+                  />
+                </div>
 
-        {/* ── Buyer Post Listing Modal ──────────────────────── */}
-        {showPostModal && isAuthenticated && (
-          <BuyerPostListingModal
-            onClose={() => setShowPostModal(false)}
-            onCreated={() => {
-              setShowPostModal(false);
-              // Optionally scroll to listings
-              const el = document.getElementById('listings-catalog');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-          />
+                {/* Mobile Filter Modal */}
+                {showMobileFilters && (
+                  <>
+                    <div
+                      className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+                      onClick={() => setShowMobileFilters(false)}
+                    />
+                    <div className="fixed inset-y-0 left-0 right-0 z-50 lg:hidden overflow-y-auto">
+                      <div className="bg-white dark:bg-slate-900 p-4 min-h-screen">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Filters</h2>
+                          <button
+                            onClick={() => setShowMobileFilters(false)}
+                            className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                          >
+                            <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                          </button>
+                        </div>
+                        <ZoneFilterSidebar
+                          activeZone={activeZone}
+                          filters={filters}
+                          onFilterChange={handleFilterChange}
+                          onReset={handleReset}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <ZoneCatalogGrid
+                  activeZone={activeZone}
+                  filters={filters}
+                />
+              </div>
+            </div>
+
+            {/* ── Browse by Location Section ──────────────────────── */}
+            <BrowseByLocation 
+              onLocationSelect={(locationKey) => {
+                // Reset all filters except city
+                setFilters({
+                  ...defaultFilters,
+                  city: locationKey,
+                });
+                setActiveZone("all");
+                setActiveCategory("all");
+                
+                // Scroll to catalog
+                setTimeout(() => {
+                  const catalogSection = document.getElementById('listings-catalog');
+                  if (catalogSection) {
+                    catalogSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }, 100);
+              }}
+            />
+
+            {/* ── Mala-Agents Recruitment Banner ───────────────────── */}
+            <div id="agents">
+              <MalaAgentsUnified />
+            </div>
+          </main>
         )}
       </div>
+
+      {/* ── Global Footer ─────────────────────── */}
+      <Footer onNavigate={navigateTo} />
+
+      {/* ── Bottom Navigation (Mobile Only) ──────────────────────── */}
+      <BottomNavigation />
+      <ChatPanel />
+
+      {/* ── Buyer Post Listing Modal ──────────────────────── */}
+      {showPostModal && isAuthenticated && (
+        <BuyerPostListingModal
+          onClose={() => setShowPostModal(false)}
+          onCreated={() => {
+            setShowPostModal(false);
+            // Optionally scroll to listings
+            const el = document.getElementById('listings-catalog');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+        />
+      )}
+    </div>
   );
 };
 

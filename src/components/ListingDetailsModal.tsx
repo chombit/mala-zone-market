@@ -9,6 +9,8 @@ import {
 import type { ListingItem } from './ZoneCatalogGrid';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ListingDetailsModalProps {
   isOpen: boolean;
@@ -18,6 +20,8 @@ interface ListingDetailsModalProps {
 
 export function ListingDetailsModal({ isOpen, onClose, listing }: ListingDetailsModalProps) {
   const { language } = useLanguage();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const currentGlobalLang = language === 'amharic' ? 'am' : 'en';
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
@@ -342,7 +346,14 @@ export function ListingDetailsModal({ isOpen, onClose, listing }: ListingDetails
                     </a>
                     
                     <button 
-                      onClick={() => toggleFavorite(listing)} 
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          onClose();
+                          navigate('/signin');
+                          return;
+                        }
+                        toggleFavorite(listing);
+                      }} 
                       className={`w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 py-3.5 rounded-xl transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.98] ${isFav(listing.id) ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-800/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     >
                       <Heart className={`size-5 transition-colors ${isFav(listing.id) ? 'fill-rose-500 text-rose-500' : 'text-slate-400 dark:text-slate-500'}`} />
