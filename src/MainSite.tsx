@@ -190,12 +190,12 @@ const MainSite: React.FC = () => {
                 {showMobileFilters && (
                   <>
                     <div
-                      className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+                      className="fixed inset-0 bg-black/50 z-[100] lg:hidden"
                       onClick={() => setShowMobileFilters(false)}
                     />
-                    <div className="fixed inset-y-0 left-0 right-0 z-50 lg:hidden overflow-y-auto">
-                      <div className="bg-white dark:bg-slate-900 p-4 min-h-screen">
-                        <div className="flex items-center justify-between mb-4">
+                    <div className="fixed inset-0 z-[101] lg:hidden flex items-start justify-center pt-0 overflow-hidden">
+                      <div className="bg-white dark:bg-slate-900 w-full h-full overflow-y-auto">
+                        <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-4 flex items-center justify-between z-10">
                           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Filters</h2>
                           <button
                             onClick={() => setShowMobileFilters(false)}
@@ -204,12 +204,14 @@ const MainSite: React.FC = () => {
                             <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                           </button>
                         </div>
-                        <ZoneFilterSidebar
-                          activeZone={activeZone}
-                          filters={filters}
-                          onFilterChange={handleFilterChange}
-                          onReset={handleReset}
-                        />
+                        <div className="p-4">
+                          <ZoneFilterSidebar
+                            activeZone={activeZone}
+                            filters={filters}
+                            onFilterChange={handleFilterChange}
+                            onReset={handleReset}
+                          />
+                        </div>
                       </div>
                     </div>
                   </>
