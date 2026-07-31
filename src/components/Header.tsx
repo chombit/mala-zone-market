@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { Globe, Menu, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Heart, Settings, UserCircle } from "lucide-react";
+import { Globe, Menu, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Heart, Settings, UserCircle, MapPin } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { getNextLanguage, LANGUAGE_OPTIONS, type Language } from "@/i18n";
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,8 +70,121 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
 
       {/* ── Main Navigation Bar ───────────────────────────────────── */}
       <header className="w-full bg-white dark:bg-slate-950 border-b border-slate-200/80 dark:border-white/10 shadow-sm">
-        {/* Top Row: Hamburger | Logo | Language | Login */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3">
+        
+        {/* DESKTOP LAYOUT: Logo | Categories | Language | Login | Heart */}
+        <div className="hidden lg:flex items-center justify-between px-8 py-4 max-w-[1600px] mx-auto">
+          {/* LEFT: Logo */}
+          <button
+            onClick={() => handleNavClick("all")}
+            className="flex items-center gap-1.5 font-black text-2xl tracking-tight hover:opacity-80 transition-opacity mr-12"
+          >
+            <span className="text-[#00A86B]">MALA</span>
+            <span className="text-slate-900 dark:text-white">ZONE</span>
+          </button>
+
+          {/* CENTER: Horizontal Category Navigation */}
+          <nav className="flex items-center justify-center gap-2 flex-1">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleNavClick(cat.id)}
+                className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.08em] rounded-lg transition-all whitespace-nowrap ${
+                  activeCategory === cat.id
+                    ? "text-white bg-[#00A86B] shadow-md shadow-emerald-500/20"
+                    : "text-slate-700 dark:text-slate-300 hover:text-[#00A86B] hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                }`}
+              >
+                {t(cat.key as any)}
+              </button>
+            ))}
+          </nav>
+
+          {/* RIGHT: Language | Sign In | Favorites */}
+          <div className="flex items-center gap-3 ml-12">
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-slate-200 dark:border-white/10 hover:border-[#00A86B] dark:hover:border-[#00A86B] transition-all"
+            >
+              <Globe className="w-4 h-4 text-[#00A86B]" />
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                {LANGUAGE_OPTIONS.find(o => o.value === language)?.labelShort || language}
+              </span>
+            </button>
+
+            {/* Login/Profile Button */}
+            {isAuthenticated && user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-slate-200 dark:border-white/10 hover:border-[#00A86B] dark:hover:border-[#00A86B] transition-all"
+                >
+                  <User className="w-4 h-4 text-[#00A86B]" />
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    {user.full_name?.split(' ')[0] || 'User'}
+                  </span>
+                </button>
+
+                {/* Profile Dropdown */}
+                {showProfileMenu && (
+                  <>
+                    <div className="fixed inset-0 z-[140]" onClick={() => setShowProfileMenu(false)} />
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg shadow-lg z-[145] overflow-hidden">
+                      <button
+                        onClick={() => { setSidebarOpen(true); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-left text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >
+                        <Heart className="w-4 h-4 text-[#00A86B]" />
+                        Favorites
+                      </button>
+                      <button
+                        onClick={() => { navigate('/my-account'); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-left text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >
+                        <Settings className="w-4 h-4 text-[#00A86B]" />
+                        Settings
+                      </button>
+                      <div className="border-t border-slate-200 dark:border-white/10" />
+                      <button
+                        onClick={() => { logout(); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-left text-sm font-medium text-red-600 dark:text-red-400"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate("/signin")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#00A86B] hover:bg-emerald-600 text-white transition-all shadow-md hover:shadow-lg shadow-emerald-500/20"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="text-sm font-bold">Sign In</span>
+              </button>
+            )}
+
+            {/* Favorites Heart Icon */}
+            {isAuthenticated && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="relative p-2.5 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-lg transition-all"
+              >
+                <Heart className="w-5 h-5 text-pink-500 fill-pink-500" />
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#00A86B] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+                    {favorites.length}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* MOBILE LAYOUT: Hamburger | Logo | Language | Login */}
+        <div className="lg:hidden flex items-center justify-between px-4 sm:px-6 py-3">
           {/* LEFT: Hamburger Menu */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -163,8 +276,8 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
           </div>
         </div>
 
-        {/* Bottom Row: Search Bar with Filter Button */}
-        <div className="px-4 sm:px-6 pb-3">
+        {/* MOBILE: Search Bar with Filter Button */}
+        <div className="lg:hidden px-4 sm:px-6 pb-3">
           <div className="relative flex items-center gap-2">
             <div className="flex-1 relative">
               <input

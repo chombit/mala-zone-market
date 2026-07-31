@@ -184,6 +184,25 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
 
   return (
     <aside className="w-full lg:w-80 shrink-0 bg-white dark:bg-slate-900/50 border border-slate-200/80 dark:border-white/5 rounded-2xl p-6 h-fit lg:sticky lg:top-28 shadow-sm">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-5 h-5 text-green-600 dark:text-green-500" />
+          <h3 className="text-base font-bold text-malazone-navy dark:text-white tracking-tight">
+            {t("sidebar.title")}
+          </h3>
+        </div>
+        <button
+          onClick={onReset}
+          className="flex items-center gap-1.5 text-xs text-malazone-navy hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          {t("sidebar.reset")}
+        </button>
+      </div>
+
+      {/* ── Divider ── */}
+      <div className="h-px bg-slate-200/80 dark:bg-white/5 mb-5" />
 
       {/* ── Core Filters (Always Visible) ── */}
       <FilterSelect
