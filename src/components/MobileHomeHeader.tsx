@@ -41,6 +41,9 @@ import {
   UserCircle,
   Heart,
   ChevronDown,
+  Smartphone,
+  Bed,
+  PartyPopper,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { LANGUAGE_OPTIONS } from "@/i18n";
@@ -99,6 +102,16 @@ const NAV_CATS = [
   { key: "nav.cat4", id: "ceremony" },
   { key: "nav.cat5", id: "heavy" },
   { key: "nav.cat6", id: "electronics" },
+];
+
+/* ── More categories modal ─────────────────── */
+const MORE_CATS = [
+  { key: "nav.cat1", id: "property",    icon: Home,       bg: "#ECFDF5", color: "#059669" },
+  { key: "nav.cat2", id: "motors",      icon: Car,        bg: "#EFF6FF", color: "#2563EB" },
+  { key: "nav.cat3", id: "stay",        icon: Bed,        bg: "#FCE7F3", color: "#BE185D" },
+  { key: "nav.cat4", id: "ceremony",    icon: PartyPopper,bg: "#FEF3C7", color: "#D97706" },
+  { key: "nav.cat5", id: "heavy",       icon: Tractor,    bg: "#FFF7ED", color: "#EA580C" },
+  { key: "nav.cat6", id: "electronics", icon: Smartphone, bg: "#DBEAFE", color: "#1E40AF" },
 ];
 
 /* ── Price formatter ─────────────────────────────────── */
@@ -161,6 +174,7 @@ const MobileHomeHeader: React.FC<MobileHomeHeaderProps> = ({
   const [menuOpen, setMenuOpen]           = useState(false);
   const [showSignOut, setShowSignOut]     = useState(false);
   const [showProfileSub, setShowProfileSub] = useState(false);
+  const [showMoreModal, setShowMoreModal] = useState(false);
   const [slides, setSlides]               = useState<Slide[]>(FALLBACK_SLIDES);
   const [activeSlide, setActiveSlide]     = useState(0);
   const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -206,7 +220,7 @@ const MobileHomeHeader: React.FC<MobileHomeHeaderProps> = ({
 
   /* ── Helpers ── */
   const handleCatClick = (id: string, isFilter?: boolean) => {
-    if (isFilter) { onFilterClick(); return; }
+    if (isFilter) { setShowMoreModal(true); return; }
     onCategoryChange(id);
     const el = document.getElementById("listings-catalog");
     if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -563,6 +577,59 @@ const MobileHomeHeader: React.FC<MobileHomeHeaderProps> = ({
 
       {/* Sign Out Modal */}
       {showSignOut && <SignOut onClose={() => setShowSignOut(false)} />}
+
+      {/* More Categories Modal */}
+      {showMoreModal && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-[200] backdrop-blur-sm"
+            onClick={() => setShowMoreModal(false)}
+          />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[201] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                {t('cat.moreCategories') || 'All Categories'}
+              </h3>
+              <button
+                onClick={() => setShowMoreModal(false)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </button>
+            </div>
+
+            {/* Categories Grid */}
+            <div className="p-6 grid grid-cols-3 gap-4">
+              {MORE_CATS.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      onCategoryChange(cat.id);
+                      setShowMoreModal(false);
+                      const el = document.getElementById('listings-catalog');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="flex flex-col items-center gap-3 py-4 px-2 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 active:scale-95 transition-all duration-200 hover:shadow-md hover:border-[#00A86B]/30"
+                  >
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200"
+                      style={{ backgroundColor: cat.bg }}
+                    >
+                      <Icon className="w-7 h-7" style={{ color: cat.color }} strokeWidth={2} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight text-center">
+                      {t(cat.key as any)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
     </div>
   );
