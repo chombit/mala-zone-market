@@ -423,15 +423,15 @@ const MobileHomeHeader: React.FC<MobileHomeHeaderProps> = ({
 
       {/* ══ 3. SEARCH BAR (Sticky - right below nav) ══ */}
       <div className="sticky top-[48px] z-[125] bg-slate-50 dark:bg-slate-950 px-4 pt-3 pb-3 shadow-md border-b border-slate-200/80 dark:border-white/5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
 
           {/* Search input — premium branded look */}
           <div className="flex-1 relative group">
             {/* Gradient border ring on focus */}
             <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-[#00A86B]/60 via-emerald-400/40 to-[#00A86B]/60 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 blur-[1px]" />
-            <div className="relative flex items-center bg-white dark:bg-slate-900 rounded-2xl h-12 px-4 gap-3 shadow-md border border-slate-200 dark:border-white/10 group-focus-within:border-[#00A86B]/50 transition-colors duration-200">
+            <div className="relative flex items-center bg-white dark:bg-slate-900 rounded-2xl h-14 px-5 gap-3 shadow-md border border-slate-200 dark:border-white/10 group-focus-within:border-[#00A86B]/50 transition-colors duration-200">
               {/* Search icon — green when focused */}
-              <Search className="w-4 h-4 text-slate-400 group-focus-within:text-[#00A86B] transition-colors duration-200 shrink-0" />
+              <Search className="w-5 h-5 text-slate-400 group-focus-within:text-[#00A86B] transition-colors duration-200 shrink-0" />
               <input
                 type="search"
                 value={searchValue}
@@ -450,16 +450,16 @@ const MobileHomeHeader: React.FC<MobileHomeHeaderProps> = ({
                   }
                 }}
                 placeholder={t("mobile.search") || "Search houses, land, cars..."}
-                className="flex-1 bg-transparent text-sm text-malazone-navy dark:text-slate-200 placeholder:text-slate-400 focus:outline-none font-semibold min-w-0"
+                className="flex-1 bg-transparent text-base text-malazone-navy dark:text-slate-200 placeholder:text-slate-400 focus:outline-none font-semibold min-w-0"
               />
               {/* Clear button when there is text */}
               {searchValue && (
                 <button
                   onClick={() => onSearchChange("")}
                   aria-label="Clear search"
-                  className="shrink-0 w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                  className="shrink-0 w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
                 >
-                  <X className="w-3 h-3 text-slate-600 dark:text-slate-300" />
+                  <X className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                 </button>
               )}
             </div>
@@ -468,10 +468,10 @@ const MobileHomeHeader: React.FC<MobileHomeHeaderProps> = ({
           {/* Filter button — branded green */}
           <button
             onClick={onFilterClick}
-            className="w-12 h-12 rounded-2xl bg-[#00A86B] flex items-center justify-center shadow-md shadow-emerald-500/25 active:scale-95 transition-all duration-200 shrink-0"
+            className="w-14 h-14 rounded-2xl bg-[#00A86B] flex items-center justify-center shadow-md shadow-emerald-500/25 active:scale-95 transition-all duration-200 shrink-0"
             aria-label="Open filters"
           >
-            <SlidersHorizontal className="w-5 h-5 text-white" />
+            <SlidersHorizontal className="w-6 h-6 text-white" />
           </button>
         </div>
       </div>

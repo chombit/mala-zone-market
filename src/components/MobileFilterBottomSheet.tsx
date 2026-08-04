@@ -1,0 +1,885 @@
+/**
+ * MobileFilterBottomSheet.tsx
+ * MALAZONE — Premium Mobile Filter Bottom Sheet (Airbnb-inspired)
+ * © 2026 Malazone Technologies PLC
+ */
+
+import React, { useState, useEffect } from "react";
+import {
+  X,
+  ChevronDown,
+  ChevronRight,
+  Search,
+  Check,
+  Home,
+  Car,
+  Hotel,
+  Music,
+  Truck,
+  Smartphone,
+  ShoppingBag,
+  Shield,
+  MapPin,
+  Clock,
+  TrendingDown,
+  CheckCircle,
+  Image,
+  Calendar,
+  ShieldCheck,
+  Info,
+} from "lucide-react";
+import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import type { ActiveZone, FilterState } from "./ZoneFilterSidebar";
+
+interface MobileFilterBottomSheetProps {
+  activeZone: ActiveZone;
+  filters: FilterState;
+  onFilterChange: (key: keyof FilterState, value: any) => void;
+  onZoneChange: (zone: ActiveZone) => void;
+  onReset: () => void;
+  onClose: () => void;
+  resultCount?: number;
+}
+
+/* ────────────────────────────────────────────
+   Trust Indicator Component (Mobile)
+   Badge with inline description for mobile
+   ──────────────────────────────────────────── */
+const TrustIndicatorMobile: React.FC<{
+  type: "verified" | "agent" | "business";
+  label: string;
+  description: string;
+}> = ({ type, label, description }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const getIcon = () => {
+    switch (type) {
+      case "verified":
+        return <ShieldCheck className="w-4 h-4" />;
+      case "agent":
+        return <Shield className="w-4 h-4" />;
+      case "business":
+        return <CheckCircle className="w-4 h-4" />;
+    }
+  };
+
+  return (
+    <div>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-2 w-full px-3 py-2 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-semibold transition-all active:scale-95"
+      >
+        {getIcon()}
+        <span className="flex-1 text-left">{label}</span>
+        <Info className="w-3 h-3 opacity-60" />
+      </button>
+      {isExpanded && (
+        <div className="mt-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+          {description}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────
+   Quick Filter Chip Component (Mobile)
+   Premium chips with instant filtering
+   ──────────────────────────────────────────── */
+const QuickFilterChip: React.FC<{
+  label: string;
+  icon: React.ReactNode;
+  active: boolean;
+  onClick: () => void;
+}> = ({ label, icon, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`
+      flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap
+      transition-all duration-200 ease-out active:scale-95
+      ${
+        active
+          ? "bg-[#16A34A] text-white shadow-md"
+          : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700"
+      }
+    `}
+  >
+    {React.cloneElement(icon as React.ReactElement, {
+      className: "w-3.5 h-3.5",
+    })}
+    <span>{label}</span>
+  </button>
+);
+
+/* ────────────────────────────────────────────
+   Premium Category Card Component (Mobile)
+   Interactive cards with icon, title, live count, hover/press animations
+   ──────────────────────────────────────────── */
+const CategoryCard: React.FC<{
+  zone: ActiveZone;
+  label: string;
+  icon: React.ReactNode;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}> = ({ zone, label, icon, count, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`
+      group relative
+      flex flex-col items-start gap-2
+      p-4 rounded-2xl
+      transition-all duration-200 ease-out
+      ${
+        active
+          ? "bg-[#16A34A] text-white shadow-lg shadow-emerald-500/30 ring-2 ring-[#16A34A] ring-offset-2 dark:ring-offset-slate-900"
+          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-2 border-slate-200 dark:border-slate-700 active:scale-[0.98]"
+      }
+    `}
+  >
+    {/* Icon */}
+    <div
+      className={`
+        p-2.5 rounded-xl transition-colors
+        ${
+          active
+            ? "bg-white/20"
+            : "bg-emerald-50 dark:bg-emerald-950/30 text-[#16A34A]"
+        }
+      `}
+    >
+      {React.cloneElement(icon as React.ReactElement, {
+        className: "w-5 h-5",
+      })}
+    </div>
+
+    {/* Label */}
+    <div className="flex flex-col items-start gap-0.5 w-full">
+      <span className="text-sm font-bold leading-tight">{label}</span>
+      <span
+        className={`text-xs font-medium ${
+          active ? "text-white/80" : "text-slate-500 dark:text-slate-400"
+        }`}
+      >
+        {count > 0 ? `${count.toLocaleString()}` : "0"}
+      </span>
+    </div>
+
+    {/* Check indicator for selected state */}
+    {active && (
+      <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md">
+        <Check className="w-4 h-4 text-[#16A34A]" />
+      </div>
+    )}
+
+    {/* Soft glow effect on selected */}
+    {active && (
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-transparent pointer-events-none" />
+    )}
+  </button>
+);
+
+/* ────────────────────────────────────────────
+   Enhanced Segmented Control (Dynamic Transaction Options)
+   Shows Buy/Rent/Lease/Book based on active category
+   ──────────────────────────────────────────── */
+const EnhancedSegmentedControl: React.FC<{
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  columns?: number;
+}> = ({ value, onChange, options, columns = 2 }) => {
+  const gridCols = columns === 4 ? "grid-cols-4" : columns === 3 ? "grid-cols-3" : "grid-cols-2";
+  
+  return (
+    <div className={`grid ${gridCols} bg-slate-100 dark:bg-slate-800 rounded-2xl p-1 gap-1`}>
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          className={`
+            px-3 py-2.5 rounded-xl text-sm font-bold
+            transition-all duration-200 ease-out active:scale-95
+            ${
+              value === opt.value
+                ? "bg-white dark:bg-slate-700 text-[#16A34A] shadow-sm"
+                : "text-slate-600 dark:text-slate-400"
+            }
+          `}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────
+   Segmented Control
+   ──────────────────────────────────────────── */
+const SegmentedControl: React.FC<{
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}> = ({ value, onChange, options }) => (
+  <div className="flex bg-slate-100 dark:bg-slate-800 rounded-2xl p-1 gap-1">
+    {options.map((opt) => (
+      <button
+        key={opt.value}
+        onClick={() => onChange(opt.value)}
+        className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+          value === opt.value
+            ? "bg-white dark:bg-slate-700 text-[#16A34A] shadow-sm"
+            : "text-slate-600 dark:text-slate-400"
+        }`}
+      >
+        {opt.label}
+      </button>
+    ))}
+  </div>
+);
+
+/* ────────────────────────────────────────────
+   Searchable Select
+   ──────────────────────────────────────────── */
+const SearchableSelect: React.FC<{
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}> = ({ label, value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
+        {label}
+      </label>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl"
+      >
+        <span className="text-sm font-medium text-slate-900 dark:text-white">
+          {selectedOption.label}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-[300] bg-white dark:bg-slate-900">
+          <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              {label}
+            </h3>
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                setSearchTerm("");
+              }}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-4">
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={`Search ${label.toLowerCase()}...`}
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-sm"
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-1">
+              {filteredOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                    setSearchTerm("");
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl ${
+                    value === opt.value
+                      ? "bg-emerald-50 dark:bg-emerald-950/30 text-[#16A34A] font-semibold"
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  {opt.label}
+                  {value === opt.value && <Check className="w-5 h-5" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────
+   Premium Dual-Thumb Price Slider Component (Mobile)
+   Range slider with min/max inputs and smooth animations
+   ──────────────────────────────────────────── */
+const PremiumPriceSlider: React.FC<{
+  minValue: string;
+  maxValue: string;
+  onMinChange: (v: string) => void;
+  onMaxChange: (v: string) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+}> = ({ minValue, maxValue, onMinChange, onMaxChange, min = 0, max = 10000000, step = 50000 }) => {
+  const [localMin, setLocalMin] = useState(minValue || String(min));
+  const [localMax, setLocalMax] = useState(maxValue || String(max));
+
+  useEffect(() => {
+    setLocalMin(minValue || String(min));
+  }, [minValue, min]);
+
+  useEffect(() => {
+    setLocalMax(maxValue || String(max));
+  }, [maxValue, max]);
+
+  const minPercent = ((Number(localMin) - min) / (max - min)) * 100;
+  const maxPercent = ((Number(localMax) - min) / (max - min)) * 100;
+
+  const handleMinSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.min(Number(e.target.value), Number(localMax) - step);
+    setLocalMin(String(value));
+    onMinChange(String(value));
+  };
+
+  const handleMaxSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.max(Number(e.target.value), Number(localMin) + step);
+    setLocalMax(String(value));
+    onMaxChange(String(value));
+  };
+
+  const formatCurrency = (value: string) => {
+    const num = Number(value);
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+    return num.toLocaleString();
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-bold text-slate-900 dark:text-white mb-4">
+        Price Range
+      </label>
+
+      {/* Slider Track Container */}
+      <div className="relative h-2 mb-8">
+        {/* Background Track */}
+        <div className="absolute w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full" />
+        
+        {/* Active Range Track */}
+        <div
+          className="absolute h-2 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-200"
+          style={{
+            left: `${minPercent}%`,
+            right: `${100 - maxPercent}%`,
+          }}
+        />
+
+        {/* Min Thumb */}
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={localMin}
+          onChange={handleMinSliderChange}
+          className="absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#16A34A] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:active:scale-125"
+          style={{ zIndex: 3 }}
+        />
+
+        {/* Max Thumb */}
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={localMax}
+          onChange={handleMaxSliderChange}
+          className="absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#16A34A] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:active:scale-125"
+          style={{ zIndex: 4 }}
+        />
+
+        {/* Value Labels Above Thumbs */}
+        <div
+          className="absolute -top-8 transform -translate-x-1/2 transition-all duration-200"
+          style={{ left: `${minPercent}%` }}
+        >
+          <div className="px-2 py-1 bg-[#16A34A] text-white text-xs font-bold rounded shadow-md whitespace-nowrap">
+            {formatCurrency(localMin)}
+          </div>
+        </div>
+        <div
+          className="absolute -top-8 transform -translate-x-1/2 transition-all duration-200"
+          style={{ left: `${maxPercent}%` }}
+        >
+          <div className="px-2 py-1 bg-[#16A34A] text-white text-xs font-bold rounded shadow-md whitespace-nowrap">
+            {formatCurrency(localMax)}
+          </div>
+        </div>
+      </div>
+
+      {/* Numeric Inputs */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-slate-500 mb-1.5">Minimum</label>
+          <input
+            type="number"
+            value={localMin}
+            onChange={(e) => {
+              setLocalMin(e.target.value);
+              onMinChange(e.target.value);
+            }}
+            placeholder="0"
+            className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-[#16A34A]"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-slate-500 mb-1.5">Maximum</label>
+          <input
+            type="number"
+            value={localMax}
+            onChange={(e) => {
+              setLocalMax(e.target.value);
+              onMaxChange(e.target.value);
+            }}
+            placeholder="Any"
+            className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-[#16A34A]"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────
+   Price Range Input
+   ──────────────────────────────────────────── */
+const PriceRangeInput: React.FC<{
+  minValue: string;
+  maxValue: string;
+  onMinChange: (v: string) => void;
+  onMaxChange: (v: string) => void;
+}> = ({ minValue, maxValue, onMinChange, onMaxChange }) => (
+  <div>
+    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
+      Price Range
+    </label>
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <label className="block text-xs text-slate-500 mb-1">Minimum</label>
+        <input
+          type="number"
+          value={minValue}
+          onChange={(e) => onMinChange(e.target.value)}
+          placeholder="0"
+          className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-xs text-slate-500 mb-1">Maximum</label>
+        <input
+          type="number"
+          value={maxValue}
+          onChange={(e) => onMaxChange(e.target.value)}
+          placeholder="Any"
+          className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-sm"
+        />
+      </div>
+    </div>
+  </div>
+);
+
+/* ────────────────────────────────────────────
+   Compact Select
+   ──────────────────────────────────────────── */
+const CompactSelect: React.FC<{
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}> = ({ label, value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+
+  return (
+    <div className="relative">
+      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
+        {label}
+      </label>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl"
+      >
+        <span className="text-sm font-medium text-slate-900 dark:text-white">
+          {selectedOption.label}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-4 py-2.5 text-left text-sm ${
+                  value === opt.value
+                    ? "bg-emerald-50 dark:bg-emerald-950/30 text-[#16A34A] font-semibold"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────
+   Toggle Switch
+   ──────────────────────────────────────────── */
+const ToggleSwitch: React.FC<{
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}> = ({ label, checked, onChange }) => (
+  <div className="flex items-center justify-between py-2">
+    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+      {label}
+    </span>
+    <button
+      onClick={() => onChange(!checked)}
+      className={`relative w-11 h-6 rounded-full transition-colors ${
+        checked ? "bg-[#16A34A]" : "bg-slate-300 dark:bg-slate-600"
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  </div>
+);
+
+/* ────────────────────────────────────────────
+   Main Bottom Sheet Component
+   ──────────────────────────────────────────── */
+const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
+  activeZone,
+  filters,
+  onFilterChange,
+  onZoneChange,
+  onReset,
+  onClose,
+  resultCount = 0,
+}) => {
+  const { t } = useLanguage();
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+
+  /* ── Dynamic Transaction Options Based on Category ── */
+  const getTransactionOptions = () => {
+    switch (activeZone) {
+      case "house":
+        return [
+          { value: "buy", label: t("intent.buy") },
+          { value: "rent", label: t("intent.rent") },
+        ];
+      case "car":
+      case "machinery":
+      case "electronics":
+        return [
+          { value: "buy", label: t("intent.buy") },
+          { value: "rent", label: t("intent.rent") },
+        ];
+      case "ceremony":
+        return [
+          { value: "book", label: t("filter.bookingType") || "Book" },
+          { value: "rent", label: t("intent.rent") },
+        ];
+      default:
+        return [
+          { value: "buy", label: t("intent.buy") },
+          { value: "rent", label: t("intent.rent") },
+        ];
+    }
+  };
+
+  const transactionOptions = getTransactionOptions();
+
+  const categories = [
+    { id: "all" as ActiveZone, label: t("cat.all"), icon: <ShoppingBag className="w-4 h-4" />, count: 15420 },
+    { id: "house" as ActiveZone, label: t("cat.property"), icon: <Home className="w-4 h-4" />, count: 12542 },
+    { id: "car" as ActiveZone, label: t("cat.vehicle"), icon: <Car className="w-4 h-4" />, count: 2481 },
+    { id: "ceremony" as ActiveZone, label: t("cat.stay"), icon: <Hotel className="w-4 h-4" />, count: 824 },
+    { id: "machinery" as ActiveZone, label: t("cat.machinery"), icon: <Truck className="w-4 h-4" />, count: 493 },
+    { id: "electronics" as ActiveZone, label: t("cat.electronics"), icon: <Smartphone className="w-4 h-4" />, count: 3291 },
+  ];
+
+  const regionOptions = [
+    { value: "", label: t("region.all") || "All Regions" },
+    { value: "sidama", label: t("region.sidama") },
+    { value: "addis", label: t("region.addis") },
+  ];
+
+  const cityOptions = [
+    { value: "", label: t("city.all") || "All Cities" },
+    { value: "tabor", label: t("city.tabor") },
+    { value: "lakefront", label: t("city.lakefront") },
+    { value: "piassa", label: t("city.piassa") },
+    { value: "yirgalem", label: t("city.yirgalem") },
+    { value: "bensa", label: t("city.bensa") },
+    { value: "chuko", label: t("city.chuko") },
+  ];
+
+  const propertyTypeOptions = [
+    { value: "", label: t("filter.propAll") || "All Properties" },
+    { value: "house", label: t("filter.propHouse") || "House" },
+    { value: "apartment", label: t("filter.propApt") || "Apartment" },
+    { value: "land", label: t("filter.propLand") || "Land" },
+    { value: "commercial", label: t("filter.propComm") || "Commercial" },
+  ];
+
+  const bedroomOptions = [
+    { value: "", label: t("filter.bedAny") || "Any" },
+    { value: "1", label: "1" },
+    { value: "2", label: "2" },
+    { value: "3", label: "3" },
+    { value: "4+", label: "4+" },
+  ];
+
+  const vehicleTypeOptions = [
+    { value: "", label: t("filter.vehAll") || "All Vehicles" },
+    { value: "sedan", label: t("filter.vehSedan") || "Sedan" },
+    { value: "suv", label: t("filter.vehSuv") || "SUV" },
+    { value: "truck", label: t("filter.vehTruck") || "Truck" },
+    { value: "van", label: t("filter.vehVan") || "Van" },
+  ];
+
+  const fuelTypeOptions = [
+    { value: "", label: t("filter.fuelAll") },
+    { value: "benzine", label: t("filter.benzine") },
+    { value: "diesel", label: t("filter.diesel") },
+    { value: "electric", label: t("filter.electric") },
+  ];
+
+  const conditionOptions = [
+    { value: "", label: t("filter.conditionAll") },
+    { value: "new", label: t("filter.condNew") },
+    { value: "used", label: t("filter.condUsed") },
+    { value: "excellent", label: t("filter.condExcellent") },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[200] flex flex-col bg-white dark:bg-slate-900">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800">
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+        >
+          <X className="w-6 h-6 text-slate-700 dark:text-slate-300" />
+        </button>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          Refine Search
+        </h2>
+        <button
+          onClick={onReset}
+          className="text-sm font-semibold text-[#16A34A] hover:text-emerald-600"
+        >
+          Clear All
+        </button>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 pb-32">
+
+
+        {/* Category Dropdown */}
+        <div className="space-y-4">
+          <SearchableSelect
+            label={t("filter.category") || "Category"}
+            value={activeZone}
+            onChange={(v) => onZoneChange(v as ActiveZone)}
+            options={categories.map(cat => ({ value: cat.id, label: cat.label }))}
+          />
+        </div>
+
+        {/* Transaction Type */}
+        <div className="space-y-4">
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
+            {activeZone === "ceremony" ? t("filter.bookingType") || "Booking Type" : t("filter.iWantTo") || "I want to"}
+          </label>
+          <EnhancedSegmentedControl
+            value={filters.intent || "buy"}
+            onChange={(v) => onFilterChange("intent", v)}
+            options={transactionOptions}
+            columns={transactionOptions.length}
+          />
+        </div>
+
+        {/* Location */}
+        <div className="space-y-4">
+          <SearchableSelect
+            label={t("sidebar.region") || "Region"}
+            value={filters.region}
+            onChange={(v) => onFilterChange("region", v)}
+            options={regionOptions}
+          />
+          <SearchableSelect
+            label={t("sidebar.city") || "City"}
+            value={filters.city}
+            onChange={(v) => onFilterChange("city", v)}
+            options={cityOptions}
+          />
+        </div>
+
+
+
+        {/* Dynamic Category Filters */}
+        {activeZone === "house" && (
+          <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              {t("filter.headerProperty") || "Property Filters"}
+            </h3>
+            <CompactSelect
+              label={t("filter.propType") || "Property Type"}
+              value={filters.propertyType || ""}
+              onChange={(v) => onFilterChange("propertyType", v)}
+              options={propertyTypeOptions}
+            />
+            <CompactSelect
+              label={t("label.bedrooms") || "Bedrooms"}
+              value={filters.bedrooms || ""}
+              onChange={(v) => onFilterChange("bedrooms", v)}
+              options={bedroomOptions}
+            />
+            <CompactSelect
+              label={t("label.bathrooms") || "Bathrooms"}
+              value={filters.bathrooms || ""}
+              onChange={(v) => onFilterChange("bathrooms", v)}
+              options={bedroomOptions}
+            />
+          </div>
+        )}
+
+        {activeZone === "car" && (
+          <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              {t("filter.headerVehicle") || "Vehicle Filters"}
+            </h3>
+            <CompactSelect
+              label={t("filter.vehType") || "Vehicle Type"}
+              value={filters.vehicleType || ""}
+              onChange={(v) => onFilterChange("vehicleType", v)}
+              options={vehicleTypeOptions}
+            />
+            <CompactSelect
+              label={t("filter.fuelType") || "Fuel Type"}
+              value={filters.fuelType || ""}
+              onChange={(v) => onFilterChange("fuelType", v)}
+              options={fuelTypeOptions}
+            />
+            <CompactSelect
+              label={t("filter.condition") || "Condition"}
+              value={filters.condition || ""}
+              onChange={(v) => onFilterChange("condition", v)}
+              options={conditionOptions}
+            />
+          </div>
+        )}
+
+        {/* More Filters */}
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+          <button
+            onClick={() => setShowMoreFilters(!showMoreFilters)}
+            className="flex items-center justify-between w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-xl"
+          >
+            <span className="text-sm font-bold text-slate-900 dark:text-white">
+              Advanced Filters
+            </span>
+            <ChevronRight
+              className={`w-5 h-5 text-slate-400 transition-transform ${
+                showMoreFilters ? "rotate-90" : ""
+              }`}
+            />
+          </button>
+
+          {showMoreFilters && (
+            <div className="mt-4 space-y-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+              {activeZone === "house" && (
+                <>
+                  <ToggleSwitch
+                    label="Furnished"
+                    checked={filters.furnished || false}
+                    onChange={(checked) => onFilterChange("furnished", checked)}
+                  />
+                  <ToggleSwitch
+                    label="Parking Available"
+                    checked={filters.parking || false}
+                    onChange={(checked) => onFilterChange("parking", checked)}
+                  />
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Sticky Bottom Action Bar */}
+      <div className="sticky bottom-0 left-0 right-0 px-4 py-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-lg">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onReset}
+            className="px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 underline"
+          >
+            Clear All
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 px-6 py-3 bg-[#16A34A] hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg transition-all"
+          >
+            Show {resultCount > 0 ? `${resultCount.toLocaleString()} ` : ""}Results
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MobileFilterBottomSheet;

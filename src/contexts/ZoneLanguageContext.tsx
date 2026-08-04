@@ -22,8 +22,14 @@ export const ZoneLanguageProvider: React.FC<{ children: ReactNode }> = ({ childr
     const [language, setLang] = useState<Language>(i18n.language as Language);
 
     useEffect(() => {
-        const handler = (lng: string) => setLang(lng as Language);
+        const handler = (lng: string) => {
+            setLang(lng as Language);
+            // Set HTML lang attribute for proper font rendering
+            document.documentElement.lang = lng === 'amharic' ? 'am' : lng === 'sidamu' ? 'sid' : 'en';
+        };
         i18n.on("languageChanged", handler);
+        // Set initial lang attribute
+        document.documentElement.lang = i18n.language === 'amharic' ? 'am' : i18n.language === 'sidamu' ? 'sid' : 'en';
         return () => { i18n.off("languageChanged", handler); };
     }, []);
 

@@ -25,6 +25,11 @@ interface ListingForm {
   is_active: boolean;
   images: string[];
   // Zone specific
+  sub_category?: string;
+  vehicle_brand?: string;
+  manufacture_year?: number;
+  is_parking_available?: boolean;
+  is_furnished?: boolean;
   plate_code?: string;
   fuel_type?: string;
   condition_type?: string;
@@ -68,6 +73,11 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
     is_verified: true,
     is_active: true,
     images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"],
+    sub_category: "",
+    vehicle_brand: "",
+    manufacture_year: new Date().getFullYear(),
+    is_parking_available: false,
+    is_furnished: false,
     plate_code: "",
     fuel_type: "benzine",
     condition_type: "used",
@@ -102,6 +112,11 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         is_verified: listing.is_verified === 1 || listing.is_verified === true,
         is_active: listing.is_active === 1 || listing.is_active === true,
         images: parsedImages.length > 0 ? parsedImages : ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"],
+        sub_category: listing.sub_category || "",
+        vehicle_brand: listing.vehicle_brand || "",
+        manufacture_year: listing.manufacture_year || new Date().getFullYear(),
+        is_parking_available: listing.is_parking_available === 1 || listing.is_parking_available === true,
+        is_furnished: listing.is_furnished === 1 || listing.is_furnished === true,
         plate_code: listing.plate_code || "",
         fuel_type: listing.fuel_type || "benzine",
         condition_type: listing.condition_type || "used",
@@ -131,6 +146,11 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         is_verified: true,
         is_active: true,
         images: [],
+        sub_category: "",
+        vehicle_brand: "",
+        manufacture_year: new Date().getFullYear(),
+        is_parking_available: false,
+        is_furnished: false,
         plate_code: "",
         fuel_type: "benzine",
         condition_type: "used",
@@ -171,6 +191,11 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
       fd.append('is_verified', formData.is_verified ? '1' : '0');
       fd.append('is_active', formData.is_active ? '1' : '0');
       fd.append('existing_images', JSON.stringify(existingImages));
+      if (formData.sub_category) fd.append('sub_category', formData.sub_category);
+      if (formData.vehicle_brand) fd.append('vehicle_brand', formData.vehicle_brand);
+      if (formData.manufacture_year) fd.append('manufacture_year', String(formData.manufacture_year));
+      fd.append('is_parking_available', formData.is_parking_available ? '1' : '0');
+      fd.append('is_furnished', formData.is_furnished ? '1' : '0');
       if (formData.plate_code) fd.append('plate_code', formData.plate_code);
       if (formData.fuel_type) fd.append('fuel_type', formData.fuel_type);
       if (formData.condition_type) fd.append('condition_type', formData.condition_type);
@@ -389,6 +414,53 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                 {(formData.category === 'motors' || formData.category === 'heavy') && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-3">
+                      <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{formData.category === 'heavy' ? 'Machinery Type' : 'Vehicle Type'}</label>
+                      <select 
+                        value={formData.sub_category}
+                        onChange={e => setFormData({...formData, sub_category: e.target.value})}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                      >
+                        <option value="">Select Type</option>
+                        {formData.category === 'heavy' ? (
+                          <>
+                            <option value="excavator">Excavator</option>
+                            <option value="crane">Crane</option>
+                            <option value="bulldozer">Bulldozer</option>
+                            <option value="loader">Loader</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="sedan">Sedan</option>
+                            <option value="suv">SUV</option>
+                            <option value="truck">Truck</option>
+                            <option value="van">Van</option>
+                          </>
+                        )}
+                      </select>
+                    </div>
+                    {formData.category === 'motors' && (
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Vehicle Brand</label>
+                        <input 
+                          value={formData.vehicle_brand}
+                          onChange={e => setFormData({...formData, vehicle_brand: e.target.value})}
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                          placeholder="e.g. Toyota, Ford..."
+                        />
+                      </div>
+                    )}
+                    {formData.category === 'motors' && (
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Manufacture Year</label>
+                        <input 
+                          type="number"
+                          value={formData.manufacture_year}
+                          onChange={e => setFormData({...formData, manufacture_year: Number(e.target.value)})}
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-3">
                       <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Plate Code</label>
                       <input 
                         value={formData.plate_code}
@@ -448,7 +520,31 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                 {/* Property / Stay */}
                 {(formData.category === 'property' || formData.category === 'stay') && (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{formData.category === 'property' ? 'Property Type' : 'Stay Type'}</label>
+                        <select 
+                          value={formData.sub_category}
+                          onChange={e => setFormData({...formData, sub_category: e.target.value})}
+                          className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                        >
+                          <option value="">Select Type</option>
+                          {formData.category === 'property' ? (
+                            <>
+                              <option value="house">House</option>
+                              <option value="apartment">Apartment</option>
+                              <option value="land">Land</option>
+                              <option value="commercial">Commercial</option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="hotel">Hotel</option>
+                              <option value="guesthouse">Guesthouse</option>
+                              <option value="resort">Resort</option>
+                            </>
+                          )}
+                        </select>
+                      </div>
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Area (SQM)</label>
                         <input 
@@ -501,12 +597,50 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                         </select>
                       </div>
                     </div>
+                    {formData.category === 'property' && (
+                      <div className="flex flex-col sm:flex-row gap-6 mt-4">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox"
+                            checked={formData.is_furnished}
+                            onChange={e => setFormData({...formData, is_furnished: e.target.checked})}
+                            className="w-5 h-5 rounded-lg border-slate-300 bg-slate-50 text-[#00A86B] focus:ring-[#00A86B]/50 focus:ring-offset-0 transition-all"
+                          />
+                          <span className="text-[10px] font-bold text-malazone-navy uppercase tracking-widest group-hover:text-malazone-navy transition-colors">Furnished</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox"
+                            checked={formData.is_parking_available}
+                            onChange={e => setFormData({...formData, is_parking_available: e.target.checked})}
+                            className="w-5 h-5 rounded-lg border-slate-300 bg-slate-50 text-[#00A86B] focus:ring-[#00A86B]/50 focus:ring-offset-0 transition-all"
+                          />
+                          <span className="text-[10px] font-bold text-malazone-navy uppercase tracking-widest group-hover:text-malazone-navy transition-colors">Parking Available</span>
+                        </label>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* Ceremony */}
                 {formData.category === 'ceremony' && (
                   <div className="space-y-3">
+                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Event/Ceremony Type</label>
+                    <select 
+                      value={formData.sub_category}
+                      onChange={e => setFormData({...formData, sub_category: e.target.value})}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="wedding">Wedding</option>
+                      <option value="birthday">Birthday</option>
+                      <option value="graduation">Graduation</option>
+                      <option value="corporate">Corporate Event</option>
+                    </select>
+                  </div>
+                )}
+                {formData.category === 'ceremony' && (
+                  <div className="space-y-3 mt-4">
                     <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Equipment Capacity / Count</label>
                     <input 
                       type="number"
@@ -521,6 +655,24 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                 {/* Electronics */}
                 {formData.category === 'electronics' && (
                   <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest ml-1">
+                      Electronics Type
+                    </label>
+                    <select 
+                      value={formData.sub_category}
+                      onChange={e => setFormData({...formData, sub_category: e.target.value})}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="phone">Mobile Phone</option>
+                      <option value="laptop">Laptop/Computer</option>
+                      <option value="tv">Television</option>
+                      <option value="home_appliance">Home Appliance</option>
+                    </select>
+                  </div>
+                )}
+                {formData.category === 'electronics' && (
+                  <div className="space-y-3 mt-4">
                     <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest ml-1">
                       የመሣሪያው IMEI ቁጥር ወይም ሲሪያል (Device IMEI/Serial Number)
                     </label>

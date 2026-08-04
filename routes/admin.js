@@ -582,6 +582,7 @@ router.post("/listings", requireAdminRoles("super_admin", "admin"), upload.array
       category, price, price_suffix, phone, whatsapp, location_key,
       is_premium, is_verified, existing_images,
       // Zone specific
+      sub_category, is_furnished, is_parking_available, vehicle_brand, manufacture_year,
       plate_code, fuel_type, condition_type, 
       area_sqm, capacity, with_operator, is_zero_km,
       bedrooms, bathrooms, title_deed
@@ -608,22 +609,22 @@ router.post("/listings", requireAdminRoles("super_admin", "admin"), upload.array
     const [result] = await db.execute(
       `INSERT INTO listings (
         user_id, title_en, title_am, description_en, description_am,
-        category, price, price_suffix, phone, whatsapp, location_key,
+        category, sub_category, price, price_suffix, phone, whatsapp, location_key,
         location_label_en, location_label_am,
         is_premium, is_verified, images,
-        plate_code, fuel_type, condition_type,
+        vehicle_brand, manufacture_year, plate_code, fuel_type, condition_type,
         area_sqm, capacity, with_operator, is_zero_km,
-        bedrooms, bathrooms, title_deed
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        bedrooms, bathrooms, is_furnished, is_parking_available, title_deed
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         user_id, title_en, title_am, description_en, description_am,
-        category, price, price_suffix || 'fixed', phone, whatsapp, location_key,
+        category, sub_category || null, price, price_suffix || 'fixed', phone, whatsapp, location_key,
         "Hawassa, Ethiopia", "ሐዋሳ፣ ኢትዮጵያ",
         is_premium ? 1 : 0, is_verified ? 1 : 0,
         JSON.stringify(imageUrls),
-        plate_code || null, fuel_type || null, condition_type || null,
+        vehicle_brand || null, manufacture_year || null, plate_code || null, fuel_type || null, condition_type || null,
         area_sqm || null, capacity || null, with_operator ? 1 : 0, is_zero_km ? 1 : 0,
-        bedrooms || null, bathrooms || null, title_deed || null
+        bedrooms || null, bathrooms || null, is_furnished ? 1 : 0, is_parking_available ? 1 : 0, title_deed || null
       ]
     );
 
@@ -664,6 +665,7 @@ router.put("/listings/:id", requireAdminRoles("super_admin", "admin"), upload.ar
       category, price, price_suffix, phone, whatsapp, location_key,
       is_premium, is_verified, is_active, existing_images,
       // Zone specific
+      sub_category, is_furnished, is_parking_available, vehicle_brand, manufacture_year,
       plate_code, fuel_type, condition_type, 
       area_sqm, capacity, with_operator, is_zero_km,
       bedrooms, bathrooms, title_deed
@@ -688,20 +690,20 @@ router.put("/listings/:id", requireAdminRoles("super_admin", "admin"), upload.ar
     const [result] = await db.execute(
       `UPDATE listings SET 
         title_en = ?, title_am = ?, description_en = ?, description_am = ?,
-        category = ?, price = ?, price_suffix = ?, phone = ?, whatsapp = ?, location_key = ?,
+        category = ?, sub_category = ?, price = ?, price_suffix = ?, phone = ?, whatsapp = ?, location_key = ?,
         is_premium = ?, is_verified = ?, is_active = ?, images = ?,
-        plate_code = ?, fuel_type = ?, condition_type = ?,
+        vehicle_brand = ?, manufacture_year = ?, plate_code = ?, fuel_type = ?, condition_type = ?,
         area_sqm = ?, capacity = ?, with_operator = ?, is_zero_km = ?,
-        bedrooms = ?, bathrooms = ?, title_deed = ?
+        bedrooms = ?, bathrooms = ?, is_furnished = ?, is_parking_available = ?, title_deed = ?
       WHERE id = ?`,
       [
         title_en, title_am, description_en, description_am,
-        category, price, price_suffix || 'fixed', phone, whatsapp, location_key,
+        category, sub_category || null, price, price_suffix || 'fixed', phone, whatsapp, location_key,
         is_premium ? 1 : 0, is_verified ? 1 : 0, is_active ? 1 : 0,
         JSON.stringify(imageUrls),
-        plate_code || null, fuel_type || null, condition_type || null,
+        vehicle_brand || null, manufacture_year || null, plate_code || null, fuel_type || null, condition_type || null,
         area_sqm || null, capacity || null, with_operator ? 1 : 0, is_zero_km ? 1 : 0,
-        bedrooms || null, bathrooms || null, title_deed || null,
+        bedrooms || null, bathrooms || null, is_furnished ? 1 : 0, is_parking_available ? 1 : 0, title_deed || null,
         id
       ]
     );

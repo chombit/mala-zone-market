@@ -34,6 +34,13 @@
     @apply bg-slate-50 text-malazone-navy dark:bg-slate-950 dark:text-slate-400 font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-900 dark:selection:bg-emerald-500/20 dark:selection:text-emerald-200 transition-colors duration-300;
   }
 
+  /* Ensure Amharic characters render properly */
+  html[lang="am"],
+  html[lang="am"] body,
+  html[lang="am"] * {
+    font-family: 'Noto Sans Ethiopic', 'Noto Sans', sans-serif !important;
+  }
+
   h1,
   h2,
   h3,

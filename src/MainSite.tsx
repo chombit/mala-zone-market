@@ -23,7 +23,7 @@ import BottomNavigation from './components/BottomNavigation';
 import ChatPanel from './components/ChatPanel';
 import BuyerPostListingModal from './components/BuyerPostListingModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { X } from 'lucide-react';
+import MobileFilterBottomSheet from './components/MobileFilterBottomSheet';
 
 import GigHubPage from './components/pages/GigHubPage';
 import AgentOnboardPage from './components/pages/AgentOnboardPage';
@@ -38,12 +38,32 @@ const defaultFilters: FilterState = {
   search: "",
   region: "",
   city: "",
-  intent: "",
-  plateCode: "",
+  intent: "buy",
+  priceMin: "",
+  priceMax: "",
+  vehicleType: "",
+  brand: "",
   fuelType: "",
   condition: "",
+  propertyType: "",
+  bedrooms: "",
+  bathrooms: "",
+  area: "",
   titleDeed: "",
-  sqm: "",
+  machineryType: "",
+  stayType: "",
+  guests: "",
+  verified: false,
+  sellerType: "",
+  parking: false,
+  furnished: false,
+  yearBuilt: "",
+  quickNearby: false,
+  quickNewest: false,
+  quickPriceSort: false,
+  quickAvailable: false,
+  quickWithPhotos: false,
+  quickOpenNow: false,
 };
 
 const MainSite: React.FC = () => {
@@ -106,7 +126,7 @@ const MainSite: React.FC = () => {
         selection:bg-emerald-500/30
         selection:text-emerald-900 dark:selection:text-emerald-200
         transition-colors duration-300
-        pb-20 md:pb-0
+        pb-0
       "
     >
       <FavoritesSidebar />
@@ -172,7 +192,7 @@ const MainSite: React.FC = () => {
             {/* ── Split-Screen Catalog Section ──────────────────────── */}
             <div
               id="listings-catalog"
-              className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-12 pb-0"
+              className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-12 pb-0"
             >
 
               <div className="flex flex-col lg:flex-row gap-8">
@@ -182,39 +202,22 @@ const MainSite: React.FC = () => {
                     activeZone={activeZone}
                     filters={filters}
                     onFilterChange={handleFilterChange}
+                    onZoneChange={(zone) => setActiveZone(zone)}
                     onReset={handleReset}
                   />
                 </div>
 
-                {/* Mobile Filter Modal */}
+                {/* Mobile Filter Bottom Sheet */}
                 {showMobileFilters && (
-                  <>
-                    <div
-                      className="fixed inset-0 bg-black/50 z-[100] lg:hidden"
-                      onClick={() => setShowMobileFilters(false)}
-                    />
-                    <div className="fixed inset-0 z-[101] lg:hidden flex items-start justify-center pt-0 overflow-hidden">
-                      <div className="bg-white dark:bg-slate-900 w-full h-full overflow-y-auto">
-                        <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-4 flex items-center justify-between z-10">
-                          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Filters</h2>
-                          <button
-                            onClick={() => setShowMobileFilters(false)}
-                            className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                          >
-                            <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                          </button>
-                        </div>
-                        <div className="p-4">
-                          <ZoneFilterSidebar
-                            activeZone={activeZone}
-                            filters={filters}
-                            onFilterChange={handleFilterChange}
-                            onReset={handleReset}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </>
+                  <MobileFilterBottomSheet
+                    activeZone={activeZone}
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    onZoneChange={(zone) => setActiveZone(zone)}
+                    onReset={handleReset}
+                    onClose={() => setShowMobileFilters(false)}
+                    resultCount={0}
+                  />
                 )}
 
                 <ZoneCatalogGrid
@@ -258,7 +261,7 @@ const MainSite: React.FC = () => {
 
       {/* ── Bottom Navigation (Mobile Only) ──────────────────────── */}
       <BottomNavigation />
-      <ChatPanel />
+
 
       {/* ── Buyer Post Listing Modal ──────────────────────── */}
       {showPostModal && isAuthenticated && (

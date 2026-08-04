@@ -83,12 +83,16 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
           </button>
 
           {/* CENTER: Horizontal Category Navigation */}
-          <nav className="flex items-center justify-center gap-2 flex-1">
+          <nav className={`flex items-center gap-1.5 md:gap-2 flex-1 overflow-x-auto scrollbar-hide mx-4 min-w-0 px-2 py-1 ${
+            language === 'amharic' || language === 'english' 
+              ? 'justify-center' 
+              : 'justify-start xl:justify-center'
+          }`}>
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => handleNavClick(cat.id)}
-                className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.08em] rounded-lg transition-all whitespace-nowrap ${
+                className={`flex-shrink-0 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.08em] rounded-lg transition-all whitespace-nowrap ${
                   activeCategory === cat.id
                     ? "text-white bg-[#00A86B] shadow-md shadow-emerald-500/20"
                     : "text-slate-700 dark:text-slate-300 hover:text-[#00A86B] hover:bg-emerald-50 dark:hover:bg-emerald-950/30"

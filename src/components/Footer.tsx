@@ -204,7 +204,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
 
           {/* Copyright - flush with bottom nav */}
-          <div className="flex items-center justify-center pt-2 pb-1">
+          <div className="flex items-center justify-center pt-2 pb-4">
             <p className="text-slate-400 text-xs font-semibold leading-none text-center">
               {f.copyright}
             </p>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Search, Heart, UserCircle2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +13,25 @@ const BottomNavigation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { favorites } = useFavorites();
+
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (typeof window !== 'undefined') {
+        if (window.scrollY > lastScrollY && window.scrollY > 50) { 
+          setIsVisible(false);
+        } else {
+          setIsVisible(true);
+        }
+        setLastScrollY(window.scrollY);
+      }
+    };
+
+    window.addEventListener('scroll', controlNavbar);
+    return () => window.removeEventListener('scroll', controlNavbar);
+  }, [lastScrollY]);
 
   const activeFromPath = (): TabId => {
     const p = location.pathname.toLowerCase();
@@ -53,7 +72,9 @@ const BottomNavigation: React.FC = () => {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10 shadow-[0_-2px_10px_rgba(0,0,0,0.08)]"
+      className={`lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 ease-in-out ${
+        isVisible ? 'translate-y-0' : 'translate-y-full'
+      }`}
       aria-label="Main"
     >
       {/* Navigation with right space reserved for Tawk.to */}

@@ -22,8 +22,18 @@ module.exports = {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Calans', 'Inter', 'system-ui', 'sans-serif'], // For premium headlines
+        sans: [
+          'Inter',
+          'Noto Sans Ethiopic',
+          'Noto Sans',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif'
+        ],
+        display: ['Calans', 'Inter', 'Noto Sans Ethiopic', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'premium-gradient': 'linear-gradient(to bottom, #ffffff 0%, #94a3b8 100%)',

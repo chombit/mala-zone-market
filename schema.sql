@@ -78,11 +78,13 @@ CREATE TABLE IF NOT EXISTS listings (
   bathrooms TINYINT UNSIGNED COMMENT 'Number of bathrooms',
   area_sqm DECIMAL(8, 2) COMMENT 'Land/building area in square meters',
   is_furnished BOOLEAN DEFAULT FALSE COMMENT 'Is property furnished?',
+  is_parking_available BOOLEAN DEFAULT FALSE COMMENT 'Is parking available?',
   cata_registry VARCHAR(100) COMMENT 'CATA Registry Code for Deeds',
   title_deed VARCHAR(100) COMMENT 'Title deed / Carta type',
   legal_document_url VARCHAR(500) COMMENT 'Admin uploaded Deed/Libre document URL',
 
   -- Motors-specific
+  vehicle_brand VARCHAR(100) COMMENT 'Brand of the vehicle',
   plate_code VARCHAR(20) COMMENT 'Vehicle plate code (AA-3-00000)',
   plate_region VARCHAR(100) COMMENT 'Plate region/city',
   chassis_number VARCHAR(100) COMMENT 'Vehicle Identification Number (VIN)',
