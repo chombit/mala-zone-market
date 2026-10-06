@@ -41,7 +41,7 @@ const t = {
       "To digitize and democratize asset commerce in Ethiopia by providing a trusted, transparent, and technology-driven marketplace where every citizen — from urban professionals in Addis Ababa to rural landowners in Bensa — can buy, sell, rent, or hire assets and services with zero intermediary fees.",
     visionTitle: "Our Vision",
     visionText:
-      "To become the undisputed pan-Ethiopian digital infrastructure for real estate, automotive, hospitality, ceremony services, and heavy machinery commerce by 2030 — processing over 100,000 monthly transactions across all 12 regional states.",
+      "To become the undisputed pan-Ethiopian digital infrastructure for real estate, automotive, hospitality, furniture, and fashion commerce by 2030 — processing over 100,000 monthly transactions across all 12 regional states.",
 
     zonesTitle: "Five Core Asset Zones",
     zonesSubtitle:
@@ -55,10 +55,10 @@ const t = {
     zone3Title: "Stay & Hall Zone",
     zone3Desc:
       "Guest houses, hotel rooms, conference halls, and co-working spaces available for hourly, daily, or monthly rental. Integrated with Mala-Agent field verification to ensure photographic accuracy and amenity compliance before any booking is confirmed.",
-    zone4Title: "Ceremony & DJ Zone",
+    zone4Title: "Furniture Zone",
     zone4Desc:
-      "Wedding gowns, tuxedos, DJ sound systems, stage lighting rigs, and full event planning packages. Our ceremony marketplace powers hundreds of weddings and corporate events monthly across the Sidama Region, with expansion into Dire Dawa, Jimma, and Bahir Dar underway.",
-    zone5Title: "Heavy Machinery Zone",
+      "Sofas, bedroom sets, dining tables, office desks, and custom carpentry. Our furniture marketplace furnishes hundreds of homes and offices monthly across the Sidama Region, with expansion into Dire Dawa, Jimma, and Bahir Dar underway.",
+    zone5Title: "Fashion Zone",
     zone5Desc:
       "Excavators, bulldozers, concrete mixers, cranes, and industrial generators — available for purchase or hourly hire. Serving Ethiopia's booming construction and infrastructure sectors with operator-verified listings and transparent pricing.",
 

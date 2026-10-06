@@ -11,13 +11,6 @@ import {
   ChevronRight,
   Search,
   Check,
-  Home,
-  Car,
-  Hotel,
-  Music,
-  Truck,
-  Smartphone,
-  ShoppingBag,
   Shield,
   MapPin,
   Clock,
@@ -29,9 +22,12 @@ import {
   Info,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import { pickDbLabel } from "@/utils/dbLabel";
 import type { ActiveZone, FilterState } from "./ZoneFilterSidebar";
+import TaxonomyFacetSection from "./TaxonomyFacetSection";
 
 interface MobileFilterBottomSheetProps {
+  activeCategory?: string;
   activeZone: ActiveZone;
   filters: FilterState;
   onFilterChange: (key: keyof FilterState, value: any) => void;
@@ -111,78 +107,6 @@ const QuickFilterChip: React.FC<{
   </button>
 );
 
-/* ────────────────────────────────────────────
-   Premium Category Card Component (Mobile)
-   Interactive cards with icon, title, live count, hover/press animations
-   ──────────────────────────────────────────── */
-const CategoryCard: React.FC<{
-  zone: ActiveZone;
-  label: string;
-  icon: React.ReactNode;
-  count: number;
-  active: boolean;
-  onClick: () => void;
-}> = ({ zone, label, icon, count, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`
-      group relative
-      flex flex-col items-start gap-2
-      p-4 rounded-2xl
-      transition-all duration-200 ease-out
-      ${
-        active
-          ? "bg-[#16A34A] text-white shadow-lg shadow-emerald-500/30 ring-2 ring-[#16A34A] ring-offset-2 dark:ring-offset-slate-900"
-          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-2 border-slate-200 dark:border-slate-700 active:scale-[0.98]"
-      }
-    `}
-  >
-    {/* Icon */}
-    <div
-      className={`
-        p-2.5 rounded-xl transition-colors
-        ${
-          active
-            ? "bg-white/20"
-            : "bg-emerald-50 dark:bg-emerald-950/30 text-[#16A34A]"
-        }
-      `}
-    >
-      {React.cloneElement(icon as React.ReactElement, {
-        className: "w-5 h-5",
-      })}
-    </div>
-
-    {/* Label */}
-    <div className="flex flex-col items-start gap-0.5 w-full">
-      <span className="text-sm font-bold leading-tight">{label}</span>
-      <span
-        className={`text-xs font-medium ${
-          active ? "text-white/80" : "text-slate-500 dark:text-slate-400"
-        }`}
-      >
-        {count > 0 ? `${count.toLocaleString()}` : "0"}
-      </span>
-    </div>
-
-    {/* Check indicator for selected state */}
-    {active && (
-      <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md">
-        <Check className="w-4 h-4 text-[#16A34A]" />
-      </div>
-    )}
-
-    {/* Soft glow effect on selected */}
-    {active && (
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-transparent pointer-events-none" />
-    )}
-  </button>
-);
-
-/* ────────────────────────────────────────────
-   Enhanced Segmented Control (Dynamic Transaction Options)
-   Shows Buy/Rent/Lease/Book based on active category
-   ──────────────────────────────────────────── */
 const EnhancedSegmentedControl: React.FC<{
   value: string;
   onChange: (v: string) => void;
@@ -601,6 +525,7 @@ const ToggleSwitch: React.FC<{
    Main Bottom Sheet Component
    ──────────────────────────────────────────── */
 const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
+  activeCategory,
   activeZone,
   filters,
   onFilterChange,
@@ -609,11 +534,17 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
   onClose,
   resultCount = 0,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showMoreFilters, setShowMoreFilters] = useState(false);
 
   /* ── Dynamic Transaction Options Based on Category ── */
+  // Sprint 8g parity: sell-only subcategories (Land) collapse to Buy,
+  // matching the desktop sidebar.
+  const SELL_ONLY_SUBCATEGORIES = ["land"];
   const getTransactionOptions = () => {
+    if (filters.subcategory && SELL_ONLY_SUBCATEGORIES.includes(filters.subcategory)) {
+      return [{ value: "buy", label: t("intent.buy") }];
+    }
     switch (activeZone) {
       case "house":
         return [
@@ -621,13 +552,14 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
           { value: "rent", label: t("intent.rent") },
         ];
       case "car":
-      case "machinery":
+      case "fashion":
       case "electronics":
         return [
           { value: "buy", label: t("intent.buy") },
           { value: "rent", label: t("intent.rent") },
         ];
-      case "ceremony":
+      case "stay":
+      case "furniture":
         return [
           { value: "book", label: t("filter.bookingType") || "Book" },
           { value: "rent", label: t("intent.rent") },
@@ -642,13 +574,23 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
 
   const transactionOptions = getTransactionOptions();
 
+  /* Category options for the zone dropdown. This list used to carry an icon
+   * and a per-zone count, and the counts were fetched with 8 parallel
+   * /api/listings/count requests on every sheet open — but nothing ever
+   * rendered them: the array is only consumed as {value, label} by
+   * SearchableSelect below. Eight round-trips per open for data no user could
+   * see. If tiles with live counts are wanted later, render cards here and add
+   * a single GROUP BY breakdown to the count endpoint rather than re-adding one
+   * request per zone. (The endpoint itself is still used by BrowseByLocation
+   * and MobileHomeSections, so it stays.) */
   const categories = [
-    { id: "all" as ActiveZone, label: t("cat.all"), icon: <ShoppingBag className="w-4 h-4" />, count: 15420 },
-    { id: "house" as ActiveZone, label: t("cat.property"), icon: <Home className="w-4 h-4" />, count: 12542 },
-    { id: "car" as ActiveZone, label: t("cat.vehicle"), icon: <Car className="w-4 h-4" />, count: 2481 },
-    { id: "ceremony" as ActiveZone, label: t("cat.stay"), icon: <Hotel className="w-4 h-4" />, count: 824 },
-    { id: "machinery" as ActiveZone, label: t("cat.machinery"), icon: <Truck className="w-4 h-4" />, count: 493 },
-    { id: "electronics" as ActiveZone, label: t("cat.electronics"), icon: <Smartphone className="w-4 h-4" />, count: 3291 },
+    { id: "all" as ActiveZone, label: t("cat.all") },
+    { id: "house" as ActiveZone, label: t("cat.property") },
+    { id: "car" as ActiveZone, label: t("cat.vehicle") },
+    { id: "stay" as ActiveZone, label: t("cat.stay") },
+    { id: "furniture" as ActiveZone, label: t("cat.furniture") },
+    { id: "fashion" as ActiveZone, label: t("cat.fashion") },
+    { id: "electronics" as ActiveZone, label: t("cat.electronics") },
   ];
 
   const regionOptions = [
@@ -657,14 +599,36 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
     { value: "addis", label: t("region.addis") },
   ];
 
+  // Real cities + official sub-cities from /api/locations — replaces the
+  // stale hardcoded neighborhood list that masqueraded as "City".
+  const [locations, setLocations] = useState<Array<{ key_name: string; label_en: string; label_am: string; sub_zones: unknown }>>([]);
+  useEffect(() => {
+    fetch("/api/locations")
+      .then((r) => r.json())
+      .then((d) => { if (d.success && Array.isArray(d.data)) setLocations(d.data); })
+      .catch(() => {});
+  }, []);
+
+  const isAmharicLang = language === "amharic";
   const cityOptions = [
     { value: "", label: t("city.all") || "All Cities" },
-    { value: "tabor", label: t("city.tabor") },
-    { value: "lakefront", label: t("city.lakefront") },
-    { value: "piassa", label: t("city.piassa") },
-    { value: "yirgalem", label: t("city.yirgalem") },
-    { value: "bensa", label: t("city.bensa") },
-    { value: "chuko", label: t("city.chuko") },
+    ...locations.map((l) => ({
+      value: l.key_name,
+      label: pickDbLabel(l, language),
+    })),
+  ];
+
+  const parseSheetSubZones = (sz: unknown): Array<{ key: string; label_en: string; label_am: string }> => {
+    if (!sz) return [];
+    if (Array.isArray(sz)) return sz;
+    try { return JSON.parse(String(sz)); } catch { return []; }
+  };
+
+  const sheetCity = locations.find((l) => l.key_name === filters.city);
+  const sheetSubCities = parseSheetSubZones(sheetCity?.sub_zones);
+  const subCityOptions = [
+    { value: "", label: isAmharicLang ? "ሁሉም ክፍለ ከተማዎች" : "All Sub-cities" },
+    ...sheetSubCities.map((s) => ({ value: `${filters.city}_${s.key}`, label: pickDbLabel(s, language) })),
   ];
 
   const propertyTypeOptions = [
@@ -683,27 +647,42 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
     { value: "4+", label: "4+" },
   ];
 
-  const vehicleTypeOptions = [
-    { value: "", label: t("filter.vehAll") || "All Vehicles" },
-    { value: "sedan", label: t("filter.vehSedan") || "Sedan" },
-    { value: "suv", label: t("filter.vehSuv") || "SUV" },
-    { value: "truck", label: t("filter.vehTruck") || "Truck" },
-    { value: "van", label: t("filter.vehVan") || "Van" },
-  ];
+  /* Vehicle Type was removed: no code path ever wrote a `vehicle_type` value
+   * (not the seed, not POST /listings, not the listing editor), so every
+   * ListingItem had vehicleType === undefined and the client-side equality
+   * check short-circuited — selecting "Sedan" silently did nothing. Body type
+   * belongs in the attribute system (attr_body_type), which already filters
+   * server-side and drives faceted counts. Reintroduce it there, not as a
+   * dead dropdown. */
 
+
+  // Mirrors the desktop sidebar. Values must match the write-path allowlists
+  // in routes/listings.js, or the option silently matches nothing.
   const fuelTypeOptions = [
     { value: "", label: t("filter.fuelAll") },
     { value: "benzine", label: t("filter.benzine") },
     { value: "diesel", label: t("filter.diesel") },
     { value: "electric", label: t("filter.electric") },
+    { value: "hybrid", label: t("filter.hybrid") },
   ];
 
   const conditionOptions = [
     { value: "", label: t("filter.conditionAll") },
     { value: "new", label: t("filter.condNew") },
+    { value: "invoiced", label: t("filter.condInvoiced") },
     { value: "used", label: t("filter.condUsed") },
-    { value: "excellent", label: t("filter.condExcellent") },
   ];
+
+  // Occupancy floor for stays — kept in sync with the desktop sidebar.
+  const guestOptions = [
+    { value: "", label: t("filter.guestsAny") || "Any size" },
+    { value: "1", label: "1" },
+    { value: "2", label: "2" },
+    { value: "3", label: "3" },
+    { value: "4", label: "4" },
+    { value: "5", label: "5+" },
+  ];
+
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-white dark:bg-slate-900">
@@ -743,7 +722,9 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
         {/* Transaction Type */}
         <div className="space-y-4">
           <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
-            {activeZone === "ceremony" ? t("filter.bookingType") || "Booking Type" : t("filter.iWantTo") || "I want to"}
+            {activeZone === "stay" || activeZone === "furniture"
+              ? t("filter.bookingType") || "Booking Type"
+              : t("filter.iWantTo") || "I want to"}
           </label>
           <EnhancedSegmentedControl
             value={filters.intent || "buy"}
@@ -752,6 +733,14 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
             columns={transactionOptions.length}
           />
         </div>
+
+        {/* ── Taxonomy Facets — shared with the desktop sidebar (Sprint 8g) ── */}
+        <TaxonomyFacetSection
+          activeCategory={activeCategory}
+          filters={filters}
+          onFilterChange={onFilterChange}
+          SelectComponent={SearchableSelect}
+        />
 
         {/* Location */}
         <div className="space-y-4">
@@ -764,9 +753,20 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
           <SearchableSelect
             label={t("sidebar.city") || "City"}
             value={filters.city}
-            onChange={(v) => onFilterChange("city", v)}
+            onChange={(v) => {
+              onFilterChange("city", v);
+              if (v !== filters.city) onFilterChange("city_subzone", "");
+            }}
             options={cityOptions}
           />
+          {filters.city && sheetSubCities.length > 0 && (
+            <SearchableSelect
+              label={isAmharicLang ? "ክፍለ ከተማ" : "Sub City"}
+              value={filters.city_subzone || ""}
+              onChange={(v) => onFilterChange("city_subzone", v)}
+              options={subCityOptions}
+            />
+          )}
         </div>
 
 
@@ -798,17 +798,25 @@ const MobileFilterBottomSheet: React.FC<MobileFilterBottomSheetProps> = ({
           </div>
         )}
 
+        {activeZone === "stay" && (
+          <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              {t("filter.headerStay") || "Stay Filters"}
+            </h3>
+            <CompactSelect
+              label={t("filter.guests") || "Guests"}
+              value={filters.guests || ""}
+              onChange={(v) => onFilterChange("guests", v)}
+              options={guestOptions}
+            />
+          </div>
+        )}
+
         {activeZone === "car" && (
           <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               {t("filter.headerVehicle") || "Vehicle Filters"}
             </h3>
-            <CompactSelect
-              label={t("filter.vehType") || "Vehicle Type"}
-              value={filters.vehicleType || ""}
-              onChange={(v) => onFilterChange("vehicleType", v)}
-              options={vehicleTypeOptions}
-            />
             <CompactSelect
               label={t("filter.fuelType") || "Fuel Type"}
               value={filters.fuelType || ""}

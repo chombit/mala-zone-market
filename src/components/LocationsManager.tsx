@@ -12,6 +12,7 @@ interface Location {
   key_name: string;
   label_en: string;
   label_am: string;
+  label_sid?: string | null;
   sub_zones: any[];
   display_order: number;
   is_active: boolean;
@@ -26,6 +27,7 @@ const LocationsManager: React.FC = () => {
     key_name: "",
     label_en: "",
     label_am: "",
+    label_sid: "",
     sub_zones: [],
     display_order: 0,
     is_active: true
@@ -132,6 +134,7 @@ const LocationsManager: React.FC = () => {
       key_name: "",
       label_en: "",
       label_am: "",
+      label_sid: "",
       sub_zones: [],
       display_order: locations.length,
       is_active: true
@@ -171,6 +174,9 @@ const LocationsManager: React.FC = () => {
                   <div className="space-y-1">
                     <p className="font-bold text-malazone-navy">{location.label_en}</p>
                     <p className="text-xs text-malazone-navy">{location.label_am}</p>
+                    {location.label_sid && (
+                      <p className="text-xs text-[#00A86B] font-semibold">{location.label_sid}</p>
+                    )}
                     <p className="text-xs text-malazone-navy">Key: {location.key_name}</p>
                   </div>
                   <div className="flex gap-2">
@@ -221,13 +227,23 @@ const LocationsManager: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-malazone-navy">Label (AM)</label>
-                  <input 
+                  <input
                     type="text"
                     value={formData.label_am}
                     onChange={(e) => setFormData({ ...formData, label_am: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-malazone-navy">Label (Sidaamu Afoo)</label>
+                <input
+                  type="text"
+                  value={formData.label_sid || ""}
+                  onChange={(e) => setFormData({ ...formData, label_sid: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20"
+                  placeholder="Hawwissaa, Addis Abbaa"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-malazone-navy">Sub Zones (JSON)</label>

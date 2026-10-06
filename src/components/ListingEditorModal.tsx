@@ -7,6 +7,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import { X, Save, Package, Globe, Tag, Phone, MapPin, ShieldCheck, Star, Loader2, Camera, Trash2, ImagePlus } from "lucide-react";
 import { useAdminLanguage } from "../contexts/AdminLanguageContext";
+import { pickDbLabel } from "../utils/dbLabel";
+
+interface LocationFromAPI {
+  id: number;
+  key_name: string;
+  label_en: string;
+  label_am: string;
+  sub_zones: SubZoneFromAPI[] | string | null;
+  is_active: number;
+}
+
+interface SubZoneFromAPI {
+  key: string;
+  label_en: string;
+  label_am: string;
+}
 
 interface ListingForm {
   id?: number;
@@ -20,12 +36,15 @@ interface ListingForm {
   phone: string;
   whatsapp: string;
   location_key: string;
+  location_label_en: string;
+  location_label_am: string;
   is_premium: boolean;
   is_verified: boolean;
   is_active: boolean;
   images: string[];
   // Zone specific
   sub_category?: string;
+  sub_category_size?: string;
   vehicle_brand?: string;
   manufacture_year?: number;
   is_parking_available?: boolean;
@@ -57,6 +76,87 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [locations, setLocations] = useState<LocationFromAPI[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string>("hawassa");
+  const [selectedSubZone, setSelectedSubZone] = useState<string>("tabor");
+
+  const parseSubZones = (subZones: SubZoneFromAPI[] | string | null | undefined): SubZoneFromAPI[] => {
+    if (!subZones) return [];
+    if (Array.isArray(subZones)) return subZones;
+    try {
+      const parsed = JSON.parse(subZones as string);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("/api/locations");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setLocations(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch locations:", err);
+      }
+    };
+    fetchLocations();
+  }, []);
+
+  const selectedCityData = locations.find((l) => l.key_name === selectedCity);
+  const subZonesList = parseSubZones(selectedCityData?.sub_zones);
+
+  const buildLocationKey = () => {
+    if (selectedSubZone) {
+      return `${selectedCity}_${selectedSubZone}`;
+    }
+    return selectedCity;
+  };
+
+  const getLocationLabels = () => {
+    const city = locations.find((l) => l.key_name === selectedCity);
+    const subZone = parseSubZones(city?.sub_zones).find((sz) => sz.key === selectedSubZone);
+    
+    let label_en = city?.label_en || selectedCity;
+    let label_am = city?.label_am || selectedCity;
+    
+    if (subZone) {
+      label_en = `${city?.label_en} - ${subZone.label_en}`;
+      label_am = `${city?.label_am} - ${subZone.label_am}`;
+    }
+    
+    return { label_en, label_am };
+  };
+
+  const parseLocationKey = (locKey: string): { city: string; subZone: string } => {
+    if (!locKey) return { city: "hawassa", subZone: "tabor" };
+    const parts = locKey.split("_");
+    if (parts.length >= 2) {
+      const possibleCity = parts[0];
+      const rest = parts.slice(1).join("_");
+      const cityExists = locations.some((l) => l.key_name === possibleCity);
+      if (cityExists) {
+        return { city: possibleCity, subZone: rest };
+      }
+      const twoWordCity = parts.slice(0, 2).join("_");
+      const twoWordExists = locations.some((l) => l.key_name === twoWordCity);
+      if (twoWordExists && parts.length >= 3) {
+        return { city: twoWordCity, subZone: parts.slice(2).join("_") };
+      }
+      if (twoWordExists) {
+        return { city: twoWordCity, subZone: "" };
+      }
+    }
+    const cityMatch = locations.find((l) => l.key_name === locKey || locKey.startsWith(l.key_name + "_"));
+    if (cityMatch) {
+      const subPart = locKey.substring(cityMatch.key_name.length + 1);
+      return { city: cityMatch.key_name, subZone: subPart || "" };
+    }
+    return { city: "hawassa", subZone: "" };
+  };
   
   const [formData, setFormData] = useState<ListingForm>({
     title_en: "",
@@ -68,12 +168,15 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
     price_suffix: "fixed",
     phone: "",
     whatsapp: "",
-    location_key: "hawassa_piassa",
+    location_key: "hawassa_tabor",
+    location_label_en: "Hawassa - Tabor Sub City",
+        location_label_am: "ሀዋሳ - ታቦር ክፍለ ከተማ",
     is_premium: false,
     is_verified: true,
     is_active: true,
     images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fm=webp"],
     sub_category: "",
+  sub_category_size: "",
     vehicle_brand: "",
     manufacture_year: new Date().getFullYear(),
     is_parking_available: false,
@@ -92,10 +195,14 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
   });
 
   useEffect(() => {
+    if (locations.length === 0) return;
     setNewImages([]);
     if (listing) {
       const parsedImages = typeof listing.images === 'string' ? JSON.parse(listing.images) : (listing.images || []);
       setExistingImages(parsedImages);
+      const parsed = parseLocationKey(listing.location_key || "hawassa_tabor");
+      setSelectedCity(parsed.city);
+      setSelectedSubZone(parsed.subZone);
       setFormData({
         id: listing.id,
         title_en: listing.title_en || "",
@@ -107,7 +214,9 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         price_suffix: listing.price_suffix || "fixed",
         phone: listing.phone || "",
         whatsapp: listing.whatsapp || "",
-        location_key: listing.location_key || "hawassa_piassa",
+        location_key: listing.location_key || "hawassa_tabor",
+        location_label_en: listing.location_label_en || "",
+        location_label_am: listing.location_label_am || "",
         is_premium: listing.is_premium === 1 || listing.is_premium === true,
         is_verified: listing.is_verified === 1 || listing.is_verified === true,
         is_active: listing.is_active === 1 || listing.is_active === true,
@@ -131,6 +240,10 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
       });
     } else {
       setExistingImages([]);
+      setSelectedCity("hawassa");
+      const cityData = locations.find((l) => l.key_name === "hawassa");
+      const subZones = parseSubZones(cityData?.sub_zones);
+      setSelectedSubZone(subZones.length > 0 ? subZones[0].key : "tabor");
       setFormData({
         title_en: "",
         title_am: "",
@@ -141,12 +254,15 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         price_suffix: "fixed",
         phone: "",
         whatsapp: "",
-        location_key: "hawassa_piassa",
+        location_key: "hawassa_tabor",
+        location_label_en: "Hawassa - Tabor Sub City",
+    location_label_am: "ሀዋሳ - ታቦር ክፍለ ከተማ",
         is_premium: false,
         is_verified: true,
         is_active: true,
         images: [],
         sub_category: "",
+  sub_category_size: "",
         vehicle_brand: "",
         manufacture_year: new Date().getFullYear(),
         is_parking_available: false,
@@ -164,7 +280,18 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
         imei_serial: ""
       });
     }
-  }, [listing, isOpen]);
+  }, [listing, isOpen, locations]);
+
+  useEffect(() => {
+    const locKey = buildLocationKey();
+    const labels = getLocationLabels();
+    setFormData(prev => ({
+      ...prev,
+      location_key: locKey,
+      location_label_en: labels.label_en,
+      location_label_am: labels.label_am,
+    }));
+  }, [selectedCity, selectedSubZone, locations]);
 
   if (!isOpen) return null;
 
@@ -176,6 +303,8 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
       const url = listing ? `/api/admin/listings/${listing.id}` : "/api/admin/listings";
       const method = listing ? "PUT" : "POST";
       
+      const locKey = buildLocationKey();
+      const labels = getLocationLabels();
       const fd = new FormData();
       fd.append('title_en', formData.title_en);
       fd.append('title_am', formData.title_am);
@@ -186,7 +315,9 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
       fd.append('price_suffix', formData.price_suffix);
       fd.append('phone', formData.phone);
       fd.append('whatsapp', formData.whatsapp);
-      fd.append('location_key', formData.location_key);
+      fd.append('location_key', locKey);
+      fd.append('location_label_en', labels.label_en);
+      fd.append('location_label_am', labels.label_am);
       fd.append('is_premium', formData.is_premium ? '1' : '0');
       fd.append('is_verified', formData.is_verified ? '1' : '0');
       fd.append('is_active', formData.is_active ? '1' : '0');
@@ -295,8 +426,8 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                     <option value="property">Property</option>
                     <option value="motors">Motors</option>
                     <option value="stay">Stay/Rentals</option>
-                    <option value="ceremony">Ceremony</option>
-                    <option value="heavy">Heavy Machinery</option>
+                    <option value="furniture">Furniture</option>
+                    <option value="fashion">Fashion</option>
                     <option value="electronics">Electronics</option>
                   </select>
                 </div>
@@ -324,24 +455,59 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               </div>
 
               {/* Location */}
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{t("admin.form.location")}</label>
-                <div className="relative">
-                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy" />
-                  <select 
-                    value={formData.location_key}
-                    onChange={e => setFormData({...formData, location_key: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
-                  >
-                    <option value="hawassa_piassa">Hawassa - Piassa</option>
-                    <option value="hawassa_tabor">Hawassa - Tabor</option>
-                    <option value="hawassa_lakefront">Hawassa - Lakefront</option>
-                    <option value="yirgalem">Yirgalem</option>
-                    <option value="bensa">Bensa</option>
-                    <option value="chuko">Chuko</option>
-                    <option value="aleta_wondo">Aleta Wondo</option>
-                  </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{isAm ? 'ከተማ' : 'City'}</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy" />
+                    <select 
+                      value={selectedCity}
+                      onChange={e => {
+                        const city = e.target.value;
+                        setSelectedCity(city);
+                        const cityData = locations.find((l) => l.key_name === city);
+                        const szList = parseSubZones(cityData?.sub_zones);
+                        setSelectedSubZone(szList.length > 0 ? szList[0].key : '');
+                      }}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                    >
+                      {locations.length > 0 ? locations.map((loc) => (
+                        <option key={loc.key_name} value={loc.key_name}>
+                          {pickDbLabel(loc, language)}
+                        </option>
+                      )) : (
+                        <>
+                          <option value="hawassa">Hawassa</option>
+                          <option value="addis_ababa">Addis Ababa</option>
+                          <option value="yirgalem">Yirgalem</option>
+                          <option value="dilla">Dilla</option>
+                          <option value="bensa">Bensa</option>
+                          <option value="aleta_wondo">Aleta Wondo</option>
+                          <option value="chuko">Chuko</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
                 </div>
+                {subZonesList.length > 0 && (
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{isAm ? 'የከተማ ክፍል' : 'Sub-area'}</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-malazone-navy opacity-50" />
+                      <select 
+                        value={selectedSubZone}
+                        onChange={e => setSelectedSubZone(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-14 pr-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                      >
+                        {subZonesList.map((sz) => (
+                          <option key={sz.key} value={sz.key}>
+                            {pickDbLabel(sz, language)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Images */}
@@ -410,32 +576,23 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
               <div className="p-5 sm:p-8 rounded-2xl bg-slate-50 border border-slate-200 space-y-8 animate-fade-in">
                 <p className="text-[10px] font-black text-[#00A86B] uppercase tracking-[0.3em] mb-4">Zone Specific Details</p>
                 
-                {/* Motors / Heavy Machinery */}
-                {(formData.category === 'motors' || formData.category === 'heavy') && (
+                {/* Motors */}
+                {formData.category === 'motors' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">{formData.category === 'heavy' ? 'Machinery Type' : 'Vehicle Type'}</label>
+                      <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Vehicle Type</label>
                       <select 
                         value={formData.sub_category}
                         onChange={e => setFormData({...formData, sub_category: e.target.value})}
                         className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
                       >
                         <option value="">Select Type</option>
-                        {formData.category === 'heavy' ? (
-                          <>
-                            <option value="excavator">Excavator</option>
-                            <option value="crane">Crane</option>
-                            <option value="bulldozer">Bulldozer</option>
-                            <option value="loader">Loader</option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="sedan">Sedan</option>
-                            <option value="suv">SUV</option>
-                            <option value="truck">Truck</option>
-                            <option value="van">Van</option>
-                          </>
-                        )}
+                        <>
+                          <option value="sedan">Sedan</option>
+                          <option value="suv">SUV</option>
+                          <option value="truck">Truck</option>
+                          <option value="van">Van</option>
+                        </>
                       </select>
                     </div>
                     {formData.category === 'motors' && (
@@ -622,33 +779,70 @@ const ListingEditorModal: React.FC<ModalProps> = ({ isOpen, onClose, listing, on
                   </div>
                 )}
 
-                {/* Ceremony */}
-                {formData.category === 'ceremony' && (
+                {/* Furniture */}
+                {formData.category === 'furniture' && (
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Event/Ceremony Type</label>
+                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Furniture Type</label>
                     <select 
                       value={formData.sub_category}
                       onChange={e => setFormData({...formData, sub_category: e.target.value})}
                       className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
                     >
                       <option value="">Select Type</option>
-                      <option value="wedding">Wedding</option>
-                      <option value="birthday">Birthday</option>
-                      <option value="graduation">Graduation</option>
-                      <option value="corporate">Corporate Event</option>
+                      <option value="living-room">Living Room</option>
+                      <option value="bedroom">Bedroom</option>
+                      <option value="dining-kitchen">Dining & Kitchen</option>
+                      <option value="office">Office</option>
                     </select>
                   </div>
                 )}
-                {formData.category === 'ceremony' && (
+                {formData.category === 'furniture' && (
                   <div className="space-y-3 mt-4">
-                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Equipment Capacity / Count</label>
+                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Pieces / Seat Count</label>
                     <input 
                       type="number"
                       value={formData.capacity}
                       onChange={e => setFormData({...formData, capacity: Number(e.target.value)})}
                       className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
-                      placeholder="e.g. 500 chairs..."
+                      placeholder="e.g. 6 seats..."
                     />
+                  </div>
+                )}
+
+                {/* Fashion */}
+                {formData.category === 'fashion' && (
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Fashion Item Type</label>
+                    <select
+                      value={formData.sub_category}
+                      onChange={e => setFormData({...formData, sub_category: e.target.value})}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="mens-clothing">Men's Clothing</option>
+                      <option value="womens-clothing">Women's Clothing</option>
+                      <option value="shoes">Shoes & Sneakers</option>
+                      <option value="bags-accessories">Bags & Accessories</option>
+                      <option value="watches-jewelry">Watches & Jewelry</option>
+                      <option value="traditional-wear">Traditional Wear</option>
+                    </select>
+                  </div>
+                )}
+                {formData.category === 'fashion' && (
+                  <div className="space-y-3 mt-4">
+                    <label className="text-[10px] font-black text-malazone-navy uppercase tracking-widest ml-1">Size</label>
+                    <select
+                      value={formData.sub_category_size || ""}
+                      onChange={e => setFormData({...formData, sub_category_size: e.target.value})}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-4 px-6 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                    >
+                      <option value="">Select Size</option>
+                      <option value="XS">XS</option>
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                    </select>
                   </div>
                 )}
 

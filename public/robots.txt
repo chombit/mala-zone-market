@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /*?tab=admin
+
+Sitemap: https://malazone.com/sitemap.xml

@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { X, HeartCrack, Phone, Send, MapPin, CheckCircle2, Trash2 } from 'lucide-react';
+import { X, HeartCrack, Phone, Send, MessageCircle, MapPin, CheckCircle2, Trash2 } from 'lucide-react';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useLanguage } from '../contexts/ZoneLanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useChat } from '../contexts/ChatContext';
 import { ListingDetailsModal } from './ListingDetailsModal';
 import type { ListingItem } from './ZoneCatalogGrid';
 
 export const FavoritesSidebar: React.FC = () => {
   const { favorites, isSidebarOpen, setSidebarOpen, toggleFavorite } = useFavorites();
   const { language, t } = useLanguage();
+  const { isAuthenticated, user } = useAuth();
+  const { openChat } = useChat();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
@@ -124,14 +128,26 @@ export const FavoritesSidebar: React.FC = () => {
                     <Phone className="w-3 h-3" />
                   </a>
                   <a 
-                    href={`https://wa.me/${item.whatsapp}`} 
+                    href={`https://t.me/${item.whatsapp}`} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     onClick={(e) => e.stopPropagation()}
-                    className="w-7 h-7 rounded-full bg-[#00A86B] text-white flex items-center justify-center hover:bg-emerald-600 transition-all"
+                    className="w-7 h-7 rounded-full bg-[#24A1DE] text-white flex items-center justify-center hover:bg-[#1c8ec7] transition-all"
                   >
                     <Send className="w-3 h-3" />
                   </a>
+                  {isAuthenticated && item.sellerUserId && item.sellerUserId !== user?.id && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openChat(item.sellerUserId as number, item.sellerName || "Seller", Number(item.id));
+                      }}
+                      className="w-7 h-7 rounded-full bg-[#0B132B] text-white flex items-center justify-center hover:bg-[#1a2340] transition-all"
+                      aria-label="Chat with seller"
+                    >
+                      <MessageCircle className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))

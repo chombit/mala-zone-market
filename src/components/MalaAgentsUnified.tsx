@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowRight, Sparkles, ShoppingBag, ShieldCheck, Zap, Play, Building2, Car, Hotel, PartyPopper, Tractor, Smartphone, PhoneCall, CheckCircle2, X } from 'lucide-react';
+import {
+  Shirt,Armchair,ArrowRight, Sparkles, ShoppingBag, ShieldCheck, Zap, Play, Building2, Car, Hotel, PartyPopper, Tractor, Smartphone, PhoneCall, CheckCircle2, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
 import { useNavigate } from 'react-router-dom';
 import AgentRegistrationModal from './AgentRegistrationModal';
 
-export function MalaAgentsUnified() {
+export function MalaAgentsUnified({ openRegister = "signup" }: { openRegister?: "signup" | "agent" }) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const currentGlobalLang = language === 'amharic' ? 'am' : 'en';
@@ -35,9 +36,9 @@ export function MalaAgentsUnified() {
     en: {
       badgeZone: "✨ Direct & Broker-Free Official Trade",
       heading: "Trade Directly Without Brokers!",
-      subMotto: "Houses, cars, hotels, wedding gear, heavy machinery & electronics — list and sell directly to verified buyers!",
+      subMotto: "Houses, cars, hotels, furniture, fashion & electronics — list and sell directly to verified buyers!",
       card1Title: "Register Your Property",
-      card1Desc: "List houses, cars, hotels, machinery or electronics and connect directly with verified global buyers.",
+      card1Desc: "List houses, cars, hotels, furniture or electronics and connect directly with verified global buyers.",
       card2Title: "Legally Verified & Trusted",
       card2Desc: "Secure operations synchronized with regional transit and municipality registries.",
       card3Title: "Fast Direct Transactions",
@@ -65,8 +66,8 @@ export function MalaAgentsUnified() {
     { id: 1, icon: <Building2 className="w-5 h-5" />, am: 'የቤትና ይዞታ ዞን (Property Zone) — "እንዴት በቀጥታ መግዛትና መሸጥ እንደሚቻል"', en: 'Property & Real Estate Matrix — How to directly buy & sell properties', pos: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2' },
     { id: 2, icon: <Car className="w-5 h-5" />, am: 'የመኪናና ኤሌክትሪክ ዞን (Motors Zone) — "ደላላ ሳይኖር የሾውሩም መኪናዎችን ማሰስ"', en: 'Motors & EV Vehicles — Explore verified vehicle listings without brokers', pos: 'top-[14.64%] right-[14.64%] translate-x-1/2 -translate-y-1/2' },
     { id: 3, icon: <Hotel className="w-5 h-5" />, am: 'የጉዞና ማረፊያ ዞን (Stay & Halls) — "ለእንግዶችና ለቱሪስቶች የተዘጋጁ ማረፊያዎች"', en: 'Rooms, Guest Houses & Events — Accommodations curated for guests', pos: 'top-1/2 right-0 translate-x-1/2 -translate-y-1/2' },
-    { id: 4, icon: <PartyPopper className="w-5 h-5" />, am: 'የክብረ-በዓላት ዞን (Ceremony Hub) — "የሰርግ ዕቃዎችና የድምፅ ሲስተም ኪራይ"', en: 'Wedding Materials & Audio Systems — Seamless asset rental pathways', pos: 'bottom-[14.64%] right-[14.64%] translate-x-1/2 translate-y-1/2' },
-    { id: 5, icon: <Tractor className="w-5 h-5" />, am: 'የከባድ ማሽነሪዎች ዞን (Machinery Zone) — "የኮንስትራክሽን ማሽኖችን በቀላሉ ማከራየት"', en: 'Heavy Machineries — Secure leasing and contracting for heavy equipment', pos: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2' },
+    { id: 4, icon: <Armchair className="w-5 h-5" />, am: 'የቤት እቃ ዞን (Furniture Hub) — "ዘመናዊ የቤትና ቢሮ እቃዎች በቀጥታ"', en: 'Furniture for Home & Office — Direct marketplace pathways', pos: 'bottom-[14.64%] right-[14.64%] translate-x-1/2 translate-y-1/2' },
+    { id: 5, icon: <Shirt className="w-5 h-5" />, am: 'የፋሽን ዞን (Fashion Zone) — "ዘመናዊ ልብሶችና ጫማዎች በቀጥታ"', en: 'Fashion — Clothing, shoes & accessories from verified sellers', pos: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2' },
     { id: 6, icon: <Smartphone className="w-5 h-5" />, am: 'የኤሌክትሮኒክስ ዞን (Electronics Zone) — "ስማርት ኤሌክትሮኒክስ እና ቴክኖሎጂ ምርቶች"', en: 'Smart Electronics & Hardware Hub — Latest gadgets and tech products', pos: 'bottom-[14.64%] left-[14.64%] -translate-x-1/2 translate-y-1/2' },
     { id: 7, icon: <ShieldCheck className="w-5 h-5" />, am: 'የቀጥታ ተጠቃሚዎች ገበያ (P2P Market) — "ሻጭና ገዢን ያለአስገዳጅ በቀጥታ ማገናኛ"', en: 'Direct Peer-to-Peer Customer Link — Bypass middleman friction cleanly', pos: 'top-1/2 left-0 -translate-x-1/2 -translate-y-1/2' },
     { id: 8, icon: <PhoneCall className="w-5 h-5" />, am: 'የቀጥታ ስልክና ጥሪ (Support Matrix) — "የባለቤቱን ስልክና ቴሌግራም በቀጥታ ማግኛ"', en: 'Direct Owner Call & Telegram Support — Immediate gateway to secure support', pos: 'top-[14.64%] left-[14.64%] -translate-x-1/2 -translate-y-1/2' },
@@ -146,7 +147,7 @@ export function MalaAgentsUnified() {
           {/* CTA Button - Centered with Premium Design */}
           <div className="flex justify-center pt-6 border-t border-slate-100 dark:border-white/5">
             <button
-              onClick={() => navigate('/signin')}
+              onClick={() => (openRegister === "agent" ? setShowRegistration(true) : navigate("/signup"))}
               className="
                 relative group
                 bg-gradient-to-r from-[#00A86B] to-emerald-600 

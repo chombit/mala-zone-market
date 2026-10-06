@@ -2,11 +2,20 @@
  * ChatContext.tsx
  * Malazone.com — Buyer-Seller Chat State Management
  * © 2026 Malazone Technologies PLC
+ *
+ * Sprint 8k hardening:
+ * - One socket per login session (refs instead of state in the handler
+ *   deps) — opening/closing threads no longer tears down the connection.
+ * - Identity comes exclusively from the auth cookie; the legacy
+ *   `sender_phone` body field and `?phone=` query params are gone.
+ * - Thread pagination via an `before`-style id cursor ("Load earlier
+ *   messages"), 50 messages per page.
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "./AuthContext";
+import { useAgentAuth } from "./AgentAuthContext";
 
 interface Message {
   id: number;
@@ -34,6 +43,8 @@ interface Conversation {
   unread_count: number;
 }
 
+const THREAD_PAGE_SIZE = 50;
+
 interface ChatContextValue {
   conversations: Conversation[];
   activeMessages: Message[];
@@ -42,11 +53,16 @@ interface ChatContextValue {
   unreadCount: number;
   isOpen: boolean;
   toast: Toast | null;
+  hasOlderMessages: boolean;
+  loadingOlder: boolean;
+  typingPartnerIds: Set<number>;
   openChat: (partnerId: number, partnerName: string, listingId?: number) => void;
   closeChat: () => void;
   sendMessage: (text: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
   dismissToast: () => void;
+  loadOlderMessages: () => Promise<void>;
+  emitTyping: (receiverId: number, isTyping: boolean) => void;
 }
 
 interface Toast {
@@ -62,40 +78,97 @@ const SERVER_URL = import.meta.env.VITE_API_URL || "";
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const { agent } = useAgentAuth();
+  // Chat identity: a normal user uses their own id; an agent chats as the
+  // underlying user id so buyer messages to the listing reach them live.
+  const userId = user?.id ?? agent?.user_id ?? null;
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeMessages, setActiveMessages] = useState<Message[]>([]);
   const [activePartnerId, setActivePartnerId] = useState<number | null>(null);
-  const [activePartnerName, setActivePartnerName] = useState<string>("");
   const [activeListingId, setActiveListingId] = useState<number | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
+  const [hasOlderMessages, setHasOlderMessages] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [typingPartnerIds, setTypingPartnerIds] = useState<Set<number>>(new Set());
+
+  // Mirrors of the active thread used inside the socket handler so the
+  // connection survives thread switches (no stale-closure reconnects).
+  const activePartnerIdRef = useRef<number | null>(null);
+  const activeListingIdRef = useRef<number | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Connect Socket.io and join personal room
+  const fetchConversations = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch("/api/messages/conversations");
+      const data = await res.json();
+      if (data.success) setConversations(data.data);
+    } catch (err) {
+      console.error("Failed to fetch conversations:", err);
+    }
+  }, [userId]);
+
+  const fetchUnreadCount = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch("/api/messages/unread-count");
+      const data = await res.json();
+      if (data.success) setUnreadCount(data.data.count);
+    } catch (err) {
+      console.error("Failed to fetch unread count:", err);
+    }
+  }, [userId]);
+
+  const fetchThread = useCallback(
+    async (partnerId: number, listingId?: number) => {
+      if (!userId) return;
+      const p = new URLSearchParams({ partner_id: String(partnerId), limit: String(THREAD_PAGE_SIZE) });
+      if (listingId) p.set("listing_id", String(listingId));
+      try {
+        const res = await fetch(`/api/messages/thread?${p.toString()}`);
+        const data = await res.json();
+        if (data.success) {
+          setActiveMessages(data.data);
+          setHasOlderMessages(Boolean(data.has_more));
+        }
+      } catch (err) {
+        console.error("Failed to fetch thread:", err);
+      }
+    },
+    [userId]
+  );
+
+  // Connect Socket.io once per login and join the personal room.
   useEffect(() => {
-    if (!user?.phone_number) return;
+    if (!userId) return;
 
     // Request browser notification permission
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
 
-    const socket = io(SERVER_URL, { transports: ["websocket"] });
+    const socket = io(SERVER_URL, {
+      transports: ["websocket"],
+      withCredentials: true, // send the JWT auth cookie on the handshake
+    });
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      socket.emit("join_chat", user.id);
+      socket.emit("join_chat", userId);
     });
 
     socket.on("new_message", (msg: Message) => {
-      // If we're viewing this thread, append the message
-      if (
-        activePartnerId &&
-        (msg.sender_id === activePartnerId || msg.receiver_id === activePartnerId) &&
-        msg.listing_id === activeListingId
-      ) {
+      // Append live when the message belongs to the open thread. A thread
+      // opened WITHOUT a listing filter (listing_id null) receives every
+      // exchange with that partner regardless of which listing it concerns.
+      const partnerMatch =
+        msg.sender_id === activePartnerIdRef.current || msg.receiver_id === activePartnerIdRef.current;
+      const listingMatch =
+        activeListingIdRef.current == null || msg.listing_id === activeListingIdRef.current;
+      if (activePartnerIdRef.current && partnerMatch && listingMatch) {
         setActiveMessages((prev) => {
           if (prev.find((m) => m.id === msg.id)) return prev;
           return [...prev, msg];
@@ -106,8 +179,19 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       fetchConversations();
 
       // Handle incoming messages (not our own)
-      if (msg.receiver_id === user.id && msg.sender_id !== user.id) {
+      if (msg.receiver_id === userId && msg.sender_id !== userId) {
         setUnreadCount((c) => c + 1);
+
+        // Clear typing indicator for this sender (they just sent a message)
+        setTypingPartnerIds((prev) => {
+          if (!prev.has(msg.sender_id)) return prev;
+          const next = new Set(prev);
+          next.delete(msg.sender_id);
+          return next;
+        });
+
+        // Notify NotificationContext (same socket, different listener)
+        window.dispatchEvent(new CustomEvent("malazone:new_message"));
 
         // Play notification sound
         try {
@@ -141,95 +225,122 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
+    // Typing indicator from conversation partner
+    socket.on("user_typing", (data: { sender_id: number; is_typing: boolean }) => {
+      if (!data.sender_id) return;
+      setTypingPartnerIds((prev) => {
+        const next = new Set(prev);
+        if (data.is_typing) {
+          next.add(data.sender_id);
+        } else {
+          next.delete(data.sender_id);
+        }
+        return next;
+      });
+    });
+
+    // Read receipt — partner opened our thread; clear their unread badge
+    socket.on("messages_read", (data: { reader_id: number; partner_id: number }) => {
+      // The partner read our messages, so from our perspective the
+      // conversation is clean. Refresh to get the updated unread count.
+      if (data.reader_id && data.reader_id !== userId) {
+        fetchUnreadCount();
+        fetchConversations();
+      }
+    });
+
     return () => {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [user?.id, activePartnerId, activeListingId]);
-
-  const fetchConversations = useCallback(async () => {
-    if (!user?.phone_number) return;
-    try {
-      const res = await fetch(`/api/messages/conversations?phone=${user.phone_number}`);
-      const data = await res.json();
-      if (data.success) setConversations(data.data);
-    } catch (err) {
-      console.error("Failed to fetch conversations:", err);
-    }
-  }, [user?.phone_number]);
-
-  const fetchUnreadCount = useCallback(async () => {
-    if (!user?.phone_number) return;
-    try {
-      const res = await fetch(`/api/messages/unread-count?phone=${user.phone_number}`);
-      const data = await res.json();
-      if (data.success) setUnreadCount(data.data.count);
-    } catch (err) {
-      console.error("Failed to fetch unread count:", err);
-    }
-  }, [user?.phone_number]);
-
-  const fetchThread = useCallback(
-    async (partnerId: number, listingId?: number) => {
-      if (!user?.phone_number) return;
-      let url = `/api/messages/thread?phone=${user.phone_number}&partner_id=${partnerId}`;
-      if (listingId) url += `&listing_id=${listingId}`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.success) setActiveMessages(data.data);
-      } catch (err) {
-        console.error("Failed to fetch thread:", err);
-      }
-    },
-    [user?.phone_number]
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   useEffect(() => {
-    if (user?.phone_number) {
+    if (userId) {
       fetchConversations();
       fetchUnreadCount();
     }
-  }, [user?.phone_number, fetchConversations, fetchUnreadCount]);
+  }, [userId, fetchConversations, fetchUnreadCount]);
 
   const openChat = useCallback(
     (partnerId: number, partnerName: string, listingId?: number) => {
+      // partnerName arrives for API compatibility; the panel derives the
+      // display name from the conversations list.
+      void partnerName;
       setActivePartnerId(partnerId);
-      setActivePartnerName(partnerName);
       setActiveListingId(listingId || null);
+      activePartnerIdRef.current = partnerId;
+      activeListingIdRef.current = listingId || null;
       setActiveMessages([]);
+      setHasOlderMessages(false);
       setIsOpen(true);
       fetchThread(partnerId, listingId);
+
+      // Notify partner their messages were read (read receipt)
+      if (socketRef.current && userId) {
+        socketRef.current.emit("chat:read", { partner_id: partnerId });
+      }
     },
-    [fetchThread]
+    [fetchThread, userId]
   );
 
   const closeChat = useCallback(() => {
     setIsOpen(false);
     setActivePartnerId(null);
     setActiveListingId(null);
+    activePartnerIdRef.current = null;
+    activeListingIdRef.current = null;
     setActiveMessages([]);
+    setHasOlderMessages(false);
   }, []);
+
+  const loadOlderMessages = useCallback(async () => {
+    if (!userId || !activePartnerIdRef.current || loadingOlder) return;
+    const oldest = activeMessages[0];
+    if (!oldest) return;
+    setLoadingOlder(true);
+    try {
+      const p = new URLSearchParams({
+        partner_id: String(activePartnerIdRef.current),
+        before_id: String(oldest.id),
+        limit: String(THREAD_PAGE_SIZE),
+      });
+      if (activeListingIdRef.current) p.set("listing_id", String(activeListingIdRef.current));
+      const res = await fetch(`/api/messages/thread?${p.toString()}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setActiveMessages((prev) => {
+          const known = new Set(prev.map((m) => m.id));
+          return [...data.data.filter((m: Message) => !known.has(m.id)), ...prev];
+        });
+        setHasOlderMessages(Boolean(data.has_more));
+      }
+    } catch (err) {
+      console.error("Failed to load earlier messages:", err);
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [userId, activeMessages, loadingOlder]);
 
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!user?.phone_number || !activePartnerId || !text.trim()) return;
+      if (!userId || !activePartnerIdRef.current || !text.trim()) return;
 
       try {
         const res = await fetch("/api/messages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            sender_phone: user.phone_number,
-            receiver_id: activePartnerId,
-            listing_id: activeListingId,
+            receiver_id: activePartnerIdRef.current,
+            listing_id: activeListingIdRef.current,
             message_text: text.trim(),
           }),
         });
         const data = await res.json();
         if (data.success && data.data) {
           setActiveMessages((prev) => {
-            if (prev.find((m) => m.id === data.data.id)) return prev;
+            if (prev.find((m: Message) => m.id === data.data.id)) return prev;
             return [...prev, data.data];
           });
         }
@@ -237,13 +348,25 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error("Failed to send message:", err);
       }
     },
-    [user?.phone_number, activePartnerId, activeListingId]
+    [userId]
   );
 
   const dismissToast = useCallback(() => {
     setToast(null);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
   }, []);
+
+  // Emit typing indicator to partner via socket
+  const emitTyping = useCallback(
+    (receiverId: number, isTyping: boolean) => {
+      if (!socketRef.current || !userId) return;
+      socketRef.current.emit("chat:typing", {
+        receiver_id: receiverId,
+        is_typing: isTyping,
+      });
+    },
+    [userId]
+  );
 
   return (
     <ChatContext.Provider
@@ -255,11 +378,16 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unreadCount,
         isOpen,
         toast,
+        hasOlderMessages,
+        loadingOlder,
+        typingPartnerIds,
         openChat,
         closeChat,
         sendMessage,
         refreshConversations: fetchConversations,
         dismissToast,
+        loadOlderMessages,
+        emitTyping,
       }}
     >
       {children}

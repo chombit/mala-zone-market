@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Play, Building2, Car, Hotel, PartyPopper, Tractor, Wallet, ShieldCheck, PhoneCall, X, Sparkles } from 'lucide-react';
+import {
+  Shirt,Armchair,Play, Building2, Car, Hotel, PartyPopper, Tractor, Wallet, ShieldCheck, PhoneCall, X, Sparkles } from 'lucide-react';
 
 export function MalaZoneMasterPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -9,8 +10,8 @@ export function MalaZoneMasterPlayer() {
     { id: 1, icon: <Building2 className="size-5" />, am: 'የቤትና ይዞታ ዞን (Property)', en: 'Property & Real Estate', pos: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2' },
     { id: 2, icon: <Car className="size-5" />, am: 'የመኪናና ኤሌክትሪክ ዞን (Motors)', en: 'Motors & EV Vehicles', pos: 'top-1/4 right-6 -translate-y-1/2' },
     { id: 3, icon: <Hotel className="size-5" />, am: 'የጉዞና ማረፊያ ዞን (Stay & Halls)', en: 'Rooms, Guest Houses & Halls', pos: 'top-1/2 right-0 translate-x-1/2 -translate-y-1/2' },
-    { id: 4, icon: <PartyPopper className="size-5" />, am: 'የክብረ-በዓላት ዞን (Ceremony)', en: 'Wedding Gear & DJ Systems', pos: 'bottom-1/4 right-6 translate-y-1/2' },
-    { id: 5, icon: <Tractor className="size-5" />, am: 'የከባድ ማሽነሪዎች ዞን (Machinery)', en: 'Heavy Machineries & Trucks', pos: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2' },
+    { id: 4, icon: <Armchair className="size-5" />, am: 'የቤት እቃ ዞን (Furniture)', en: 'Home & Office Furniture', pos: 'bottom-1/4 right-6 translate-y-1/2' },
+    { id: 5, icon: <Shirt className="size-5" />, am: 'የፋሽን ዞን (Fashion)', en: 'Clothing, Shoes & Accessories', pos: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2' },
     { id: 6, icon: <Wallet className="size-5" />, am: 'የወኪል ወጣቶች ክፍያ (Mala-Agents)', en: 'Weekly Telebirr Payout Loop', pos: 'bottom-1/4 left-6 translate-y-1/2' },
     { id: 7, icon: <ShieldCheck className="size-5" />, am: 'የማዘጋጃ ቤት ኦዲት (G2B Link)', en: 'Municipal Deed Verification', pos: 'top-1/2 left-0 -translate-x-1/2 -translate-y-1/2' },
     { id: 8, icon: <PhoneCall className="size-5" />, am: 'የቀጥታ ስልክና ጥሪ (Support)', en: 'Direct Owner Call & Telegram', pos: 'top-1/4 left-6 -translate-y-1/2' },

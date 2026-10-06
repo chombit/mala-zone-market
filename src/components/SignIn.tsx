@@ -6,13 +6,16 @@
 
 import React, { useState } from "react";
 import { Lock, Mail, User, Phone, Loader2, Eye, EyeOff, Globe } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/ZoneLanguageContext";
 import LogoImg from "../images/Logo.png";
 
 const SignIn: React.FC = () => {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const location = useLocation();
+  const [mode, setMode] = useState<"signin" | "signup">(
+    location.pathname.includes("signup") ? "signup" : "signin"
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -281,8 +284,10 @@ const SignIn: React.FC = () => {
             <div className="text-center">
               <button
                 onClick={() => {
-                  setMode(mode === "signin" ? "signup" : "signin");
+                  const next = mode === "signin" ? "signup" : "signin";
+                  setMode(next);
                   setError(null);
+                  navigate(next === "signup" ? "/signup" : "/signin");
                 }}
                 className="text-[#00A86B] hover:text-[#00A86B]/80 font-semibold text-sm transition-colors"
               >

@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { LayoutDashboard, Package, Home, Wallet, LogOut, Globe, Bell, Search, Users, Image, Star, MapPin, Tag, ShieldCheck, Megaphone, Radio, ScrollText, AlertTriangle, CheckCircle2, Menu, X } from "lucide-react";
+import { LayoutDashboard, Package, Home, Wallet, LogOut, Globe, Bell, Search, Users, Image, Star, MapPin, Tag, ShieldCheck, Megaphone, Radio, ScrollText, AlertTriangle, CheckCircle2, Menu, X, Store } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdminLanguageProvider, useAdminLanguage } from "./contexts/AdminLanguageContext";
 import { useAdminAuth } from "./contexts/AdminAuthContext";
@@ -23,7 +23,11 @@ import GovernmentAuditDashboard from "./components/GovernmentAuditDashboard";
 import PromoTickerManager from "./components/PromoTickerManager";
 import { SuperAdminLiveDesk } from "./components/SuperAdminLiveDesk";
 import AuditLogsDashboard from "./components/AuditLogsDashboard";
-
+import TranslationsManager from "./components/TranslationsManager";
+import PromosVerificationHub from "./components/PromosVerificationHub";
+import SellerManagement from "./components/SellerManagement";
+import G2BOfficersHub from "./components/G2BOfficersHub";
+import VerificationWorkflowHub from "./components/VerificationWorkflowHub";
 const AdminDashboard: React.FC = () => {
   const { t, toggleLanguage } = useAdminLanguage();
   const { user, logout, isSuperAdmin } = useAdminAuth();
@@ -58,18 +62,22 @@ const AdminDashboard: React.FC = () => {
     { key: "Bureau Profile", isRawKey: true, icon: <Users className="w-5 h-5" />, id: "g2b_profile", allowedRoles: ["g2b_municipality", "g2b_transport"] },
 
     // Super Admin / Admin Portal Items
+    { key: "Verification Workflow", isRawKey: true, icon: <ShieldCheck className="w-5 h-5" />, id: "verification", allowedRoles: ["super_admin", "admin", "g2b_municipality", "g2b_transport"] },
     { key: "Municipality Portal", isRawKey: true, icon: <ShieldCheck className="w-5 h-5" />, id: "g2b_municipality", allowedRoles: ["super_admin"] },
     { key: "Transport Portal", isRawKey: true, icon: <ShieldCheck className="w-5 h-5" />, id: "g2b_transport", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.analytics", icon: <LayoutDashboard className="w-5 h-5" />, id: "analytics", allowedRoles: ["super_admin", "admin"] },
     { key: "admin.sidebar.listings", icon: <Package className="w-5 h-5" />, id: "listings", allowedRoles: ["super_admin", "admin"] },
     { key: "admin.sidebar.property", icon: <Home className="w-5 h-5" />, id: "property", allowedRoles: ["super_admin", "admin"] },
     { key: "admin.sidebar.agents", icon: <Wallet className="w-5 h-5" />, id: "agents", allowedRoles: ["super_admin", "admin"] },
+    { key: "Sellers", isRawKey: true, icon: <Store className="w-5 h-5" />, id: "sellers", allowedRoles: ["super_admin", "admin"] },
+    { key: "Promo Payments", isRawKey: true, icon: <Wallet className="w-5 h-5" />, id: "promo_verifications", allowedRoles: ["super_admin", "admin"] },
     { key: "admin.sidebar.hero", icon: <Star className="w-5 h-5" />, id: "hero", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.banners", icon: <Image className="w-5 h-5" />, id: "banners", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.locations", icon: <MapPin className="w-5 h-5" />, id: "locations", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.categories", icon: <Tag className="w-5 h-5" />, id: "categories", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.users", icon: <Users className="w-5 h-5" />, id: "users", allowedRoles: ["super_admin"] },
     { key: "Audit Logs", isRawKey: true, icon: <ScrollText className="w-5 h-5" />, id: "audit_logs", allowedRoles: ["super_admin"] },
+    { key: "Translations", isRawKey: true, icon: <Globe className="w-5 h-5" />, id: "translations", allowedRoles: ["super_admin"] },
     { key: "admin.sidebar.live_desk", icon: <Radio className="w-5 h-5" />, id: "live_desk", allowedRoles: ["super_admin", "admin"] },
     { key: "Promo Ticker", isRawKey: true, icon: <Megaphone className="w-5 h-5" />, id: "promo_ticker", allowedRoles: ["super_admin"] },
   ];
@@ -189,7 +197,25 @@ const AdminDashboard: React.FC = () => {
 
         {/* Content Switcher */}
         <div className="space-y-8">
-          {(isGovernmentUser || activeTab === "g2b_municipality" || activeTab === "g2b_transport" || activeTab.startsWith("g2b_")) && (
+          {activeTab === "verification" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <VerificationWorkflowHub />
+            </div>
+          )}
+
+          {activeTab === "g2b_municipality" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <G2BOfficersHub type="municipality" />
+            </div>
+          )}
+
+          {activeTab === "g2b_transport" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <G2BOfficersHub type="transport" />
+            </div>
+          )}
+
+          {(isGovernmentUser || activeTab.startsWith("g2b_")) && !activeTab.match(/^g2b_(municipality|transport)$/) && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
               <GovernmentAuditDashboard
                 overrideTab={governmentPortalTab}
@@ -231,6 +257,18 @@ const AdminDashboard: React.FC = () => {
             </div>
           )}
 
+          {activeTab === "sellers" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <SellerManagement />
+            </div>
+          )}
+
+          {activeTab === "promo_verifications" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <PromosVerificationHub />
+            </div>
+          )}
+
           {activeTab === "hero" && isSuperAdmin && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
               <HeroSlidesManager />
@@ -264,6 +302,12 @@ const AdminDashboard: React.FC = () => {
           {activeTab === "audit_logs" && isSuperAdmin && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
               <AuditLogsDashboard />
+            </div>
+          )}
+
+          {activeTab === "translations" && isSuperAdmin && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <TranslationsManager />
             </div>
           )}
 

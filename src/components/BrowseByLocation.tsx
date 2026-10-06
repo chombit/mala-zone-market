@@ -8,18 +8,21 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
+import { pickDbLabel } from '@/utils/dbLabel';
 
 interface Location {
   id: number;
   key_name: string;
   label_en: string;
   label_am: string;
+  label_sid?: string | null;
   sub_zones: any;
   listing_count?: number;
 }
 
 interface BrowseByLocationProps {
   onLocationSelect: (locationKey: string) => void;
+  activeLocation?: string;
 }
 
 // Fallback location images (Unsplash city/landscape images)
@@ -34,15 +37,15 @@ const LOCATION_IMAGES: Record<string, string> = {
 };
 
 const FALLBACK_LOCATIONS: Location[] = [
-  { id: 1, key_name: 'hawassa', label_en: 'Hawassa', label_am: 'ሐዋሳ', sub_zones: null, listing_count: 245 },
-  { id: 2, key_name: 'addis_ababa', label_en: 'Addis Ababa', label_am: 'አዲስ አበበ', sub_zones: null, listing_count: 892 },
-  { id: 3, key_name: 'yirgalem', label_en: 'Yirgalem', label_am: 'ይርጋለም', sub_zones: null, listing_count: 128 },
-  { id: 4, key_name: 'dilla', label_en: 'Dilla', label_am: 'ዲላ', sub_zones: null, listing_count: 156 },
-  { id: 5, key_name: 'bensa', label_en: 'Bensa', label_am: 'በንሳ', sub_zones: null, listing_count: 89 },
-  { id: 6, key_name: 'aleta_wondo', label_en: 'Aleta Wondo', label_am: 'አለታ ወንዶ', sub_zones: null, listing_count: 67 },
+  { id: 1, key_name: 'hawassa', label_en: 'Hawassa', label_am: 'ሐዋሳ', label_sid: 'Hawwissaa', sub_zones: null, listing_count: 245 },
+  { id: 2, key_name: 'addis_ababa', label_en: 'Addis Ababa', label_am: 'አዲስ አበበ', label_sid: 'Addis Abbaa', sub_zones: null, listing_count: 892 },
+  { id: 3, key_name: 'yirgalem', label_en: 'Yirgalem', label_am: 'ይርጋለም', label_sid: 'Yirgaaleem', sub_zones: null, listing_count: 128 },
+  { id: 4, key_name: 'dilla', label_en: 'Dilla', label_am: 'ዲላ', label_sid: 'Diilla', sub_zones: null, listing_count: 156 },
+  { id: 5, key_name: 'bensa', label_en: 'Bensa', label_am: 'በንሳ', label_sid: 'Bensaa/Daaye', sub_zones: null, listing_count: 89 },
+  { id: 6, key_name: 'aleta_wondo', label_en: 'Aleta Wondo', label_am: 'አለታ ወንዶ', label_sid: 'Aletaa Wondoo', sub_zones: null, listing_count: 67 },
 ];
 
-export function BrowseByLocation({ onLocationSelect }: BrowseByLocationProps) {
+export function BrowseByLocation({ onLocationSelect, activeLocation }: BrowseByLocationProps) {
   const { language } = useLanguage();
   const currentLang = language === 'amharic' ? 'am' : 'en';
   const [locations, setLocations] = useState<Location[]>(FALLBACK_LOCATIONS);
@@ -157,40 +160,50 @@ export function BrowseByLocation({ onLocationSelect }: BrowseByLocationProps) {
         <div className="relative -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="overflow-x-auto scrollbar-hide px-4 sm:px-6 lg:px-8">
             <div className="flex gap-3 sm:gap-4 pb-2">
-              {locations.map((location) => (
-                <button
-                  key={location.id}
-                  onClick={() => onLocationSelect(location.key_name)}
-                  className="group relative flex-shrink-0 w-[160px] sm:w-[180px] h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
-                >
-                  {/* Background Image */}
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                    style={{ 
-                      backgroundImage: `url(${LOCATION_IMAGES[location.key_name] || LOCATION_IMAGES.hawassa})` 
-                    }}
-                  />
-                  
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  
-                  {/* Content */}
-                  <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <MapPin className="w-4 h-4 text-[#00A86B] flex-shrink-0" />
-                      <h3 className="text-sm sm:text-base font-black text-white truncate">
-                        {currentLang === 'am' ? location.label_am : location.label_en}
-                      </h3>
+              {locations.map((location) => {
+                const isActive = activeLocation === location.key_name;
+                return (
+                  <button
+                    key={location.id}
+                    onClick={() => onLocationSelect(location.key_name)}
+                    className={`group relative flex-shrink-0 w-[160px] sm:w-[180px] h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 ${isActive ? 'ring-4 ring-[#00A86B] ring-offset-2 dark:ring-offset-slate-950 scale-[1.02]' : ''}`}
+                  >
+                    {/* Background Image */}
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                      style={{ 
+                        backgroundImage: `url(${LOCATION_IMAGES[location.key_name] || LOCATION_IMAGES.hawassa})` 
+                      }}
+                    />
+                    
+                    {/* Gradient Overlay */}
+                    <div className={`absolute inset-0 bg-gradient-to-t via-black/40 to-transparent ${isActive ? 'from-[#00A86B]/90' : 'from-black/80'}`} />
+                    
+                    {/* Content */}
+                    <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <MapPin className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-[#00A86B]'}`} />
+                        <h3 className="text-sm sm:text-base font-black text-white truncate">
+                          {pickDbLabel(location, language)}
+                        </h3>
+                      </div>
+                      <p className="text-xs font-bold text-white/90">
+                        {location.listing_count} {t.listings}
+                      </p>
                     </div>
-                    <p className="text-xs font-bold text-white/80">
-                      {location.listing_count} {t.listings}
-                    </p>
-                  </div>
 
-                  {/* Hover Effect Border */}
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#00A86B] rounded-2xl transition-colors duration-300 pointer-events-none" />
-                </button>
-              ))}
+                    {/* Active / Hover Effect Border */}
+                    <div className={`absolute inset-0 border-2 rounded-2xl transition-colors duration-300 pointer-events-none ${isActive ? 'border-white' : 'border-transparent group-hover:border-[#00A86B]'}`} />
+                    
+                    {/* Active Badge */}
+                    {isActive && (
+                      <div className="absolute top-2 right-2 px-2 py-0.5 bg-white text-[#00A86B] text-[10px] font-black rounded-full shadow-lg uppercase tracking-wider">
+                        ✓ {currentLang === 'am' ? 'ተመረጠ' : 'Selected'}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

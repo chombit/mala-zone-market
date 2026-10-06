@@ -15,6 +15,9 @@ export interface User {
   provider: string;
   preferred_language: "am" | "en";
   is_verified: boolean;
+  seller_status?: "casual" | "store";
+  is_featured_seller?: boolean;
+  created_at?: string;
 }
 
 interface AuthContextValue {

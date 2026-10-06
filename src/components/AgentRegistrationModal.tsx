@@ -5,22 +5,24 @@
  */
 
 import React, { useState } from "react";
-import { X, User, Phone, MapPin, Loader2, CheckCircle2, ShieldCheck } from "lucide-react";
+import { X, User, Phone, MapPin, Loader2, CheckCircle2, ShieldCheck, Lock } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
+const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { t, language } = useLanguage();
   const isAm = language === "amharic";
   
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
-    sub_city: ""
+    sub_city: "",
+    password: ""
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -34,7 +36,13 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     setError(null);
 
     if (!/^(09|07)\d{8}$/.test(formData.phone)) {
-      setError(isAm ? "দযা ትክክለኛ ስልክ ቁጥር ያስገቡ (09XXXXXXXX ወይም 07XXXXXXXX)" : "Please enter a valid Ethiopian phone number (09XXXXXXXX or 07XXXXXXXX)");
+      setError(isAm ? "እባክዎ ትክክለኛ ስልክ ቁጥር ያስገቡ (09XXXXXXXX ወይም 07XXXXXXXX)" : "Please enter a valid Ethiopian phone number (09XXXXXXXX or 07XXXXXXXX)");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError(isAm ? "የይለፍ ቃል ቢያንስ 8 ቁምፊዎች መሆን አለበት" : "Password must be at least 8 characters");
       setLoading(false);
       return;
     }
@@ -49,6 +57,7 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       const result = await response.json();
 
       if (result.success) {
+        if (onSuccess) { onSuccess(); return; }
         setSuccess(true);
       } else {
         setError(isAm ? result.message_am : result.message);
@@ -155,6 +164,24 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
+              {/* Password */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-malazone-navy uppercase tracking-[0.2em] ml-2">
+                  {isAm ? "የይለፍ ቃል" : "Password"}
+                </label>
+                <div className="relative group">
+                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-malazone-navy group-focus-within:text-green-500 transition-colors" />
+                  <input 
+                    required
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    placeholder={isAm ? "ቢያንስ 8 ቁምፊዎች" : "At least 8 characters"}
+                    className="w-full bg-white/5 border border-white/5 focus:border-green-500/50 rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-malazone-navy focus:outline-none focus:ring-4 focus:ring-green-500/5 transition-all"
+                  />
+                </div>
+              </div>
+
               {/* Sub-City */}
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-malazone-navy uppercase tracking-[0.2em] ml-2">
@@ -171,7 +198,14 @@ const AgentRegistrationModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                     <option value="" disabled>{isAm ? "ይምረጡ..." : "Select Zone..."}</option>
                     <option value="Tabor">Tabor</option>
                     <option value="Lakefront">Lakefront</option>
-                    <option value="Piassa">Piassa</option>
+                    <option value="Tabor Sub City">Tabor Sub City</option>
+                      <option value="Addis Ketema Sub City">Addis Ketema Sub City</option>
+                      <option value="Hayek Dar Sub City">Hayek Dar Sub City</option>
+                      <option value="Mehal Sub City">Mehal Sub City</option>
+                      <option value="Bahil Adarash Sub City">Bahil Adarash Sub City</option>
+                      <option value="Misrak Sub City">Misrak Sub City</option>
+                      <option value="Menahreya Sub City">Menahreya Sub City</option>
+                      <option value="Tulla Sub City">Tulla Sub City</option>
                     <option value="Millennium">Millennium</option>
                     <option value="Industrial">Industrial Park Area</option>
                   </select>

@@ -17,6 +17,26 @@ CREATE DATABASE IF NOT EXISTS malazone
 USE malazone;
 
 -- ─────────────────────────────────────────────────────────────
+-- ADMIN USERS TABLE
+-- Track all platform administrators and their roles
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS admin_users (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique admin ID',
+  username VARCHAR(100) NOT NULL UNIQUE COMMENT 'Admin login username',
+  password_hash VARCHAR(255) NOT NULL COMMENT 'Bcrypt password hash',
+  full_name VARCHAR(255) NOT NULL COMMENT 'Admin full name',
+  role ENUM('super_admin', 'admin', 'g2b_municipality', 'g2b_transport') DEFAULT 'admin' COMMENT 'RBAC role',
+  is_active BOOLEAN DEFAULT TRUE COMMENT 'Active status',
+  last_login TIMESTAMP NULL COMMENT 'Last login time',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+  COMMENT='Platform administrators';
+
+INSERT INTO admin_users (username, password_hash, full_name, role)
+VALUES ('admin', '$2b$12$DQ4m3l90BkTWtTMs6auo7O2NbYRgFlQ6Cog45koN6GC7ebzpyAsq2', 'Super Admin', 'super_admin')
+ON DUPLICATE KEY UPDATE username=username;
+
+-- ─────────────────────────────────────────────────────────────
 -- USERS TABLE
 -- Track all marketplace users (sellers, agents, etc.)
 -- ─────────────────────────────────────────────────────────────

@@ -36,7 +36,7 @@ const t = {
         title: "1. Information We Collect",
         content: [
           "Account Registration Data: When you create a Malazone account, we collect your full name, phone number, email address, preferred language, and regional location (city/zone). This information is required to personalize your marketplace experience and connect you with relevant listings.",
-          "Listing Data: When you post an asset listing (property, vehicle, ceremony equipment, or machinery), we collect the listing details you provide including photographs, descriptions, pricing, location coordinates, and category metadata. All listing images are stored securely on our cloud infrastructure.",
+          "Listing Data: When you post an asset listing (property, vehicle, furniture, or fashion), we collect the listing details you provide including photographs, descriptions, pricing, location coordinates, and category metadata. All listing images are stored securely on our cloud infrastructure.",
           "Transaction Records: We maintain records of all inquiries, booking requests, and completed transactions facilitated through the Malazone platform. This includes timestamps, counterparty identifiers, and communication logs.",
           "Device & Usage Data: We automatically collect device type, operating system, browser version, IP address, session duration, and page interaction patterns to improve platform performance and security. This data is anonymized and aggregated for analytics purposes.",
           "Mala-Agent Data: If you register as a Mala-Agent, we additionally collect your national ID information, assigned territory zone, Telebirr payment credentials, and field verification activity logs.",
@@ -46,7 +46,7 @@ const t = {
         icon: "Eye",
         title: "2. How We Use Your Data",
         content: [
-          "Service Delivery: To display relevant listings, match buyers with sellers, process booking requests, and facilitate direct communication between parties across all five asset zones (Property, Motors, Stay & Hall, Ceremony, Heavy Machinery).",
+          "Service Delivery: To display relevant listings, match buyers with sellers, process booking requests, and facilitate direct communication between parties across all five asset zones (Property, Motors, Hotels & Halls, Furniture, Fashion).",
           "Identity Verification: To verify user identities through our three-tier verification pipeline, ensuring that property title deeds, vehicle registrations, and business licenses are authentic before listings go live.",
           "Payment Processing: To facilitate Telebirr-based payouts for Mala-Agents and process any platform transaction fees. Malazone does not store complete payment credentials — all financial transactions are processed through authorized Ethiopian payment gateways.",
           "Platform Improvement: To analyze usage patterns, identify technical issues, optimize search algorithms, and develop new features that enhance the Ethiopian digital marketplace experience.",

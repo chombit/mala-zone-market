@@ -1,23 +1,16 @@
 /**
  * ZoneFilterSidebar.tsx
- * MALAZONE — Premium Marketplace Filter (Airbnb/Zillow-inspired)
- * © 2026 Malazone Technologies PLC
+ * MALAZONE â€” Premium Marketplace Filter (Airbnb/Zillow-inspired)
+ * Â© 2026 Malazone Technologies PLC
  */
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   SlidersHorizontal,
   RotateCcw,
   ChevronDown,
   Check,
   Search,
-  Home,
-  Car,
-  Hotel,
-  Music,
-  Truck,
-  Smartphone,
-  ShoppingBag,
   Wrench,
   ChevronRight,
   X,
@@ -32,49 +25,71 @@ import {
   Info,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import { pickDbLabel } from "@/utils/dbLabel";
+import TaxonomyFacetSection from "./TaxonomyFacetSection";
 
-/* ────────────────────────────────────────────
+interface LocationFromAPI {
+  id: number;
+  key_name: string;
+  label_en: string;
+  label_am: string;
+  sub_zones: SubZoneFromAPI[] | string | null;
+  is_active: number;
+}
+
+interface SubZoneFromAPI {
+  key: string;
+  label_en: string;
+  label_am: string;
+}
+
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Types
-   ──────────────────────────────────────────── */
-export type ActiveZone = "all" | "car" | "house" | "ceremony" | "machinery" | "electronics";
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+type ActiveZone = "all" | "car" | "house" | "stay" | "furniture" | "fashion" | "electronics";
 
 interface FilterState {
   search: string;
   region: string;
   city: string;
+  city_subzone: string;
   intent: string;
-  
+
+  /* Taxonomy facets (Sprint 4 backend, wired Sprint 8+) */
+  subcategory: string;
+  brand: string;
+
   // Price
   priceMin: string;
   priceMax: string;
-  
+
   // Vehicle
-  vehicleType: string;
-  brand: string;
+  plateCode: string;
   fuelType: string;
   condition: string;
-  
+
   // Property
   propertyType: string;
   bedrooms: string;
   bathrooms: string;
   area: string;
+  sqm: string;
   titleDeed: string;
-  
-  // Machinery
-  machineryType: string;
-  
+
+  // Fashion
+  fashionType: string;
+
   // Stays
-  stayType: string;
+  /** Occupancy floor — sent to the API as ?guests_min= and matched against listings.capacity. */
   guests: string;
-  
+
   // Advanced
   verified: boolean;
   sellerType: string;
   parking: boolean;
   furnished: boolean;
   yearBuilt: string;
-  
+
   // Quick Filters
   quickNearby: boolean;
   quickNewest: boolean;
@@ -82,20 +97,25 @@ interface FilterState {
   quickAvailable: boolean;
   quickWithPhotos: boolean;
   quickOpenNow: boolean;
+
+  /* Dynamic taxonomy attribute filters: attr_<key> = value */
+  [key: string]: string | boolean | undefined;
 }
 
 interface ZoneFilterSidebarProps {
   activeZone: ActiveZone;
+  /** Raw category tile id ("property"|"motors"|â€¦|"all"). Drives taxonomy facets. */
+  activeCategory?: string;
   filters: FilterState;
   onFilterChange: (key: keyof FilterState, value: any) => void;
   onZoneChange?: (zone: ActiveZone) => void;
   onReset: () => void;
 }
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Trust Indicator Component
    Badge with tooltip explaining verification benefits
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const TrustIndicator: React.FC<{
   type: "verified" | "agent" | "business";
   label: string;
@@ -140,10 +160,10 @@ const TrustIndicator: React.FC<{
   );
 };
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Quick Filter Chip Component
    Premium chips with instant filtering (Verified, Nearby, Newest, etc.)
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const QuickFilterChip: React.FC<{
   label: string;
   icon: React.ReactNode;
@@ -169,78 +189,6 @@ const QuickFilterChip: React.FC<{
   </button>
 );
 
-/* ────────────────────────────────────────────
-   Premium Category Card Component
-   Interactive cards with icon, title, live count, hover/press animations
-   ──────────────────────────────────────────── */
-const CategoryCard: React.FC<{
-  zone: ActiveZone;
-  label: string;
-  icon: React.ReactNode;
-  count: number;
-  active: boolean;
-  onClick: () => void;
-}> = ({ zone, label, icon, count, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`
-      group relative
-      flex flex-col items-start gap-2
-      p-4 rounded-2xl
-      transition-all duration-200 ease-out
-      ${
-        active
-          ? "bg-[#16A34A] text-white shadow-lg shadow-emerald-500/30 ring-2 ring-[#16A34A] ring-offset-2 dark:ring-offset-slate-900"
-          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-2 border-slate-200 dark:border-slate-700 hover:border-[#16A34A] hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
-      }
-    `}
-  >
-    {/* Icon */}
-    <div
-      className={`
-        p-2.5 rounded-xl transition-colors
-        ${
-          active
-            ? "bg-white/20"
-            : "bg-emerald-50 dark:bg-emerald-950/30 text-[#16A34A] group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50"
-        }
-      `}
-    >
-      {React.cloneElement(icon as React.ReactElement, {
-        className: "w-5 h-5",
-      })}
-    </div>
-
-    {/* Label */}
-    <div className="flex flex-col items-start gap-0.5 w-full">
-      <span className="text-sm font-bold leading-tight">{label}</span>
-      <span
-        className={`text-xs font-medium ${
-          active ? "text-white/80" : "text-slate-500 dark:text-slate-400"
-        }`}
-      >
-        {count > 0 ? `${count.toLocaleString()} Listings` : "No listings"}
-      </span>
-    </div>
-
-    {/* Check indicator for selected state */}
-    {active && (
-      <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md">
-        <Check className="w-4 h-4 text-[#16A34A]" />
-      </div>
-    )}
-
-    {/* Soft glow effect on selected */}
-    {active && (
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-transparent pointer-events-none" />
-    )}
-  </button>
-);
-
-/* ────────────────────────────────────────────
-   Enhanced Segmented Control (Dynamic Transaction Options)
-   Shows Buy/Rent/Lease/Book based on active category
-   ──────────────────────────────────────────── */
 const EnhancedSegmentedControl: React.FC<{
   value: string;
   onChange: (v: string) => void;
@@ -272,9 +220,9 @@ const EnhancedSegmentedControl: React.FC<{
   );
 };
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Segmented Control (Buy/Rent)
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const SegmentedControl: React.FC<{
   value: string;
   onChange: (v: string) => void;
@@ -297,9 +245,9 @@ const SegmentedControl: React.FC<{
   </div>
 );
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Searchable Select Component
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const SearchableSelect: React.FC<{
   label: string;
   value: string;
@@ -398,10 +346,10 @@ const SearchableSelect: React.FC<{
   );
 };
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Premium Dual-Thumb Price Slider Component
    Range slider with min/max inputs and smooth animations
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const PremiumPriceSlider: React.FC<{
   minValue: string;
   maxValue: string;
@@ -565,9 +513,9 @@ const PremiumPriceSlider: React.FC<{
   );
 };
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Price Range Input
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const PriceRangeInput: React.FC<{
   minValue: string;
   maxValue: string;
@@ -617,9 +565,9 @@ const PriceRangeInput: React.FC<{
   );
 };
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Compact Select Dropdown
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const CompactSelect: React.FC<{
   label: string;
   value: string;
@@ -675,9 +623,9 @@ const CompactSelect: React.FC<{
   );
 };
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Toggle Switch
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const ToggleSwitch: React.FC<{
   label: string;
   checked: boolean;
@@ -702,30 +650,73 @@ const ToggleSwitch: React.FC<{
   </div>
 );
 
-/* ────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Main Sidebar Component
-   ──────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
   activeZone,
+  activeCategory,
   filters,
   onFilterChange,
   onZoneChange,
   onReset,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isAmharic = language === "amharic";
+  const [locations, setLocations] = useState<LocationFromAPI[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
 
-  /* ── Category Options with Live Counts ── */
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("/api/locations");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setLocations(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch locations:", err);
+      } finally {
+        setLocationsLoading(false);
+      }
+    };
+    fetchLocations();
+  }, []);
+
+  const parseSubZones = (subZones: SubZoneFromAPI[] | string | null | undefined): SubZoneFromAPI[] => {
+    if (!subZones) return [];
+    if (Array.isArray(subZones)) return subZones;
+    try {
+      const parsed = JSON.parse(subZones as string);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  /* Category options for the zone dropdown. This list previously carried
+   * invented counts (15420/12542/2481/824/493/3291) and an icon per row, but
+   * nothing rendered them — it is only consumed as {value, label} by
+   * SearchableSelect below. Fabricated numbers in a marketplace are a trap for
+   * the next reader, so they are gone rather than faked. */
   const categories = [
-    { id: "all" as ActiveZone, label: t("cat.all"), icon: <ShoppingBag className="w-4 h-4" />, count: 15420 },
-    { id: "house" as ActiveZone, label: t("cat.property"), icon: <Home className="w-4 h-4" />, count: 12542 },
-    { id: "car" as ActiveZone, label: t("cat.vehicle"), icon: <Car className="w-4 h-4" />, count: 2481 },
-    { id: "ceremony" as ActiveZone, label: t("cat.stay"), icon: <Hotel className="w-4 h-4" />, count: 824 },
-    { id: "machinery" as ActiveZone, label: t("cat.machinery"), icon: <Truck className="w-4 h-4" />, count: 493 },
-    { id: "electronics" as ActiveZone, label: t("cat.electronics"), icon: <Smartphone className="w-4 h-4" />, count: 3291 },
+    { id: "all" as ActiveZone, label: t("cat.all") },
+    { id: "house" as ActiveZone, label: t("cat.property") },
+    { id: "car" as ActiveZone, label: t("cat.vehicle") },
+    { id: "stay" as ActiveZone, label: t("cat.stay") },
+    { id: "furniture" as ActiveZone, label: t("cat.furniture") },
+    { id: "fashion" as ActiveZone, label: t("cat.fashion") },
+    { id: "electronics" as ActiveZone, label: t("cat.electronics") },
   ];
 
-  /* ── Dynamic Transaction Options Based on Category ── */
+  /* â”€â”€ Dynamic Transaction Options Based on Category â”€â”€ */
+  // Sprint 8d: some subcategories are sell-only (Land) â€” Rent must not be
+  // offered there.
+  const SELL_ONLY_SUBCATEGORIES = ["land"];
   const getTransactionOptions = () => {
+    if (filters.subcategory && SELL_ONLY_SUBCATEGORIES.includes(filters.subcategory)) {
+      return [{ value: "buy", label: t("intent.buy") }];
+    }
     switch (activeZone) {
       case "house":
         return [
@@ -733,13 +724,14 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
           { value: "rent", label: t("intent.rent") },
         ];
       case "car":
-      case "machinery":
+      case "fashion":
       case "electronics":
         return [
           { value: "buy", label: t("intent.buy") },
           { value: "rent", label: t("intent.rent") },
         ];
-      case "ceremony":
+      case "stay":
+      case "furniture":
         return [
           { value: "book", label: t("filter.bookingType") || "Book" },
           { value: "rent", label: t("intent.rent") },
@@ -754,30 +746,33 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
 
   const transactionOptions = getTransactionOptions();
 
-  /* ── Transaction Options ── */
-  const transactionOptionsOld = [
-    { value: "buy", label: t("intent.buy") },
-    { value: "rent", label: t("intent.rent") },
-  ];
-
-  /* ── Location Options ── */
+  /* â”€â”€ Location Options â”€â”€ */
   const regionOptions = [
     { value: "", label: t("region.all") || "All Regions" },
-    { value: "sidama", label: t("region.sidama") },
-    { value: "addis", label: t("region.addis") },
+    { value: "sidama", label: t("region.sidama") || "Sidama Region" },
+    { value: "addis", label: t("region.addis") || "Addis Ababa" },
   ];
 
   const cityOptions = [
-    { value: "", label: t("city.all") || "All Cities" },
-    { value: "tabor", label: t("city.tabor") },
-    { value: "lakefront", label: t("city.lakefront") },
-    { value: "piassa", label: t("city.piassa") },
-    { value: "yirgalem", label: t("city.yirgalem") },
-    { value: "bensa", label: t("city.bensa") },
-    { value: "chuko", label: t("city.chuko") },
+    { value: "", label: isAmharic ? "áˆáˆ‰áˆ áŠ¨á‰°áˆžá‰½" : "All Cities" },
+    ...locations.map((loc) => ({
+      value: loc.key_name,
+      label: pickDbLabel(loc, language),
+    })),
   ];
 
-  /* ── Dynamic Category Filters ── */
+  const selectedCity = locations.find((l) => l.key_name === filters.city);
+  const subZonesOfSelectedCity = parseSubZones(selectedCity?.sub_zones);
+
+  const subZoneOptions = [
+    { value: "", label: isAmharic ? "áˆáˆ‰áˆ áŠ­ááˆŽá‰½" : "All Sub-areas" },
+    ...subZonesOfSelectedCity.map((sz) => ({
+      value: `${filters.city}_${sz.key}`,
+      label: pickDbLabel(sz, language),
+    })),
+  ];
+
+  /* â”€â”€ Dynamic Category Filters â”€â”€ */
   const propertyTypeOptions = [
     { value: "", label: t("filter.propAll") || "All Properties" },
     { value: "house", label: t("filter.propHouse") || "House" },
@@ -794,27 +789,44 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
     { value: "4+", label: "4+" },
   ];
 
-  const vehicleTypeOptions = [
-    { value: "", label: t("filter.vehAll") || "All Vehicles" },
-    { value: "sedan", label: t("filter.vehSedan") || "Sedan" },
-    { value: "suv", label: t("filter.vehSuv") || "SUV" },
-    { value: "truck", label: t("filter.vehTruck") || "Truck" },
-    { value: "van", label: t("filter.vehVan") || "Van" },
-  ];
+  /* Vehicle Type was removed: nothing ever wrote a `vehicle_type` value (not
+   * the seed, not POST /listings, not the listing editor), so the filter
+   * matched nothing and silently did nothing when selected. Body type belongs
+   * in the attribute system (attr_body_type), which already filters
+   * server-side and drives faceted counts. Kept in sync with the mobile sheet. */
 
+
+  /* Option values must match what the write path can actually store, or the
+   * filter silently matches nothing: routes/listings.js CONDITION_TYPES /
+   * FUEL_TYPES and the listing editor are the source of truth. "hybrid" and
+   * "invoiced" were previously missing here, so those listings were
+   * unfilterable, and "excellent" was offered but can never be stored. */
   const fuelTypeOptions = [
     { value: "", label: t("filter.fuelAll") },
     { value: "benzine", label: t("filter.benzine") },
     { value: "diesel", label: t("filter.diesel") },
     { value: "electric", label: t("filter.electric") },
+    { value: "hybrid", label: t("filter.hybrid") },
   ];
 
   const conditionOptions = [
     { value: "", label: t("filter.conditionAll") },
     { value: "new", label: t("filter.condNew") },
+    { value: "invoiced", label: t("filter.condInvoiced") },
     { value: "used", label: t("filter.condUsed") },
-    { value: "excellent", label: t("filter.condExcellent") },
   ];
+
+  /* Stays are sold by headcount, so occupancy — not bedrooms — is the floor
+     guests actually shop on. Mirrors the `capacity` column the API filters. */
+  const guestOptions = [
+    { value: "", label: t("filter.guestsAny") || "Any size" },
+    { value: "1", label: "1" },
+    { value: "2", label: "2" },
+    { value: "3", label: "3" },
+    { value: "4", label: "4" },
+    { value: "5", label: "5+" },
+  ];
+
 
   return (
     <aside className="w-full lg:w-72 shrink-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 h-fit lg:sticky lg:top-28 shadow-sm">
@@ -849,12 +861,24 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
         />
       </div>
 
+      {/* â”€â”€ Taxonomy Facets (subcategory / brand / attributes) â”€â”€
+          Sprint 8g: logic lives in the shared component so the mobile
+          bottom sheet stays in perfect sync with this sidebar. */}
+      <TaxonomyFacetSection
+        activeCategory={activeCategory}
+        filters={filters}
+        onFilterChange={onFilterChange}
+        SelectComponent={SearchableSelect}
+      />
+
       <div className="h-px bg-slate-200 dark:bg-slate-800 my-6" />
 
       {/* Transaction Type - Dynamic Options */}
       <div className="mb-6">
         <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-3">
-          {activeZone === "ceremony" ? t("filter.bookingType") || "Booking Type" : t("filter.iWantTo") || "I want to"}
+          {activeZone === "stay" || activeZone === "furniture"
+            ? t("filter.bookingType") || "Booking Type"
+            : t("filter.iWantTo") || "I want to"}
         </label>
         <EnhancedSegmentedControl
           value={filters.intent || "buy"}
@@ -877,10 +901,24 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
         <SearchableSelect
           label={t("sidebar.city") || "City"}
           value={filters.city}
-          onChange={(v) => onFilterChange("city", v)}
+          onChange={(v) => {
+            onFilterChange("city", v);
+            if (v !== filters.city) {
+              onFilterChange("city_subzone", "");
+            }
+          }}
           options={cityOptions}
           placeholder="Search cities..."
         />
+
+        {filters.city && subZonesOfSelectedCity.length > 0 && (
+          <CompactSelect
+            label={isAmharic ? "á‹¨áŠ¨á‰°áˆ› áŠ­ááˆ" : "Sub-area"}
+            value={filters.city_subzone || ""}
+            onChange={(v) => onFilterChange("city_subzone", v)}
+            options={subZoneOptions}
+          />
+        )}
       </div>
 
 
@@ -914,17 +952,25 @@ const ZoneFilterSidebar: React.FC<ZoneFilterSidebarProps> = ({
         </div>
       )}
 
+      {activeZone === "stay" && (
+        <div className="space-y-4 mb-6">
+          <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+            {t("filter.headerStay") || "Stay Filters"}
+          </h4>
+          <CompactSelect
+            label={t("filter.guests") || "Guests"}
+            value={filters.guests || ""}
+            onChange={(v) => onFilterChange("guests", v)}
+            options={guestOptions}
+          />
+        </div>
+      )}
+
       {activeZone === "car" && (
         <div className="space-y-4 mb-6">
           <h4 className="text-sm font-bold text-slate-900 dark:text-white">
             {t("filter.headerVehicle") || "Vehicle Filters"}
           </h4>
-          <CompactSelect
-            label={t("filter.vehType") || "Vehicle Type"}
-            value={filters.vehicleType || ""}
-            onChange={(v) => onFilterChange("vehicleType", v)}
-            options={vehicleTypeOptions}
-          />
           <CompactSelect
             label={t("filter.fuelType")}
             value={filters.fuelType || ""}

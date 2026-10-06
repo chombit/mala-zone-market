@@ -8,6 +8,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, CheckCircle2, MapPin, Flame, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
+import { useListingRevision } from "@/contexts/ListingRealtimeContext";
 
 interface TrendingItem {
   id: string;
@@ -61,7 +62,7 @@ const FALLBACK_TRENDING: TrendingItem[] = [
     priceSuffixKey: "price.day",
     image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80&fm=webp",
     locationTag: "LAKEFRONT",
-    zone: "ceremony",
+    zone: "furniture",
     isVerified: true,
     isPremium: true,
     rating: 4,
@@ -75,7 +76,7 @@ const FALLBACK_TRENDING: TrendingItem[] = [
     priceSuffixKey: "price.day",
     image: "https://images.unsplash.com/photo-1579412691522-861f6540960d?w=600&q=80&fm=webp",
     locationTag: "TABOR",
-    zone: "machinery",
+    zone: "fashion",
     isVerified: true,
     isPremium: true,
     rating: 4,
@@ -88,7 +89,7 @@ const FALLBACK_TRENDING: TrendingItem[] = [
     price: 85000,
     priceSuffixKey: "price.etb",
     image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&q=80&fm=webp",
-    locationTag: "PIASSA",
+    locationTag: "TABOR",
     zone: "electronics",
     isVerified: true,
     isPremium: true,
@@ -117,7 +118,7 @@ const FALLBACK_TRENDING: TrendingItem[] = [
     priceSuffixKey: "price.day",
     image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=600&q=80&fm=webp",
     locationTag: "LAKEFRONT",
-    zone: "ceremony",
+    zone: "furniture",
     isVerified: true,
     isPremium: true,
     rating: 4.4,
@@ -220,6 +221,7 @@ const TrendingListings: React.FC = () => {
   const [listings, setListings] = useState<TrendingItem[]>(FALLBACK_TRENDING);
   const [showAll, setShowAll] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { revision } = useListingRevision();
 
   useEffect(() => {
     fetch("/api/listings")
@@ -240,9 +242,9 @@ const TrendingListings: React.FC = () => {
                 titleEn: r.title_en || "",
                 titleAm: r.title_am || "",
                 price: Number(r.price) || 0,
-                priceSuffixKey: r.price_suffix === "per_day" ? "price.day" : r.price_suffix === "per_hour" ? "price.hour" : "price.etb",
+                priceSuffixKey: r.price_suffix === "per_day" ? "price.day" : r.price_suffix === "per_hour" ? "price.hour" : r.price_suffix === "per_month" ? "price.month" : "price.etb",
                 image: images[0] || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80&fm=webp",
-                locationTag: (r.location_label_en || "").toUpperCase() || "PIASSA",
+                locationTag: (r.location_label_en || "").toUpperCase() || "HAWASSA",
                 zone: r.category || "property",
                 isVerified: !!r.is_verified,
                 isPremium: !!r.is_premium,
@@ -254,7 +256,7 @@ const TrendingListings: React.FC = () => {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [revision]);
 
   const scroll = (dir: "left" | "right") => {
     if (scrollRef.current) {

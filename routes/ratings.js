@@ -8,8 +8,15 @@
 
 const express = require("express");
 const db = require("../database/db");
+const { requireUserAuth } = require("../middleware/userAuth");
 
 const router = express.Router();
+
+// ── Helpers ─────────────────────────────────────────────
+const toId = (value) => {
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 ? n : null;
+};
 
 /**
  * GET /api/ratings/seller/:userId
@@ -66,23 +73,19 @@ router.get("/seller/:userId", async (req, res) => {
 
 /**
  * GET /api/ratings/check
- * Check if current user has already rated a listing
- * Query: phone, listing_id
+ * Check if the authenticated user has already rated a listing
+ * Query: listing_id
  */
-router.get("/check", async (req, res) => {
+router.get("/check", requireUserAuth, async (req, res) => {
   try {
-    const { phone, listing_id } = req.query;
-    if (!phone || !listing_id) {
+    const listingId = toId(req.query.listing_id);
+    if (!listingId) {
       return res.json({ success: true, data: { rated: false } });
     }
 
-    const cleanPhone = phone.replace(/\s/g, "");
-    const [[user]] = await db.execute("SELECT id FROM users WHERE phone_number = ?", [cleanPhone]);
-    if (!user) return res.json({ success: true, data: { rated: false } });
-
     const [[existing]] = await db.execute(
       "SELECT id, rating, review FROM ratings WHERE rater_id = ? AND listing_id = ?",
-      [user.id, listing_id]
+      [req.user.id, listingId]
     );
 
     res.json({
@@ -97,16 +100,20 @@ router.get("/check", async (req, res) => {
 
 /**
  * POST /api/ratings
- * Submit a rating for a seller
+ * Submit a rating for a seller (authenticated; rater = session user)
  */
-router.post("/", async (req, res) => {
+router.post("/", requireUserAuth, async (req, res) => {
   try {
-    const { phone, listing_id, seller_id, rating, review } = req.body;
+    const sellerId = toId(req.body.seller_id);
+    const listingId = toId(req.body.listing_id);
+    const rating = Number(req.body.rating);
+    const review =
+      typeof req.body.review === "string" ? req.body.review.trim().slice(0, 1000) : null;
 
-    if (!phone || !seller_id || !rating) {
+    if (!sellerId || !Number.isInteger(rating)) {
       return res.status(400).json({
         success: false,
-        message: "phone, seller_id, and rating are required",
+        message: "seller_id and integer rating are required",
       });
     }
 
@@ -117,22 +124,19 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const cleanPhone = phone.replace(/\s/g, "");
-    const [[user]] = await db.execute("SELECT id FROM users WHERE phone_number = ?", [cleanPhone]);
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
+    // Rater identity comes from the session — never from the request body
+    const raterId = req.user.id;
 
     // Can't rate yourself
-    if (user.id === Number(seller_id)) {
+    if (raterId === sellerId) {
       return res.status(400).json({ success: false, message: "You cannot rate yourself" });
     }
 
     // Check if already rated this listing
-    if (listing_id) {
+    if (listingId) {
       const [[existing]] = await db.execute(
         "SELECT id FROM ratings WHERE rater_id = ? AND listing_id = ?",
-        [user.id, listing_id]
+        [raterId, listingId]
       );
       if (existing) {
         // Update existing rating
@@ -149,7 +153,7 @@ router.post("/", async (req, res) => {
     const [result] = await db.execute(
       `INSERT INTO ratings (listing_id, rater_id, seller_id, rating, review)
        VALUES (?, ?, ?, ?, ?)`,
-      [listing_id || null, user.id, seller_id, rating, review || null]
+      [listingId, raterId, sellerId, rating, review]
     );
 
     const [[newRating]] = await db.execute("SELECT * FROM ratings WHERE id = ?", [result.insertId]);

@@ -8,6 +8,14 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit3, Trash2, Save, X, ShieldCheck, User } from "lucide-react";
 import { useAdminAuth, AdminUser } from "../contexts/AdminAuthContext";
 
+interface Jurisdiction {
+  id: number;
+  key: string;
+  label_en: string;
+  label_am: string;
+  sub_zones: Array<{ key: string; label_en: string; label_am: string }>;
+}
+
 interface AdminUserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,29 +28,55 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
     username: user?.username || "",
     full_name: user?.full_name || "",
     role: (user?.role || "admin") as any,
-    password: ""
+    password: "",
+    city: (user as any)?.city || "",
+    sub_cities: (user as any)?.sub_cities || []
   });
   const [loading, setLoading] = useState(false);
+  const [jurisdictions, setJurisdictions] = useState<Jurisdiction[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Load jurisdictions
+      fetch("/api/admin/jurisdictions", { credentials: "include" })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setJurisdictions(data.jurisdictions);
+          }
+        })
+        .catch(err => console.error("Failed to load jurisdictions:", err));
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const isG2BRole = formData.role === "g2b_municipality" || formData.role === "g2b_transport";
 
   const handleSave = async () => {
     setLoading(true);
     try {
+      const payload: any = {
+        username: formData.username,
+        full_name: formData.full_name,
+        role: formData.role
+      };
+
+      // Add city and sub_cities for g2b roles
+      if (isG2BRole) {
+        payload.city = formData.city;
+        payload.sub_cities = formData.sub_cities;
+      }
+
       if (user) {
         // Update existing user
-        const updateData: any = {
-          username: formData.username,
-          full_name: formData.full_name,
-          role: formData.role
-        };
-        if (formData.password) updateData.password = formData.password;
+        if (formData.password) payload.password = formData.password;
 
         const response = await fetch(`/api/admin/users/${user.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify(updateData)
+          body: JSON.stringify(payload)
         });
         const result = await response.json();
         if (result.success) {
@@ -51,11 +85,12 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
         }
       } else {
         // Create new user
+        payload.password = formData.password;
         const response = await fetch("/api/admin/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify(formData)
+          body: JSON.stringify(payload)
         });
         const result = await response.json();
         if (result.success) {
@@ -114,10 +149,59 @@ const AdminUserModal: React.FC<AdminUserModalProps> = ({ isOpen, onClose, user, 
             >
               <option value="admin">Admin</option>
               <option value="super_admin">Super Admin</option>
-              <option value="g2b_municipality">Municipality</option>
-              <option value="g2b_transport">Transport Bureau</option>
+              <option value="g2b_municipality">Municipality Officer</option>
+              <option value="g2b_transport">Transport Officer</option>
             </select>
           </div>
+
+          {/* City Selection for G2B Roles */}
+          {isG2BRole && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-malazone-navy">City *</label>
+                <select
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value, sub_cities: [] })}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all appearance-none"
+                  required
+                >
+                  <option value="">Select City</option>
+                  {jurisdictions.map((city) => (
+                    <option key={city.key} value={city.key}>
+                      {city.label_en} - {city.label_am}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sub-cities Input (Optional) */}
+              {formData.city && (
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-malazone-navy">
+                    Sub-Cities (Optional)
+                    <span className="block text-xs font-normal text-malazone-navy/60 mt-1">
+                      Enter sub-cities separated by commas (e.g., Tabor, Lakefront, Piassa)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={Array.isArray(formData.sub_cities) ? formData.sub_cities.join(", ") : ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const subCitiesArray = value
+                        .split(",")
+                        .map(s => s.trim())
+                        .filter(s => s.length > 0);
+                      setFormData({ ...formData, sub_cities: subCitiesArray });
+                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-malazone-navy focus:outline-none focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 transition-all"
+                    placeholder="Tabor, Lakefront, Piassa"
+                  />
+                </div>
+              )}
+            </>
+          )}
+
           <div className="space-y-2">
             <label className="text-sm font-semibold text-malazone-navy">Password {user ? "(optional)" : ""}</label>
             <input
@@ -244,6 +328,7 @@ const AdminUsers: React.FC = () => {
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">User</th>
                 <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">Role</th>
+                <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">Jurisdiction</th>
                 <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-malazone-navy">Status</th>
                 <th className="px-6 py-4 text-right text-xs font-black uppercase tracking-wider text-malazone-navy">Actions</th>
               </tr>
@@ -276,6 +361,20 @@ const AdminUsers: React.FC = () => {
                             ? "Transport Bureau"
                             : "Admin"}
                     </span>
+                  </td>
+                  <td className="px-6 py-5">
+                    {(adminUser as any).city ? (
+                      <div className="text-xs">
+                        <p className="font-bold text-malazone-navy capitalize">{(adminUser as any).city}</p>
+                        {(adminUser as any).sub_cities && (adminUser as any).sub_cities.length > 0 && (
+                          <p className="text-malazone-navy/60 mt-1">
+                            {(adminUser as any).sub_cities.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-malazone-navy/40">—</span>
+                    )}
                   </td>
                   <td className="px-6 py-5">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black rounded-full ${adminUser.is_active

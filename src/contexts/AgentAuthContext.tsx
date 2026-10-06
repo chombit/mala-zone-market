@@ -16,6 +16,7 @@ interface Agent {
   status: 'pending' | 'active' | 'suspended';
   earnings_total_etb: number;
   created_at: string;
+  must_set_password?: boolean;
 }
 
 interface AgentAuthContextType {
@@ -25,6 +26,7 @@ interface AgentAuthContextType {
   login: (phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAgent: () => Promise<void>;
+  setPassword: (newPassword: string, currentPassword?: string) => Promise<void>;
 }
 
 const AgentAuthContext = createContext<AgentAuthContextType | undefined>(undefined);
@@ -110,6 +112,23 @@ export const AgentAuthProvider: React.FC<AgentAuthProviderProps> = ({ children }
     }
   };
 
+  const setPassword = async (newPassword: string, currentPassword?: string) => {
+    const response = await fetch('/api/agents/me/password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ new_password: newPassword, current_password: currentPassword }),
+    });
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to update password');
+    }
+
+    // Enrollment complete — clear the flag locally
+    setAgent((prev) => (prev ? { ...prev, must_set_password: false } : prev));
+  };
+
   return (
     <AgentAuthContext.Provider
       value={{
@@ -119,6 +138,7 @@ export const AgentAuthProvider: React.FC<AgentAuthProviderProps> = ({ children }
         login,
         logout,
         refreshAgent,
+        setPassword,
       }}
     >
       {children}

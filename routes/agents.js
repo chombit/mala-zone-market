@@ -9,40 +9,27 @@
 
 const express = require("express");
 const multer = require("multer");
-const sharp = require("sharp");
-const path = require("path");
-const fs = require("fs");
-const { v4: uuidv4 } = require("uuid");
+const bcrypt = require("bcrypt");
 const db = require("../database/db");
 const { requireAdminAuth, requireAdminRoles } = require("../middleware/adminAuth");
 const { requireAgentAuth, issueAgentToken, setAgentAuthCookie, clearAgentAuthCookie } = require("../middleware/agentAuth");
+const { broadcastListingChange } = require("../utils/listingRealtime");
+const { processImage } = require("../utils/imageProcessor");
 
 const router = express.Router();
 
-// ── Image Upload Pipeline (same as listings.js)
-const UPLOAD_DIR = path.join(__dirname, "..", "public", "uploads");
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
+// ── Multer Config (Memory Storage)
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024, files: 4 },
 });
 
-async function processImage(buffer) {
-  const filename = `mala_${uuidv4()}.webp`;
-  const outputPath = path.join(UPLOAD_DIR, filename);
-  await sharp(buffer)
-    .resize({ width: 1200, withoutEnlargement: true, fit: "inside" })
-    .webp({ quality: 80, effort: 6 })
-    .toFile(outputPath);
-  return `/uploads/${filename}`;
-}
-
 // ─────────────────────────────────────────────
 // VALIDATION
 // ─────────────────────────────────────────────
 const ETH_PHONE_REGEX = /^(\+2519|09)\d{8}$/;
+const PRICE_SUFFIXES = new Set(["fixed", "per_day", "per_month", "per_hour"]);
 
 function validateAgentRegistration(body) {
   const errors = [];
@@ -55,6 +42,9 @@ function validateAgentRegistration(body) {
   }
   if (!body.sub_city) {
     errors.push("sub_city: Required (e.g. Tabor Sub-City, Lakefront)");
+  }
+  if (!body.password || String(body.password).length < 8) {
+    errors.push("password: Must be at least 8 characters");
   }
 
   return errors;
@@ -70,7 +60,7 @@ function validateAgentRegistration(body) {
  */
 router.post("/register", async (req, res) => {
   try {
-    const { full_name, phone, sub_city } = req.body;
+    const { full_name, phone, sub_city, password } = req.body;
 
     // Validate
     const errors = validateAgentRegistration(req.body);
@@ -84,16 +74,32 @@ router.post("/register", async (req, res) => {
     }
 
     const cleanPhone = phone.replace(/\s/g, "");
+    const passwordHash = await bcrypt.hash(String(password), 12);
 
     // 1. Get or Create User
     let userId;
-    const [[user]] = await db.execute("SELECT id FROM users WHERE phone_number = ?", [cleanPhone]);
+    const [[user]] = await db.execute(
+      "SELECT id, password_hash FROM users WHERE phone_number = ?",
+      [cleanPhone]
+    );
     if (user) {
+      // Existing account: only claimable if it has no password yet.
+      if (user.password_hash) {
+        return res.status(409).json({
+          success: false,
+          message: "An account with this phone number already exists. Please log in instead.",
+          message_am: "በዚህ ስልክ ቁጥር መለያ አለ። እባክዎ ይግቡ።",
+        });
+      }
       userId = user.id;
+      await db.execute(
+        "UPDATE users SET password_hash = ?, account_type = 'Agent' WHERE id = ?",
+        [passwordHash, userId]
+      );
     } else {
       const [ins] = await db.execute(
-        "INSERT INTO users (full_name, phone_number, account_type) VALUES (?, ?, 'Agent')",
-        [full_name.trim(), cleanPhone]
+        "INSERT INTO users (full_name, phone_number, account_type, password_hash) VALUES (?, ?, 'Agent', ?)",
+        [full_name.trim(), cleanPhone, passwordHash]
       );
       userId = ins.insertId;
     }
@@ -111,24 +117,25 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // 3. Insert agent record
+    // 3. Insert agent record — pending until a coordinator approves
+    // (POST /api/agents/status, admin-only; see F7 lifecycle)
     const [result] = await db.execute(
       `INSERT INTO agents (user_id, sub_city, status, earnings_total_etb)
-       VALUES (?, ?, 'active', 0)`,
+       VALUES (?, ?, 'pending', 0)`,
       [userId, sub_city]
     );
 
     // Successful registration
     res.status(201).json({
       success: true,
-      message: "Agent registered successfully. You can start listing properties!",
-      message_am: "በተሳካ ሁኔታ ተመዝግበዋል! አሁን ንብረቶች ማስገባት ይችላሉ።",
+      message: "Agent registered successfully. Your application is pending coordinator approval.",
+      message_am: "በተሳካ ሁኔታ ተመዝግበዋል! ማመልከቻዎ በአስተባባሪ ውሳኔ ላይ ነው።",
       data: {
         agent_id: result.insertId,
         user_id: userId,
         phone_number: cleanPhone,
         sub_city,
-        status: "active",
+        status: "pending",
       },
     });
   } catch (err) {
@@ -142,13 +149,44 @@ router.post("/register", async (req, res) => {
 });
 
 /**
+ * GET /api/agents/all
+ * Admin-only: returns EVERY agent regardless of status (pending, active,
+ * suspended) so coordinators can review and approve new applications.
+ * NOTE: must be declared BEFORE the /:phone route or "all" would be
+ * swallowed as a phone number.
+ */
+router.get("/all", requireAdminAuth, requireAdminRoles("super_admin", "admin"), async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 200, 500);
+    const [agents] = await db.execute(
+      `SELECT a.id, a.user_id, u.full_name, u.phone_number, a.sub_city,
+              a.status, a.earnings_total_etb, a.created_at
+       FROM agents a
+       JOIN users u ON a.user_id = u.id
+       ORDER BY a.id DESC
+       LIMIT ?`,
+      [limit]
+    );
+    res.json({ success: true, data: agents });
+  } catch (err) {
+    console.error("[GET /agents/all]", err);
+    res.status(500).json({ success: false, message: "Failed to fetch agents" });
+  }
+});
+
+/**
  * GET /api/agents/:phone
  * Get agent profile and earnings summary
  */
-router.get("/:phone", async (req, res) => {
+router.get("/:phone", async (req, res, next) => {
   try {
     const { phone } = req.params;
     const cleanPhone = phone.replace(/\s/g, "");
+
+    // Reserve non-phone path segments (e.g. /me, /leaderboard) for later-defined routes
+    if (!ETH_PHONE_REGEX.test(cleanPhone)) {
+      return next("route");
+    }
 
     // Join agents table with users table to get agent info with phone number
     const [[agent]] = await db.execute(
@@ -214,41 +252,59 @@ router.get("/:phone", async (req, res) => {
  * Record earnings transaction for an agent
  * (Called internally when a listing is sold/rented)
  */
-router.post("/earnings/record", async (req, res) => {
-  try {
-    const { phone, amount_etb, listing_id, transaction_type } = req.body;
+/**
+ * POST /api/agents/earnings/record
+ * Record an earnings transaction for the AUTHENTICATED agent.
+ * Identity comes from the session cookie; amounts are capped and typed.
+ */
+const EARNING_TYPES = new Set(["listing_sale", "listing_rental", "service_fee"]);
+const MAX_EARNING_ETB = 50_000;
 
-    if (!phone || !amount_etb || !listing_id) {
+router.post("/earnings/record", requireAgentAuth, async (req, res) => {
+  try {
+    const amount = Number(req.body.amount_etb);
+    const listingIdRaw = Number(req.body.listing_id);
+    const transactionType = EARNING_TYPES.has(req.body.transaction_type)
+      ? req.body.transaction_type
+      : "listing_sale";
+
+    if (!Number.isFinite(amount) || amount <= 0 || !Number.isInteger(listingIdRaw) || listingIdRaw <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields",
+        message: "amount_etb and listing_id must be positive values",
       });
     }
 
-    const cleanPhone = phone.replace(/\s/g, "");
+    if (amount > MAX_EARNING_ETB) {
+      return res.status(400).json({
+        success: false,
+        message: `Amount exceeds the maximum of ${MAX_EARNING_ETB} ETB per record`,
+      });
+    }
 
-    // Verify agent exists
+    // Agent identity is bound to the session — verify it is still active
     const [[agent]] = await db.execute(
-      `SELECT a.id FROM agents a
-       JOIN users u ON a.user_id = u.id
-       WHERE u.phone_number = ?`,
-      [cleanPhone]
+      "SELECT id FROM agents WHERE id = ? AND status = 'active'",
+      [req.agent.agent_id]
     );
     if (!agent) {
-      return res.status(404).json({ success: false, message: "Agent not found" });
+      return res.status(403).json({ success: false, message: "Agent account is not active" });
     }
+
+    const listingId = listingIdRaw;
+    const roundedAmount = Math.round(amount * 100) / 100;
 
     // Insert earnings record
     await db.execute(
       `INSERT INTO agent_earnings (agent_id, listing_id, amount_etb, transaction_type, status)
        VALUES (?, ?, ?, ?, 'pending_approval')`,
-      [agent.id, listing_id, Number(amount_etb), transaction_type || "listing_sale"]
+      [agent.id, listingId, roundedAmount, transactionType]
     );
 
     // Update agent total (will be confirmed after TeleBirr verification)
     await db.execute(
       "UPDATE agents SET earnings_total_etb = earnings_total_etb + ? WHERE id = ?",
-      [Number(amount_etb), agent.id]
+      [roundedAmount, agent.id]
     );
 
     res.json({
@@ -388,42 +444,53 @@ router.post("/status", requireAdminAuth, requireAdminRoles("super_admin", "admin
 
 /**
  * POST /api/agents/listings
- * Create a new listing as an agent
+ * Create a new listing as the AUTHENTICATED agent.
+ * Identity comes from the session cookie; privilege fields are
+ * server-controlled (is_premium/is_verified start at 0).
  */
-router.post("/listings", upload.array("images", 4), async (req, res) => {
+router.post("/listings", requireAgentAuth, upload.array("images", 4), async (req, res) => {
   try {
-    const { phone, title_en, title_am, category, price, price_suffix, location_key, description_en, description_am, whatsapp, is_premium, is_verified } = req.body;
+    const { title_en, title_am, category, price, price_suffix, location_key, description_en, description_am, whatsapp } = req.body;
 
-    if (!phone || !title_en || !title_am || !category) {
+    if (!title_en || !title_am || !category) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: phone, title_en, title_am, category",
+        message: "Missing required fields: title_en, title_am, category",
       });
     }
 
-    const cleanPhone = phone.replace(/\s/g, "");
-
+    // Agent identity is bound to the session; must still be active
     const [[agent]] = await db.execute(
-      `SELECT a.id, a.user_id FROM agents a
-       JOIN users u ON a.user_id = u.id
-       WHERE u.phone_number = ? AND a.status = 'active'`,
-      [cleanPhone]
+      "SELECT a.id, a.user_id, u.full_name FROM agents a JOIN users u ON u.id = a.user_id WHERE a.id = ? AND a.status = 'active'",
+      [req.agent.agent_id]
     );
-
     if (!agent) {
-      return res.status(404).json({ success: false, message: "Agent not found or inactive" });
+      return res.status(403).json({ success: false, message: "Agent account is not active" });
     }
 
-    const contactPhone = cleanPhone;
+    // Contact number defaults to the agent's own registered phone
+    const [[user]] = await db.execute(
+      "SELECT phone_number FROM users WHERE id = ?",
+      [agent.user_id]
+    );
+    const contactPhone = (user?.phone_number || "").replace(/\s/g, "");
+
     const imageFiles = req.files || [];
-    const imageUrls = await Promise.all(imageFiles.map(f => processImage(f.buffer)));
+    const imageUrls = await Promise.all(imageFiles.map(f =>
+      processImage(f.buffer, { watermark: { name: agent?.full_name || "" } })
+    ));
     const locationLabels = {
-      hawassa_piassa: { en: "Piassa, Hawassa", am: "ፒያሳ፣ ሀዋሳ" },
-      hawassa_tabor: { en: "Tabor, Hawassa", am: "ታቦር፣ ሀዋሳ" },
-      hawassa_lakefront: { en: "Lakefront, Hawassa", am: "የሐይቅ ጫፍ፣ ሀዋሳ" },
+      hawassa_tabor: { en: "Tabor Sub City, Hawassa", am: "ታቦር ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_addis_ketema: { en: "Addis Ketema Sub City, Hawassa", am: "አዲስ ከተማ ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_hayek_dar: { en: "Hayek Dar Sub City, Hawassa", am: "ሐይክ ዳር ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_mehal: { en: "Mehal Sub City, Hawassa", am: "መሃል ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_bahil_adarash: { en: "Bahil Adarash Sub City, Hawassa", am: "ባህል አደራሽ ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_misrak: { en: "Misrak Sub City, Hawassa", am: "ምስራቅ ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_menahreya: { en: "Menahreya Sub City, Hawassa", am: "መናሕሪያ ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_tulla: { en: "Tulla Sub City, Hawassa", am: "ሆዌላ ቱላ ክፍለ ከተማ፣ ሀዋሳ" },
       yirgalem: { en: "Yirgalem", am: "ይርጋለም" },
       bensa: { en: "Bensa", am: "በንሳ" },
-      chuko: { en: "Chuko", am: "ጭகቆ" },
+      chuko: { en: "Chuko", am: "ጭንቆ" },
       aleta_wondo: { en: "Aleta Wondo", am: "አለታ ወንዶ" },
     };
     const loc = locationLabels[location_key] || { en: "Hawassa", am: "ሀዋሳ" };
@@ -434,15 +501,13 @@ router.post("/listings", upload.array("images", 4), async (req, res) => {
         location_key, location_label_am, location_label_en,
         phone, whatsapp, images, is_active, is_premium, is_verified,
         description_en, description_am, view_count
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, 0)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, 0)`,
       [
         agent.user_id, title_en, title_am, category,
-        Number(price) || 0, price_suffix || "fixed",
-        location_key || "hawassa_piassa", loc.am, loc.en,
+        Number(price) || 0, PRICE_SUFFIXES.has(price_suffix) ? price_suffix : "fixed",
+        location_key || "hawassa_tabor", loc.am, loc.en,
         contactPhone, whatsapp || contactPhone,
         JSON.stringify(imageUrls),
-        is_premium === "true" || is_premium === 1 ? 1 : 0,
-        is_verified === "true" || is_verified === 1 ? 1 : 0,
         description_en || null, description_am || null,
       ]
     );
@@ -451,6 +516,15 @@ router.post("/listings", upload.array("images", 4), async (req, res) => {
       success: true,
       message: "Listing created successfully",
       data: { id: result.insertId },
+    });
+
+    // Real-time availability to all visitors / agents
+    broadcastListingChange(req.app.get("io"), {
+      action: "created",
+      id: result.insertId,
+      is_active: true,
+      category,
+      location_key: location_key || "hawassa_tabor",
     });
   } catch (err) {
     console.error("[POST /agents/listings]", err);
@@ -480,10 +554,10 @@ router.post("/login", async (req, res) => {
 
     const cleanPhone = phone.replace(/\s/g, "");
 
-    // Look up agent by phone number
+    // Look up agent by phone number (including credential state)
     const [rows] = await db.execute(
       `SELECT a.id, a.user_id, a.sub_city, a.status, a.earnings_total_etb, a.created_at,
-              u.full_name, u.phone_number
+              u.full_name, u.phone_number, u.password_hash
        FROM agents a
        JOIN users u ON a.user_id = u.id
        WHERE u.phone_number = ?
@@ -492,7 +566,11 @@ router.post("/login", async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(401).json({ success: false, message: "Agent not found" });
+      return res.status(401).json({
+        success: false,
+        message: "Invalid phone number or password",
+        message_am: "የስልክ ቁጥሩ ወይም የይለፍ ቃሉ ተሳስቷል",
+      });
     }
 
     const agent = rows[0];
@@ -506,11 +584,37 @@ router.post("/login", async (req, res) => {
       return res.status(403).json({ success: false, message: "Account pending activation. Please wait for coordinator approval." });
     }
 
-    // Issue JWT token and set cookie
-    const token = issueAgentToken({
+    let mustSetPassword = false;
+
+    if (agent.password_hash) {
+      // Normal path: verify credentials
+      const match = await bcrypt.compare(String(password), agent.password_hash);
+      if (!match) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid phone number or password",
+          message_am: "የስልክ ቁጥሩ ወይም የይለፍ ቃሉ ተሳስቷል",
+        });
+      }
+    } else {
+      // Legacy account created before passwords existed.
+      // Issue a short-lived enrollment session; a password must be set
+      // immediately via PUT /api/agents/me/password.
+      mustSetPassword = true;
+    }
+
+    // Issue JWT token and set cookie. Enrollment sessions expire in 1 hour.
+    const payload = {
       agent_id: agent.id,
       user_id: agent.user_id,
       phone_number: agent.phone_number,
+    };
+    if (mustSetPassword) payload.must_set_password = true;
+
+    const { JWT_SECRET } = require("../middleware/agentAuth");
+    const jwt = require("jsonwebtoken");
+    const token = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: mustSetPassword ? "1h" : "7d",
     });
 
     setAgentAuthCookie(res, token);
@@ -526,6 +630,7 @@ router.post("/login", async (req, res) => {
         status: agent.status,
         earnings_total_etb: agent.earnings_total_etb,
         created_at: agent.created_at,
+        must_set_password: mustSetPassword,
       },
     });
   } catch (err) {
@@ -541,6 +646,83 @@ router.post("/login", async (req, res) => {
 router.post("/logout", (req, res) => {
   clearAgentAuthCookie(res);
   res.json({ success: true, message: "Logged out" });
+});
+
+/**
+ * PUT /api/agents/me/password
+ * Set or change the authenticated agent's password.
+ * Legacy accounts (no password yet) enroll here after their first login;
+ * established accounts must confirm their current password first.
+ */
+router.put("/me/password", requireAgentAuth, async (req, res) => {
+  try {
+    const newPassword = String(req.body.new_password || "");
+    const currentPassword = req.body.current_password;
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters",
+        message_am: "የይለፍ ቃል ቢያንስ 8 ቁምፊዎች መሆን አለበት",
+      });
+    }
+
+    const [[user]] = await db.execute(
+      "SELECT id, password_hash FROM users WHERE id = ?",
+      [req.agent.user_id]
+    );
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Account not found" });
+    }
+
+    if (user.password_hash && !req.agent.must_set_password) {
+      // Established account: require the current password
+      if (!currentPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is required to set a new one",
+        });
+      }
+      const match = await bcrypt.compare(String(currentPassword), user.password_hash);
+      if (!match) {
+        return res.status(401).json({ success: false, message: "Current password is incorrect" });
+      }
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await db.execute("UPDATE users SET password_hash = ? WHERE id = ?", [
+      passwordHash,
+      user.id,
+    ]);
+
+    // If this was an enrollment session, upgrade to a full-length session token
+    let reissued = false;
+    if (req.agent.must_set_password) {
+      const { JWT_SECRET } = require("../middleware/agentAuth");
+      const jwt = require("jsonwebtoken");
+      const freshToken = jwt.sign(
+        {
+          agent_id: req.agent.agent_id,
+          user_id: req.agent.user_id,
+          phone_number: req.agent.phone_number,
+        },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+      setAgentAuthCookie(res, freshToken);
+      reissued = true;
+    }
+
+    res.json({
+      success: true,
+      message: "Password updated successfully",
+      message_am: "የይለፍ ቃል በተሳካ ሁኔታ ተዘምኗል",
+      data: { reissued_session: reissued },
+    });
+  } catch (err) {
+    console.error("[PUT /agents/me/password]", err);
+    res.status(500).json({ success: false, message: "Failed to update password" });
+  }
 });
 
 /**
@@ -671,11 +853,19 @@ router.put("/listings/:id", requireAgentAuth, upload.array("images", 4), async (
       return res.status(404).json({ success: false, message: "Listing not found or access denied" });
     }
 
+    // Seller name for the image watermark (JWT only carries agent_id/user_id)
+    const [[seller]] = await db.execute(
+      "SELECT full_name FROM users WHERE id = ?",
+      [req.agent.user_id]
+    );
+
     const { title_en, title_am, category, price, price_suffix, location_key, description_en, description_am, whatsapp, existing_images } = req.body;
 
     // Process new images if uploaded
     const newImageFiles = req.files || [];
-    const newImageUrls = await Promise.all(newImageFiles.map(f => processImage(f.buffer)));
+    const newImageUrls = await Promise.all(newImageFiles.map(f =>
+      processImage(f.buffer, { watermark: { name: seller?.full_name || "" } })
+    ));
 
     // Merge with existing images (sent as JSON string from frontend)
     let finalImages;
@@ -687,12 +877,17 @@ router.put("/listings/:id", requireAgentAuth, upload.array("images", 4), async (
     }
 
     const locationLabels = {
-      hawassa_piassa: { en: "Piassa, Hawassa", am: "ፒያሳ፣ ሀዋሳ" },
-      hawassa_tabor: { en: "Tabor, Hawassa", am: "ታቦር፣ ሀዋሳ" },
-      hawassa_lakefront: { en: "Lakefront, Hawassa", am: "የሐይቅ ጫፍ፣ ሀዋሳ" },
+      hawassa_tabor: { en: "Tabor Sub City, Hawassa", am: "ታቦር ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_addis_ketema: { en: "Addis Ketema Sub City, Hawassa", am: "አዲስ ከተማ ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_hayek_dar: { en: "Hayek Dar Sub City, Hawassa", am: "ሐይክ ዳር ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_mehal: { en: "Mehal Sub City, Hawassa", am: "መሃል ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_bahil_adarash: { en: "Bahil Adarash Sub City, Hawassa", am: "ባህል አደራሽ ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_misrak: { en: "Misrak Sub City, Hawassa", am: "ምስራቅ ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_menahreya: { en: "Menahreya Sub City, Hawassa", am: "መናሕሪያ ክፍለ ከተማ፣ ሀዋሳ" },
+      hawassa_tulla: { en: "Tulla Sub City, Hawassa", am: "ሆዌላ ቱላ ክፍለ ከተማ፣ ሀዋሳ" },
       yirgalem: { en: "Yirgalem", am: "ይርጋለም" },
       bensa: { en: "Bensa", am: "በንሳ" },
-      chuko: { en: "Chuko", am: "ጭকቆ" },
+      chuko: { en: "Chuko", am: "ጭንቆ" },
       aleta_wondo: { en: "Aleta Wondo", am: "አለታ ወንዶ" },
     };
     const loc = locationLabels[location_key] || { en: "Hawassa", am: "ሀዋሳ" };
@@ -724,6 +919,15 @@ router.put("/listings/:id", requireAgentAuth, upload.array("images", 4), async (
     );
 
     res.json({ success: true, message: "Listing updated successfully" });
+
+    // Real-time availability: reflect agent edits everywhere
+    broadcastListingChange(req.app.get("io"), {
+      action: "updated",
+      id: Number(listingId),
+      is_active: true,
+      category: category || null,
+      location_key: location_key || null,
+    });
   } catch (err) {
     console.error("[PUT /agents/listings/:id]", err);
     res.status(500).json({ success: false, message: "Failed to update listing" });
@@ -750,6 +954,13 @@ router.delete("/listings/:id", requireAgentAuth, async (req, res) => {
     await db.execute("UPDATE listings SET is_active = 0 WHERE id = ?", [listingId]);
 
     res.json({ success: true, message: "Listing deleted successfully" });
+
+    // Real-time availability: agent-deleted listings vanish live
+    broadcastListingChange(req.app.get("io"), {
+      action: "deleted",
+      id: Number(listingId),
+      is_active: false,
+    });
   } catch (err) {
     console.error("[DELETE /agents/listings/:id]", err);
     res.status(500).json({ success: false, message: "Failed to delete listing" });
@@ -865,52 +1076,100 @@ router.get("/me/earnings", requireAgentAuth, async (req, res) => {
 
 /**
  * POST /api/agents/payout/request
- * Agent requests payout of earned commission via TeleBirr
+ * Agent requests payout of earned commission via TeleBirr.
+ *
+ * Money-safety rules:
+ *  - Reservation model: balance is deducted inside the same transaction that
+ *    creates the request, so a failed insert can never orphan a deduction
+ *    (previously the deduction committed and then the INSERT 500-ed — silent
+ *    loss of the agent's earnings on every attempt while the table was missing).
+ *  - Row is locked FOR UPDATE to prevent double-spend via concurrent requests.
+ *  - Max 3 open (pending/approved) requests per agent to limit spam exposure.
  */
+const MAX_OPEN_PAYOUT_REQUESTS = 3;
+
 router.post("/payout/request", requireAgentAuth, async (req, res) => {
   try {
     const { amount_etb, telebirr_phone } = req.body;
 
-    if (!amount_etb || !telebirr_phone) {
-      return res.status(400).json({ success: false, message: "amount_etb and telebirr_phone are required" });
-    }
-
     const amount = Number(amount_etb);
-    if (amount <= 0) {
+    if (!Number.isFinite(amount) || amount <= 0) {
       return res.status(422).json({ success: false, message: "Amount must be greater than 0" });
     }
-
-    // Check agent has sufficient balance
-    const [[agent]] = await db.execute(
-      "SELECT earnings_total_etb FROM agents WHERE id = ?",
-      [req.agent.agent_id]
-    );
-
-    if (!agent || Number(agent.earnings_total_etb) < amount) {
-      return res.status(422).json({
-        success: false,
-        message: `Insufficient balance. Available: ${agent ? Number(agent.earnings_total_etb).toLocaleString() : 0} ETB`,
-      });
+    if (amount > 1000000) {
+      return res.status(422).json({ success: false, message: "Amount exceeds single-payout limit" });
     }
 
-    // Deduct from agent balance and create payout request
-    await db.execute(
-      "UPDATE agents SET earnings_total_etb = earnings_total_etb - ? WHERE id = ?",
-      [amount, req.agent.agent_id]
-    );
+    const phone = String(telebirr_phone || "").replace(/\s/g, "");
+    if (!ETH_PHONE_REGEX.test(phone)) {
+      return res.status(422).json({ success: false, message: "A valid Ethiopian phone number is required" });
+    }
 
-    const [result] = await db.execute(
-      `INSERT INTO agent_payout_requests (agent_id, amount_etb, telebirr_phone, status)
-       VALUES (?, ?, ?, 'pending')`,
-      [req.agent.agent_id, amount, telebirr_phone]
-    );
+    const result = await db.transaction(async (conn) => {
+      // Lock the agent row so concurrent requests cannot both pass the check
+      const [[agent]] = await conn.execute(
+        "SELECT earnings_total_etb FROM agents WHERE id = ? FOR UPDATE",
+        [req.agent.agent_id]
+      );
+
+      if (!agent) {
+        const err = new Error("Agent not found");
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const available = Number(agent.earnings_total_etb);
+      if (available < amount) {
+        const err = new Error(`Insufficient balance. Available: ${available.toLocaleString()} ETB`);
+        err.statusCode = 422;
+        throw err;
+      }
+
+      const [[{ open_count }]] = await conn.execute(
+        "SELECT COUNT(*) AS open_count FROM agent_payout_requests WHERE agent_id = ? AND status IN ('pending','approved')",
+        [req.agent.agent_id]
+      );
+      if (open_count >= MAX_OPEN_PAYOUT_REQUESTS) {
+        const err = new Error("You already have 3 open payout requests. Wait for them to be processed.");
+        err.statusCode = 429;
+        throw err;
+      }
+
+      await conn.execute(
+        "UPDATE agents SET earnings_total_etb = earnings_total_etb - ? WHERE id = ?",
+        [amount, req.agent.agent_id]
+      );
+
+      const [insert] = await conn.execute(
+        `INSERT INTO agent_payout_requests (agent_id, amount_etb, telebirr_phone, status)
+         VALUES (?, ?, ?, 'pending')`,
+        [req.agent.agent_id, amount, phone]
+      );
+
+      return { id: insert.insertId, amount_etb: amount, status: "pending" };
+    });
 
     res.status(201).json({
       success: true,
       message: "Payout request submitted. Processing within 48 hours.",
-      data: { id: result.insertId, amount_etb: amount, status: 'pending' },
+      data: result,
     });
+
+    // Admin live feed — push new payout request
+    const io = req.app.get("io");
+    if (io) {
+      io.to("admin_feed").emit("admin:new_payout_request", {
+        request_id: result.id,
+        agent_id: req.agent.agent_id,
+        amount_etb: amount,
+        telebirr_phone: phone,
+        timestamp: Date.now(),
+      });
+    }
   } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ success: false, message: err.message });
+    }
     console.error("[POST /agents/payout/request]", err);
     res.status(500).json({ success: false, message: "Failed to submit payout request" });
   }

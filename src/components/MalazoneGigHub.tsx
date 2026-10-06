@@ -25,7 +25,7 @@ export function MalazoneGigHub({ currentGlobalLang = 'am', onNavigateToOnboard }
       heading: "Decentralized Employment Portal",
       mainBody: "malazone operates as an enterprise platform dedicated to creating verified job opportunities for youth with zero initial capital investment. Earn high daily income simply by registering and tracking local assets across our multi-vertical channels.",
       steps: [
-        { title: "🏠 1. Locate Local Assets", desc: "Identify available cars, real estate plots, machinery, or premium electronics in your area." },
+        { title: "🏠 1. Locate Local Assets", desc: "Identify available cars, real estate plots, furniture, or premium electronics in your area." },
         { title: "📸 2. Capture Verified Records", desc: "Use your device to legally log specification details and images directly into our database lines." },
         { title: "💰 3. Secure High Payouts", desc: "Get your automated commission share transferred straight into your verified banking account layout." }
       ],

@@ -1,10 +1,10 @@
 import React from "react";
 import {
+  Shirt,
+  Armchair,
   Building2,
   Car,
   DoorOpen,
-  Music,
-  Tractor,
   Smartphone,
   Phone,
   Mail,
@@ -21,8 +21,8 @@ const footerTranslations = {
       { icon: Building2, label: "Property Zone" },
       { icon: Car, label: "Motors & EV" },
       { icon: DoorOpen, label: "Rooms & Halls" },
-      { icon: Music, label: "Ceremony Hub" },
-      { icon: Tractor, label: "Heavy Machinery" },
+      { icon: Armchair, label: "Furniture Hub" },
+      { icon: Shirt, label: "Fashion" },
       { icon: Smartphone, label: "Electronics Zone" }
     ],
     col2Title: "SUPPORT",
@@ -49,8 +49,8 @@ const footerTranslations = {
       { icon: Building2, label: "መሬትና ቤት" },
       { icon: Car, label: "መኪናና ኤሌክትሪክ" },
       { icon: DoorOpen, label: "አዳራሽና ጌስት ሃውስ" },
-      { icon: Music, label: "ልብስና ዲጄ ኪራይ" },
-      { icon: Tractor, label: "ከባድ ማሽነሪዎች" },
+      { icon: Armchair, label: "የቤት እቃ ዞን" },
+      { icon: Shirt, label: "ፋሽን" },
       { icon: Smartphone, label: "ኤሌክትሮኒክስ ዞን" }
     ],
     col2Title: "እርዳታና ድጋፍ",
@@ -77,8 +77,8 @@ const footerTranslations = {
       { icon: Building2, label: "Manzawuna Beti" },
       { icon: Car, label: "Oottobillisiinota" },
       { icon: DoorOpen, label: "Ummata Hooje" },
-      { icon: Music, label: "Waashettu" },
-      { icon: Tractor, label: "Shaayinarii Dandalicha" },
+      { icon: Armchair, label: "Fuurnichara Zoone" },
+      { icon: Shirt, label: "Faashinii" },
       { icon: Smartphone, label: "Elektrooniks Lakkal" }
     ],
     col2Title: "GUMAAFFA",

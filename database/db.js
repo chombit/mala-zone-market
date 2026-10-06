@@ -37,7 +37,10 @@ const dbConfig = {
   charset: "utf8mb4",
   supportBigNumbers: true,
   bigNumberStrings: false,
-  decimalNumbers: true,
+  // DECIMAL columns (price, commissions, payouts) are returned as strings so
+  // no float rounding can corrupt ETB financial values. Cast explicitly in
+  // application code when arithmetic is needed.
+  decimalNumbers: false,
 };
 
 // ─────────────────────────────────────────────

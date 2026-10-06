@@ -5,13 +5,16 @@
  * © 2026 Malazone Technologies PLC
  */
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, ArrowLeft } from "lucide-react";
 import { useChat } from "../contexts/ChatContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useAgentAuth } from "../contexts/AgentAuthContext";
 
 const ChatPanel: React.FC = () => {
   const { user } = useAuth();
+  const { agent } = useAgentAuth();
+  const chatUserId = user?.id ?? agent?.user_id ?? null;
   const {
     conversations,
     activeMessages,
@@ -19,10 +22,16 @@ const ChatPanel: React.FC = () => {
     activeListingId,
     unreadCount,
     toast,
+    hasOlderMessages,
+    loadingOlder,
+    typingPartnerIds,
     openChat,
     closeChat,
     sendMessage,
+    refreshConversations,
     dismissToast,
+    loadOlderMessages,
+    emitTyping,
   } = useChat();
 
   const [panelOpen, setPanelOpen] = useState(false);
@@ -30,6 +39,11 @@ const ChatPanel: React.FC = () => {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Skip the auto-scroll-to-bottom once when older history is prepended.
+  const skipScrollRef = useRef(false);
+  // Typing indicator debounce: emit "typing" on keystroke, "stopped" after 2s idle
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingEmitRef = useRef(0);
 
   /* ── Draggable button state ── */
   const [btnPos, setBtnPos] = useState<{ x: number; y: number } | null>(null);
@@ -48,6 +62,10 @@ const ChatPanel: React.FC = () => {
   }, [activePartnerId]);
 
   useEffect(() => {
+    if (skipScrollRef.current) {
+      skipScrollRef.current = false;
+      return;
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeMessages]);
 
@@ -59,7 +77,25 @@ const ChatPanel: React.FC = () => {
 
   const handleOpenConversations = () => {
     setPanelOpen(true);
+    refreshConversations();
   };
+
+  // Open the panel from anywhere via a custom event (e.g. header chat bell,
+  // MyAccount quick action). Refreshes the conversation list on open.
+  useEffect(() => {
+    const open = () => {
+      closeChat();
+      setPanelOpen(true);
+      refreshConversations();
+    };
+    window.addEventListener("malazone:open-chat", open);
+    window.addEventListener("openChatPanel", open);
+    return () => {
+      window.removeEventListener("malazone:open-chat", open);
+      window.removeEventListener("openChatPanel", open);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleClosePanel = () => {
     setPanelOpen(false);
@@ -73,9 +109,12 @@ const ChatPanel: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || sending) return;
     setSending(true);
+    // Clear typing indicator before sending
+    if (activePartnerId) emitTyping(activePartnerId, false);
     await sendMessage(input);
     setInput("");
     setSending(false);
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -83,6 +122,22 @@ const ChatPanel: React.FC = () => {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // Emit typing indicator on each keystroke (throttled to 1 emit/800ms)
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+    if (!activePartnerId || !chatUserId) return;
+    const now = Date.now();
+    if (now - lastTypingEmitRef.current > 800) {
+      lastTypingEmitRef.current = now;
+      emitTyping(activePartnerId, true);
+    }
+    // Reset the "stopped typing" timer on each keystroke
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = setTimeout(() => {
+      emitTyping(activePartnerId!, false);
+    }, 2000);
   };
 
   const formatTime = (dateStr: string) => {
@@ -102,12 +157,25 @@ const ChatPanel: React.FC = () => {
 
   return (
     <>
-      {/* Chat Panel - Full screen on mobile, floating on desktop */}
+      {/* Chat - backdrop (closes on click outside) */}
       <div
-        className={`fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-[110] w-full md:w-[400px] h-full md:h-[600px] bg-white dark:bg-slate-900 md:rounded-2xl shadow-2xl border-0 md:border border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-300 ${
-          panelOpen ? "translate-x-0" : "translate-x-full pointer-events-none"
+        className={`fixed inset-0 z-[109] bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+          panelOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={handleClosePanel}
+      />
+
+      {/* Chat Panel - full screen sheet on mobile, centered modal on desktop */}
+      <div
+        className={`fixed inset-0 z-[110] flex items-end md:items-center md:justify-center transition-opacity duration-300 ${
+          panelOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
+        <div
+          className={`w-full md:w-[420px] h-[92vh] md:h-[620px] max-h-[92vh] md:max-h-[620px] bg-white dark:bg-slate-900 md:rounded-2xl md:shadow-2xl md:border border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-300 ${
+            panelOpen ? "translate-y-0 scale-100" : "translate-y-8 scale-95"
+          }`}
+        >
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-[#00A86B] text-white rounded-t-2xl">
           {activePartnerId ? (
@@ -213,6 +281,20 @@ const ChatPanel: React.FC = () => {
           /* Message Thread */
           <>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {hasOlderMessages && (
+                <div className="text-center">
+                  <button
+                    onClick={() => {
+                      skipScrollRef.current = true;
+                      loadOlderMessages();
+                    }}
+                    disabled={loadingOlder}
+                    className="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                  >
+                    {loadingOlder ? "Loading..." : "Load earlier messages"}
+                  </button>
+                </div>
+              )}
               {activeMessages.length === 0 && (
                 <div className="text-center py-8">
                   <p className="text-xs text-slate-400 dark:text-slate-500">
@@ -251,13 +333,24 @@ const ChatPanel: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Typing indicator */}
+            {activePartnerId != null && typingPartnerIds.has(activePartnerId) && (
+              <div className="px-4 pb-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-bl-md">
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            )}
+
             {/* Input */}
             <div className="border-t border-slate-200 dark:border-slate-800 p-3 flex items-center gap-2">
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a message..."
                 className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:ring-2 focus:ring-[#00A86B]"
@@ -272,6 +365,7 @@ const ChatPanel: React.FC = () => {
             </div>
           </>
         )}
+        </div>
       </div>
     </>
   );

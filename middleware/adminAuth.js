@@ -33,6 +33,22 @@ function issueAdminToken(admin) {
   );
 }
 
+/**
+ * verifyAdminToken(token)
+ * Cryptographically verifies an admin JWT. Returns the decoded payload or
+ * null — never throws. Used by HTTP middleware and the Socket.io admin feed.
+ */
+function verifyAdminToken(token) {
+  if (!token || typeof token !== "string") return null;
+  try {
+    const payload = jwt.verify(token, ADMIN_JWT_SECRET);
+    if (payload.type !== "admin") return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 function setAdminAuthCookie(res, token) {
   res.cookie(ADMIN_COOKIE_NAME, token, {
     httpOnly: true,
@@ -64,7 +80,13 @@ async function requireAdminAuth(req, res, next) {
       return res.status(401).json({ success: false, message: "Admin authentication required" });
     }
 
-    const payload = jwt.verify(token, ADMIN_JWT_SECRET);
+    const payload = verifyAdminToken(token);
+
+    if (!payload) {
+      clearAdminAuthCookie(res);
+      return res.status(401).json({ success: false, message: "Invalid or expired admin session" });
+    }
+
     const [[admin]] = await db.execute(
       "SELECT id, username, full_name, role, is_active, last_login, created_at FROM admin_users WHERE id = ? AND is_active = 1",
       [payload.sub]
@@ -101,6 +123,7 @@ module.exports = {
   ADMIN_COOKIE_NAME,
   sanitizeAdminUser,
   issueAdminToken,
+  verifyAdminToken,
   setAdminAuthCookie,
   clearAdminAuthCookie,
   requireAdminAuth,

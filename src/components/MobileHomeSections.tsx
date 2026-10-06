@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
-import { FALLBACK_LISTINGS, type ListingItem } from './ZoneCatalogGrid';
+import { useListingRevision } from '@/contexts/ListingRealtimeContext';
+import { FALLBACK_LISTINGS, mapDbListingToItem, type ListingItem } from './ZoneCatalogGrid';
 
 interface MobileHomeSectionsProps {
   onScrollToCatalog?: () => void;
@@ -37,12 +38,47 @@ const fmtPrice = (n: number, currency = 'ETB') =>
 const MobileHomeSections: React.FC<MobileHomeSectionsProps> = ({ onScrollToCatalog, onListingClick }) => {
   const { language, t } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { revision } = useListingRevision();
 
-  // Use real site data: premium listings first (isPremium), take top 8
+  // Real site data via API; mocks remain only for network failure.
+  const [apiListings, setApiListings] = React.useState<ListingItem[]>(FALLBACK_LISTINGS);
+  const [locationCounts, setLocationCounts] = React.useState<Record<string, number>>({});
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch('/api/listings?limit=12')
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled || !data?.success || !Array.isArray(data.data)) return;
+        setApiListings(data.data.map(mapDbListingToItem));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [revision]);
+
+  // Live per-city counts for the Browse by Location strip
+  React.useEffect(() => {
+    let cancelled = false;
+    Promise.all(
+      LOCATIONS.map((loc) =>
+        fetch(`/api/listings/count?location=${encodeURIComponent(loc.id)}`)
+          .then((r) => r.json())
+          .then((d) => [loc.id, d?.success ? d.count : null] as const)
+          .catch(() => [loc.id, null] as const)
+      )
+    ).then((pairs) => {
+      if (cancelled) return;
+      const next: Record<string, number> = {};
+      for (const [id, count] of pairs) if (count != null) next[id] = count;
+      setLocationCounts(next);
+    });
+    return () => { cancelled = true; };
+  }, [revision]);
+
   const featuredListings = React.useMemo<ListingItem[]>(() => {
-    const withPremium = [...FALLBACK_LISTINGS].sort((a, b) => Number(b.isPremium) - Number(a.isPremium));
+    const withPremium = [...apiListings].sort((a, b) => Number(b.isPremium) - Number(a.isPremium));
     return withPremium.slice(0, 8);
-  }, []);
+  }, [apiListings]);
 
   const firstPremium = featuredListings.find((l) => l.isPremium && (l.zone === 'house')) || featuredListings[0];
 
@@ -287,7 +323,7 @@ const MobileHomeSections: React.FC<MobileHomeSectionsProps> = ({ onScrollToCatal
                     {t(loc.nameKey as any)}
                   </p>
                   <p className="text-[11px] font-semibold text-white/85 mt-0.5">
-                    {loc.count} {t('home.listingsCount').replace('{count}', '').trim()}
+                    {(locationCounts[loc.id] ?? loc.count)} {t('home.listingsCount').replace('{count}', '').trim()}
                   </p>
                 </div>
               </div>

@@ -27,7 +27,7 @@ const AgentOnboardPage: React.FC<AgentOnboardPageProps> = ({ onBack }) => {
       </div>
 
       <main className="py-8">
-        <MalaAgentsUnified />
+        <MalaAgentsUnified openRegister="agent" />
       </main>
     </div>
   );

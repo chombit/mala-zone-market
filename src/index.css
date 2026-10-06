@@ -41,6 +41,19 @@
     font-family: 'Noto Sans Ethiopic', 'Noto Sans', sans-serif !important;
   }
 
+  /* Native <select> dropdown popup — options must be readable in both themes.
+     The listbox background stays white by default in most browsers while the
+     select inherits light/dark text color, which otherwise renders invisible. */
+  select option {
+    color: #0f172a;
+    background-color: #ffffff;
+  }
+
+  .dark select option {
+    color: #f1f5f9;
+    background-color: #1e293b;
+  }
+
   h1,
   h2,
   h3,
@@ -279,4 +292,39 @@
     opacity: 1;
     transform: rotate(0deg) scale(1);
   }
+}
+
+/* ───────────────────────────────────────────────────────
+   PULSE SLOW — Subtle pulse for active filter indicators
+   ─────────────────────────────────────────────────────── */
+@keyframes pulseSlow {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.92;
+    transform: scale(1.015);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 2.4s ease-in-out infinite;
+}
+
+/* Hide scrollbar on horizontal scroll containers */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Auto-slide marquee for trending cards */
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }

@@ -4,7 +4,7 @@ import { io, Socket } from 'socket.io-client';
 export interface TrackingPayload {
   eventId: string;
   eventType: 'visit' | 'favorite' | 'click_call' | 'click_telegram';
-  zone: 'property' | 'motors' | 'stay' | 'ceremony' | 'machinery' | 'electronics';
+  zone: 'property' | 'motors' | 'stay' | 'furniture' | 'fashion' | 'electronics';
   assetId: string | number;
   assetTitleAm: string;
   timestamp: string;

@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { useAgentAuth } from '../contexts/AgentAuthContext';
 import { useLanguage } from '../contexts/ZoneLanguageContext';
+import ChatBell from './ChatBell';
+import { useListingRevision } from '../contexts/ListingRealtimeContext';
 
 interface Listing {
   id: number;
@@ -44,8 +46,9 @@ interface Listing {
 
 const AgentDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { agent, logout, refreshAgent } = useAgentAuth();
+  const { agent, logout, refreshAgent, setPassword } = useAgentAuth();
   const { language } = useLanguage();
+  const { revision } = useListingRevision();
   const isAmharic = language === 'amharic';
 
   const [listings, setListings] = useState<Listing[]>([]);
@@ -61,7 +64,7 @@ const AgentDashboard: React.FC = () => {
     category: 'property' as string,
     price: '',
     price_suffix: 'fixed',
-    location_key: 'hawassa_piassa',
+    location_key: 'hawassa_tabor',
     description_en: '',
     description_am: '',
     whatsapp: '',
@@ -74,11 +77,40 @@ const AgentDashboard: React.FC = () => {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
 
+  // Password enrollment state (legacy accounts without a password)
+  const [showPasswordSetup, setShowPasswordSetup] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSaved, setPasswordSaved] = useState(false);
+
+  const handleSetPassword = async () => {
+    setPasswordError('');
+    if (newPassword.length < 8) {
+      setPasswordError(isAmharic ? 'የይለፍ ቃል ቢያንስ 8 ቁምፊዎች መሆን አለበት' : 'Password must be at least 8 characters');
+      return;
+    }
+    try {
+      setPasswordSaving(true);
+      await setPassword(newPassword);
+      setPasswordSaved(true);
+      setNewPassword('');
+      setTimeout(() => {
+        setPasswordSaved(false);
+        setShowPasswordSetup(false);
+      }, 2500);
+    } catch (err: any) {
+      setPasswordError(err?.message || (isAmharic ? 'ሞክረው ያይሩ' : 'Please try again'));
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
   // Listing edit state
   const [editingListingId, setEditingListingId] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState({
     title_en: '', title_am: '', category: 'property', price: '',
-    price_suffix: 'fixed', location_key: 'hawassa_piassa',
+    price_suffix: 'fixed', location_key: 'hawassa_tabor',
     description_en: '', description_am: '', whatsapp: '',
   });
   const [editExistingImages, setEditExistingImages] = useState<string[]>([]);
@@ -119,7 +151,9 @@ const AgentDashboard: React.FC = () => {
     if (agent) {
       fetchAgentListings();
     }
-  }, [agent]);
+    // revision bumps on realtime listings:changed (sold/edited/archived),
+    // keeping the agent's own inventory live.
+  }, [agent, revision]);
 
   useEffect(() => {
     if (activeTab === 'earnings' && agent) {
@@ -201,7 +235,7 @@ const AgentDashboard: React.FC = () => {
         setShowCreateModal(false);
         setCreateFormData({
           title_en: '', title_am: '', category: 'property', price: '',
-          price_suffix: 'fixed', location_key: 'hawassa_piassa',
+          price_suffix: 'fixed', location_key: 'hawassa_tabor',
           description_en: '', description_am: '', whatsapp: '',
         });
         setCreateImages([]);
@@ -272,7 +306,7 @@ const AgentDashboard: React.FC = () => {
           category: l.category || 'property',
           price: l.price?.toString() || '',
           price_suffix: l.price_suffix || 'fixed',
-          location_key: l.location_key || 'hawassa_piassa',
+          location_key: l.location_key || 'hawassa_tabor',
           description_en: l.description_en || '',
           description_am: l.description_am || '',
           whatsapp: l.whatsapp || '',
@@ -466,6 +500,7 @@ const AgentDashboard: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <ChatBell className="w-10 h-10 rounded-lg" />
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
@@ -485,6 +520,61 @@ const AgentDashboard: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Password Enrollment Banner */}
+      {agent.must_set_password && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-200">
+                  {isAmharic
+                    ? 'የመለያዎ አሁንም የይለፍ ቃል አልተቀመጠም። እባክዎ ይለፍ ቃል ያስቀምጡ።'
+                    : 'Your account does not have a password yet. Please set one to secure it.'}
+                </p>
+                {!showPasswordSetup ? (
+                  <button
+                    onClick={() => setShowPasswordSetup(true)}
+                    className="text-sm font-bold text-amber-700 dark:text-amber-300 underline"
+                  >
+                    {isAmharic ? 'አሁን ያስቀምጡ' : 'Set password now'}
+                  </button>
+                ) : (
+                  <div className="space-y-2 max-w-sm">
+                    {passwordSaved ? (
+                      <p className="text-sm font-bold text-green-700 dark:text-green-400 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4" />
+                        {isAmharic ? 'የይለፍ ቃል ተቀምጧል!' : 'Password saved!'}
+                      </p>
+                    ) : (
+                      <>
+                        <input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder={isAmharic ? 'አዲስ የይለፍ ቃል (ቢያንስ 8)' : 'New password (min 8 chars)'}
+                          className="w-full px-3 py-2 rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                        />
+                        {passwordError && (
+                          <p className="text-xs font-bold text-red-600 dark:text-red-400">{passwordError}</p>
+                        )}
+                        <button
+                          onClick={handleSetPassword}
+                          disabled={passwordSaving}
+                          className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-bold transition-colors"
+                        >
+                          {passwordSaving ? '...' : isAmharic ? 'አስቀምጥ' : 'Save Password'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
@@ -1141,8 +1231,8 @@ const AgentDashboard: React.FC = () => {
                     <option value="property">{isAmharic ? 'ንብረት' : 'Property'}</option>
                     <option value="motors">{isAmharic ? 'መኪና' : 'Motors'}</option>
                     <option value="stay">{isAmharic ? 'ማረፊያ' : 'Stay'}</option>
-                    <option value="ceremony">{isAmharic ? 'ስርዓት' : 'Ceremony'}</option>
-                    <option value="heavy">{isAmharic ? 'ከባድ ማሽን' : 'Heavy Machinery'}</option>
+                    <option value="furniture">{isAmharic ? 'የቤት እቃ' : 'Furniture'}</option>
+                    <option value="fashion">{isAmharic ? 'ፋሽን' : 'Fashion'}</option>
                     <option value="electronics">{isAmharic ? 'ኤሌክትሮኒክስ' : 'Electronics'}</option>
                   </select>
                 </div>
@@ -1155,13 +1245,22 @@ const AgentDashboard: React.FC = () => {
                     onChange={(e) => setCreateFormData({...createFormData, location_key: e.target.value})}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A86B] outline-none"
                   >
-                    <option value="hawassa_piassa">Piassa</option>
-                    <option value="hawassa_tabor">Tabor</option>
-                    <option value="hawassa_lakefront">Lakefront</option>
-                    <option value="yirgalem">Yirgalem</option>
-                    <option value="bensa">Bensa</option>
-                    <option value="chuko">Chuko</option>
-                    <option value="aleta_wondo">Aleta Wondo</option>
+<optgroup label="Hawassa Sub-cities">
+                      <option value="hawassa_tabor">Tabor Sub City</option>
+                      <option value="hawassa_addis_ketema">Addis Ketema Sub City</option>
+                      <option value="hawassa_hayek_dar">Hayek Dar Sub City</option>
+                      <option value="hawassa_mehal">Mehal Sub City</option>
+                      <option value="hawassa_bahil_adarash">Bahil Adarash Sub City</option>
+                      <option value="hawassa_misrak">Misrak Sub City</option>
+                      <option value="hawassa_menahreya">Menahreya Sub City</option>
+                      <option value="hawassa_tulla">Tulla Sub City</option>
+                    </optgroup>
+                    <optgroup label="Other cities">
+                      <option value="yirgalem">Yirgalem</option>
+                      <option value="bensa">Bensa/Daye</option>
+                      <option value="chuko">Chuko</option>
+                      <option value="aleta_wondo">Aleta Wondo</option>
+                    </optgroup>
                   </select>
                 </div>
               </div>
@@ -1258,14 +1357,14 @@ const AgentDashboard: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  WhatsApp
+                  Telegram
                 </label>
                 <input
                   type="text"
                   value={createFormData.whatsapp}
                   onChange={(e) => setCreateFormData({...createFormData, whatsapp: e.target.value})}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A86B] outline-none"
-                  placeholder={isAmharic ? 'ቻርት ቴሌፍונו ቁጥር' : 'WhatsApp number'}
+                  placeholder={isAmharic ? 'ቻርት ቴሌፍונו ቁጥር' : 'Telegram (phone or @username)'}
                 />
               </div>
 
@@ -1350,8 +1449,8 @@ const AgentDashboard: React.FC = () => {
                     <option value="property">{isAmharic ? 'ንብረት' : 'Property'}</option>
                     <option value="motors">{isAmharic ? 'መኪና' : 'Motors'}</option>
                     <option value="stay">{isAmharic ? 'ማረፊያ' : 'Stay'}</option>
-                    <option value="ceremony">{isAmharic ? 'ስርዓት' : 'Ceremony'}</option>
-                    <option value="heavy">{isAmharic ? 'ከባድ ማሽን' : 'Heavy Machinery'}</option>
+                    <option value="furniture">{isAmharic ? 'የቤት እቃ' : 'Furniture'}</option>
+                    <option value="fashion">{isAmharic ? 'ፋሽን' : 'Fashion'}</option>
                     <option value="electronics">{isAmharic ? 'ኤሌክትሮኒክስ' : 'Electronics'}</option>
                   </select>
                 </div>
@@ -1364,13 +1463,22 @@ const AgentDashboard: React.FC = () => {
                     onChange={(e) => setEditFormData({...editFormData, location_key: e.target.value})}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A86B] outline-none"
                   >
-                    <option value="hawassa_piassa">Piassa</option>
-                    <option value="hawassa_tabor">Tabor</option>
-                    <option value="hawassa_lakefront">Lakefront</option>
-                    <option value="yirgalem">Yirgalem</option>
-                    <option value="bensa">Bensa</option>
-                    <option value="chuko">Chuko</option>
-                    <option value="aleta_wondo">Aleta Wondo</option>
+<optgroup label="Hawassa Sub-cities">
+                      <option value="hawassa_tabor">Tabor Sub City</option>
+                      <option value="hawassa_addis_ketema">Addis Ketema Sub City</option>
+                      <option value="hawassa_hayek_dar">Hayek Dar Sub City</option>
+                      <option value="hawassa_mehal">Mehal Sub City</option>
+                      <option value="hawassa_bahil_adarash">Bahil Adarash Sub City</option>
+                      <option value="hawassa_misrak">Misrak Sub City</option>
+                      <option value="hawassa_menahreya">Menahreya Sub City</option>
+                      <option value="hawassa_tulla">Tulla Sub City</option>
+                    </optgroup>
+                    <optgroup label="Other cities">
+                      <option value="yirgalem">Yirgalem</option>
+                      <option value="bensa">Bensa/Daye</option>
+                      <option value="chuko">Chuko</option>
+                      <option value="aleta_wondo">Aleta Wondo</option>
+                    </optgroup>
                   </select>
                 </div>
               </div>
@@ -1462,13 +1570,14 @@ const AgentDashboard: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  WhatsApp
+                  Telegram
                 </label>
                 <input
                   type="text"
                   value={editFormData.whatsapp}
                   onChange={(e) => setEditFormData({...editFormData, whatsapp: e.target.value})}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A86B] outline-none"
+                  placeholder={isAmharic ? 'ቴሌግራም (ስልክ ወይም @ስም)' : 'Telegram (phone or @username)'}
                 />
               </div>
 

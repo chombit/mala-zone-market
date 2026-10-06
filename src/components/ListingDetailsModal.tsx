@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
-  X, Heart, MapPin, ShieldCheck, Phone, Send, 
+  X, Heart, MapPin, ShieldCheck, Phone, Send, MessageCircle, 
   ChevronLeft, ChevronRight, CheckCircle2, Sparkles,
   BedDouble, Bath, Layers, Calendar, Share2,
   FileText, Zap, Ruler, Settings, Key, Building2,
@@ -10,6 +10,7 @@ import type { ListingItem } from './ZoneCatalogGrid';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChat } from '@/contexts/ChatContext';
 import { useNavigate } from 'react-router-dom';
 
 interface ListingDetailsModalProps {
@@ -20,7 +21,8 @@ interface ListingDetailsModalProps {
 
 export function ListingDetailsModal({ isOpen, onClose, listing }: ListingDetailsModalProps) {
   const { language } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { openChat } = useChat();
   const navigate = useNavigate();
   const currentGlobalLang = language === 'amharic' ? 'am' : 'en';
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -67,14 +69,14 @@ export function ListingDetailsModal({ isOpen, onClose, listing }: ListingDetails
       );
       if (listing.plateCode) specs.push({ labelAm: 'የታርጋ ኮድ', labelEn: 'Plate Code', val: listing.plateCode, icon: <FileText className="w-4 h-4 text-[#00A86B]" /> });
       if (listing.fuelType) specs.push({ labelAm: 'የነዳጅ ዓይነት', labelEn: 'Fuel Type', val: listing.fuelType, icon: <Zap className="w-4 h-4 text-[#00A86B]" /> });
-    } else if (listing.zone === 'machinery') {
+    } else if (listing.zone === 'fashion') {
       specs.push(
-        { labelAm: 'የምርት ዓይነት', labelEn: 'Equipment Type', val: 'Heavy Machinery', icon: <Layers className="w-4 h-4 text-[#00A86B]" /> },
+        { labelAm: 'የፋሽን ዓይነት', labelEn: 'Item Type', val: 'Clothing & Accessories', icon: <Layers className="w-4 h-4 text-[#00A86B]" /> },
       );
       if (listing.billingTrack) specs.push({ labelAm: 'የክፍያ መንገድ', labelEn: 'Billing', val: listing.billingTrack, icon: <Settings className="w-4 h-4 text-[#00A86B]" /> });
-    } else if (listing.zone === 'ceremony') {
+    } else if (listing.zone === 'furniture') {
       specs.push(
-        { labelAm: 'የስርግ አዳራሽ', labelEn: 'Venue Type', val: 'Ceremony Hall', icon: <Building2 className="w-4 h-4 text-[#00A86B]" /> },
+        { labelAm: 'የእቃ ዓይነት', labelEn: 'Furniture Type', val: 'Home & Office Furniture', icon: <Building2 className="w-4 h-4 text-[#00A86B]" /> },
       );
     }
 
@@ -101,6 +103,7 @@ export function ListingDetailsModal({ isOpen, onClose, listing }: ListingDetails
       ownerReviews: `⭐⭐⭐⭐⭐ (${listing.rating})`,
       btnCall: 'ቀጥታ ደውል',
       btnTelegram: 'በቴሌግራም አነጋግር',
+      btnChat: 'ለባለቤቱ መልዕክት ይላኩ',
       btnFavorite: isFav(listing.id) ? 'ተገልብጧል ✓' : 'ለበኋላ አስቀምጥ',
       btnShare: copiedId === listing.id ? 'ተገልብጧል ✓' : 'አጋራት',
       specsTitle: 'ስለ ንብረቱ ዝርዝር መረጃ',
@@ -116,6 +119,7 @@ export function ListingDetailsModal({ isOpen, onClose, listing }: ListingDetails
       ownerReviews: `⭐⭐⭐⭐⭐ (${listing.rating} Rating)`,
       btnCall: 'Direct Call',
       btnTelegram: 'Message on Telegram',
+      btnChat: 'Message Seller',
       btnFavorite: isFav(listing.id) ? 'Saved ✓' : 'Add to Favorites',
       btnShare: copiedId === listing.id ? 'Copied!' : 'Share',
       specsTitle: 'Comprehensive Specifications',
@@ -344,6 +348,19 @@ export function ListingDetailsModal({ isOpen, onClose, listing }: ListingDetails
                       <Send className="size-5 -ml-1 translate-y-[1px]" />
                       <span className="font-black tracking-wider uppercase text-xs">{t.btnTelegram}</span>
                     </a>
+
+                    {isAuthenticated && listing.sellerUserId && listing.sellerUserId !== user?.id && (
+                      <button 
+                        onClick={() => {
+                          onClose();
+                          openChat(listing.sellerUserId!, listing.sellerName || 'Seller', Number(listing.id));
+                        }} 
+                        className="w-full bg-[#0B132B] hover:bg-[#1a2340] text-white py-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer shadow-sm active:scale-[0.98]"
+                      >
+                        <MessageCircle className="size-5" />
+                        <span className="font-black tracking-wider uppercase text-xs">{t.btnChat}</span>
+                      </button>
+                    )}
                     
                     <button 
                       onClick={() => {

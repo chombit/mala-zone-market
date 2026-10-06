@@ -55,7 +55,8 @@ const AgentManagement: React.FC = () => {
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
-    sub_city: 'Tabor Sub-City'
+    sub_city: 'Tabor Sub-City',
+    password: ''
   });
 
   const [formError, setFormError] = useState('');
@@ -68,17 +69,13 @@ const AgentManagement: React.FC = () => {
   const fetchAgents = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/agents/stats/program');
-      const data = await response.json();
-      
-      if (data.success) {
-        // Fetch individual agent details
-        const agentsResponse = await fetch('/api/agents/leaderboard/top?limit=100');
-        const agentsData = await agentsResponse.json();
-        
-        if (agentsData.success) {
-          setAgents(agentsData.data);
-        }
+      // Admin-only: all agents (pending, active, suspended) — the public
+      // leaderboard hides pending agents, so it can't double as a management list.
+      const agentsResponse = await fetch('/api/agents/all?limit=200', { credentials: 'include' });
+      const agentsData = await agentsResponse.json();
+
+      if (agentsData.success) {
+        setAgents(agentsData.data);
       }
     } catch (error) {
       console.error('Failed to fetch agents:', error);
@@ -110,7 +107,7 @@ const AgentManagement: React.FC = () => {
 
       if (data.success) {
         setShowRegistrationForm(false);
-        setFormData({ full_name: '', phone: '', sub_city: 'Tabor Sub-City' });
+        setFormData({ full_name: '', phone: '', sub_city: 'Tabor Sub-City', password: '' });
         await fetchAgents();
       } else {
         setFormError(data.message || 'Registration failed');
@@ -124,7 +121,7 @@ const AgentManagement: React.FC = () => {
 
   const handleStatusChange = async (agentId: number, newStatus: string) => {
     try {
-      const response = await fetch('/api/admin/agents/status', {
+      const response = await fetch('/api/agents/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -412,6 +409,21 @@ const AgentManagement: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  Password <span className="font-normal text-slate-400">(agent uses this to log in)</span>
+                </label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Min 8 characters"
+                  minLength={8}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#00A86B] focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                   Sub-City
                 </label>
                 <select
@@ -421,7 +433,14 @@ const AgentManagement: React.FC = () => {
                 >
                   <option value="Tabor">Tabor</option>
                   <option value="Lakefront">Lakefront</option>
-                  <option value="Piassa">Piassa</option>
+                  <option value="Tabor Sub City">Tabor Sub City</option>
+                    <option value="Addis Ketema Sub City">Addis Ketema Sub City</option>
+                    <option value="Hayek Dar Sub City">Hayek Dar Sub City</option>
+                    <option value="Mehal Sub City">Mehal Sub City</option>
+                    <option value="Bahil Adarash Sub City">Bahil Adarash Sub City</option>
+                    <option value="Misrak Sub City">Misrak Sub City</option>
+                    <option value="Menahreya Sub City">Menahreya Sub City</option>
+                    <option value="Tulla Sub City">Tulla Sub City</option>
                   <option value="Yirgalem">Yirgalem</option>
                   <option value="Aleta Wondo">Aleta Wondo</option>
                 </select>

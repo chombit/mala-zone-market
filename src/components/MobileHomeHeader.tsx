@@ -17,7 +17,8 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
@@ -32,7 +33,6 @@ import {
   KeyRound,
   MapPin,
   Car,
-  Tractor,
   LayoutGrid,
   ArrowRight,
   LogIn,
@@ -44,12 +44,16 @@ import {
   Smartphone,
   Bed,
   PartyPopper,
+  Armchair,
+  Shirt,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { LANGUAGE_OPTIONS } from "@/i18n";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import SignOut from "./SignOut";
+import ChatBell from "./ChatBell";
 
 /* ── Types ─────────────────────────────────────────────── */
 interface Slide {
@@ -90,7 +94,7 @@ const CATS = [
   { id: "intent_rent", labelKey: "cat.rent",     icon: KeyRound,   bg: "#ECFDF5", color: "#00A86B" },
   { id: "property",    labelKey: "cat.land",     icon: MapPin,     bg: "#ECFDF5", color: "#059669" },
   { id: "motors",      labelKey: "cat.cars",     icon: Car,        bg: "#EFF6FF", color: "#2563EB" },
-  { id: "heavy",       labelKey: "cat.machinery",icon: Tractor,    bg: "#FFF7ED", color: "#EA580C" },
+  { id: "fashion",      labelKey: "cat.fashion",  icon: Shirt,      bg: "#FFF7ED", color: "#EA580C" },
   { id: "more",        labelKey: "cat.more",     icon: LayoutGrid, bg: "#F5F3FF", color: "#7C3AED", isFilter: true },
 ];
 
@@ -99,8 +103,8 @@ const NAV_CATS = [
   { key: "nav.cat1", id: "property" },
   { key: "nav.cat2", id: "motors" },
   { key: "nav.cat3", id: "stay" },
-  { key: "nav.cat4", id: "ceremony" },
-  { key: "nav.cat5", id: "heavy" },
+  { key: "nav.cat4", id: "furniture" },
+  { key: "nav.cat5", id: "fashion" },
   { key: "nav.cat6", id: "electronics" },
 ];
 
@@ -109,8 +113,8 @@ const MORE_CATS = [
   { key: "nav.cat1", id: "property",    icon: Home,       bg: "#ECFDF5", color: "#059669" },
   { key: "nav.cat2", id: "motors",      icon: Car,        bg: "#EFF6FF", color: "#2563EB" },
   { key: "nav.cat3", id: "stay",        icon: Bed,        bg: "#FCE7F3", color: "#BE185D" },
-  { key: "nav.cat4", id: "ceremony",    icon: PartyPopper,bg: "#FEF3C7", color: "#D97706" },
-  { key: "nav.cat5", id: "heavy",       icon: Tractor,    bg: "#FFF7ED", color: "#EA580C" },
+  { key: "nav.cat4", id: "furniture",     icon: Armchair,   bg: "#FEF3C7", color: "#D97706" },
+  { key: "nav.cat5", id: "fashion",      icon: Shirt,      bg: "#FFF7ED", color: "#EA580C" },
   { key: "nav.cat6", id: "electronics", icon: Smartphone, bg: "#DBEAFE", color: "#1E40AF" },
 ];
 
@@ -151,7 +155,7 @@ const FALLBACK_SLIDES: Slide[] = [
   {
     id: 5,
     image_url: "https://images.unsplash.com/photo-1579412691522-861f6540960d?w=900&q=85&fm=webp",
-    category_id: "heavy", label_en: "Machinery", label_am: "ማሽነሪዎች",
+    category_id: "fashion", label_en: "Fashion", label_am: "ፋሽን",
     title_en: "Cat 320 Excavator — For Hire", title_am: "ካት 320 አቃቂ — በኪራይ", price: 35000,
   },
 ];
@@ -169,6 +173,7 @@ const MobileHomeHeader: React.FC<MobileHomeHeaderProps> = ({
   const { t, language, toggleLanguage } = useLanguage();
   const { isAuthenticated, user } = useAuth();
   const { favorites, setSidebarOpen } = useFavorites();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
 
   const [menuOpen, setMenuOpen]           = useState(false);
@@ -292,6 +297,25 @@ const MobileHomeHeader: React.FC<MobileHomeHeaderProps> = ({
               {favorites.length > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 flex items-center justify-center text-[9px] font-black text-white bg-red-500 rounded-full border border-white">
                   {favorites.length}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Chat bell — unread messages, opens chat panel — logged in only */}
+          {isAuthenticated && <ChatBell className="w-8 h-8" />}
+
+          {/* Notification bell — logged in only */}
+          {isAuthenticated && (
+            <button
+              onClick={() => navigate("/account")}
+              aria-label="Notifications"
+              className="relative w-8 h-8 rounded-full flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50 shadow-sm transition-colors"
+            >
+              <Bell className="w-4 h-4 text-slate-600" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 flex items-center justify-center text-[9px] font-black text-white bg-red-500 rounded-full border border-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>

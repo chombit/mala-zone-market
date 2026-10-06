@@ -6,6 +6,7 @@
 
 import React from "react";
 import {
+  Shirt,
   LayoutDashboard,
   Home,
   Car,
@@ -27,7 +28,7 @@ const AdminSidebar: React.FC = () => {
     { key: "admin.sidebar.property", icon: <Home className="w-5 h-5" />, path: "property" },
     { key: "admin.sidebar.motors", icon: <Car className="w-5 h-5" />, path: "motors" },
     { key: "admin.sidebar.stay", icon: <Palmtree className="w-5 h-5" />, path: "stay" },
-    { key: "admin.sidebar.heavy", icon: <Construction className="w-5 h-5" />, path: "heavy" },
+    { key: "admin.sidebar.fashion", icon: <Shirt className="w-5 h-5" />, path: "fashion" },
     { key: "admin.sidebar.agents", icon: <Wallet className="w-5 h-5" />, path: "agents" },
   ];
 

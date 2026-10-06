@@ -262,7 +262,7 @@ router.post("/register", loginLimiter, async (req, res) => {
       });
     }
 
-    // Check if email exists
+// Check if email exists
     const [existingUsers] = await db.execute("SELECT id FROM users WHERE email = ?", [email]);
     if (existingUsers.length > 0) {
       await writeAuditLog({
@@ -280,12 +280,36 @@ router.post("/register", loginLimiter, async (req, res) => {
       });
     }
 
+    // Check if phone number exists
+    if (phone_number) {
+      const cleanPhone = String(phone_number).replace(/\s/g, "");
+      const [existingByPhone] = await db.execute(
+        "SELECT id FROM users WHERE phone_number = ?",
+        [cleanPhone]
+      );
+      if (existingByPhone.length > 0) {
+        await writeAuditLog({
+          req,
+          actorType: "anonymous",
+          actorIdentifier: email,
+          action: "user_registration_failed",
+          resourceType: "user_account",
+          details: { reason: "phone_already_registered" },
+        });
+        return res.status(409).json({
+          success: false,
+          message: "Phone number already registered",
+          message_am: "የስልክ ቁጥሩ ቀድሞ ተመዝግቧል"
+        });
+      }
+    }
+
     const password_hash = await bcrypt.hash(password, 12);
 
     const [result] = await db.execute(
       `INSERT INTO users (full_name, email, password_hash, phone_number, account_type, provider) 
        VALUES (?, ?, ?, ?, ?, 'local')`,
-      [full_name, email, password_hash, phone_number || null, account_type || "Individual"]
+      [full_name, email, password_hash, phone_number ? String(phone_number).replace(/\s/g, "") : null, account_type || "Individual"]
     );
 
     const [newUsers] = await db.execute("SELECT * FROM users WHERE id = ?", [result.insertId]);
@@ -320,6 +344,20 @@ router.post("/register", loginLimiter, async (req, res) => {
     });
   } catch (err) {
     console.error("[Auth Register Error]", err);
+    if (err && err.code === "ER_DUP_ENTRY") {
+      const key = err.sqlMessage && err.sqlMessage.includes("phone_number")
+        ? "phone_number"
+        : "email";
+      return res.status(409).json({
+        success: false,
+        message: key === "phone_number"
+          ? "Phone number already registered"
+          : "Email already registered",
+        message_am: key === "phone_number"
+          ? "የስልክ ቁጥሩ ቀድሞ ተመዝግቧል"
+          : "ኢሜይሉ ቀድሞ ይመዝገባል"
+      });
+    }
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -356,7 +394,26 @@ router.get("/google/callback", passport.authenticate("google", { failureRedirect
 router.post("/logout", async (req, res) => {
   const currentUser = await getCurrentUserFromRequest(req);
   res.clearCookie("malazone_token");
-  req.logout(async () => {
+  // Passport may not be mounted (sessions are OAuth-only) — guard the call.
+  if (typeof req.logout === "function") {
+    req.logout(async () => {
+      if (currentUser) {
+        await writeAuditLog({
+          req,
+          ...getUserActor(currentUser),
+          action: "user_logout",
+          resourceType: "user_session",
+          resourceId: currentUser.id,
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Logged out successfully",
+        message_am: "በተሳካ ሁኔታ ወጥተዋል"
+      });
+    });
+  } else {
     if (currentUser) {
       await writeAuditLog({
         req,
@@ -372,7 +429,7 @@ router.post("/logout", async (req, res) => {
       message: "Logged out successfully",
       message_am: "በተሳካ ሁኔታ ወጥተዋል"
     });
-  });
+  }
 });
 
 // Get Current User

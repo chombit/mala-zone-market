@@ -1,6 +1,8 @@
 /**
  * routes/messages.js
  * Malazone.com — Buyer-Seller Chat API
+ * All endpoints are authenticated; sender/receiver identity is derived from the
+ * session cookie, never from client-supplied fields.
  * © 2026 Malazone Technologies PLC
  */
 
@@ -8,32 +10,53 @@
 
 const express = require("express");
 const db = require("../database/db");
+const { requireUserOrAgentAuth } = require("../middleware/userOrAgentAuth");
 
 const router = express.Router();
 
-/**
- * GET /api/messages/conversations
- * List all conversations for a user (latest message per chat partner)
- * Query: phone (required)
- */
-router.get("/conversations", async (req, res) => {
+// ── Helpers ─────────────────────────────────────────────
+const toId = (value) => {
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 ? n : null;
+};
+
+// Simple in-memory rate limiter: 20 messages / minute / user
+const sendCounters = new Map();
+function messageSendLimiter(req, res, next) {
+  const key = req.user.id;
+  const now = Date.now();
+  const entry = sendCounters.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    sendCounters.set(key, { count: 1, resetAt: now + 60_000 });
+    return next();
+  }
+
+  entry.count += 1;
+  if (entry.count > 20) {
+    return res.status(429).json({
+      success: false,
+      message: "Too many messages. Please slow down.",
+    });
+  }
+  next();
+}
+
+// Periodically purge stale counters to bound memory
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of sendCounters) {
+    if (now > entry.resetAt) sendCounters.delete(key);
+  }
+}, 5 * 60_000).unref();
+
+// ──────────────────────────────────────────────────────────────
+// GET /api/messages/conversations
+// List all conversations for the authenticated user
+// ──────────────────────────────────────────────────────────────
+router.get("/conversations", requireUserOrAgentAuth, async (req, res) => {
   try {
-    const { phone } = req.query;
-    if (!phone) {
-      return res.status(400).json({ success: false, message: "phone is required" });
-    }
-
-    const cleanPhone = phone.replace(/\s/g, "");
-
-    const [[user]] = await db.execute(
-      "SELECT id FROM users WHERE phone_number = ?",
-      [cleanPhone]
-    );
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    const userId = user.id;
+    const userId = req.user.id;
 
     const [conversations] = await db.execute(
       `SELECT
@@ -75,89 +98,104 @@ router.get("/conversations", async (req, res) => {
   }
 });
 
-/**
- * GET /api/messages/thread
- * Get all messages between two users about a specific listing
- * Query: phone, partner_id, listing_id (optional)
- */
-router.get("/thread", async (req, res) => {
+// ──────────────────────────────────────────────────────────────
+// GET /api/messages/thread
+// Get messages between the authenticated user and a partner.
+// Query: partner_id (required), listing_id (optional),
+//        before_id (cursor for pagination), limit (default 50, max 100)
+// Returns the NEWEST page (ending at the most recent message) or, when
+// before_id is supplied, the page immediately older than that id.
+// Response: { success, data (ASC), has_more }
+// ──────────────────────────────────────────────────────────────
+router.get("/thread", requireUserOrAgentAuth, async (req, res) => {
   try {
-    const { phone, partner_id, listing_id } = req.query;
-    if (!phone || !partner_id) {
-      return res.status(400).json({ success: false, message: "phone and partner_id are required" });
+    const userId = req.user.id;
+    const partnerId = toId(req.query.partner_id);
+    const listingId = toId(req.query.listing_id);
+    const beforeId = toId(req.query.before_id);
+    let limit = toId(req.query.limit) || 50;
+    if (limit > 100) limit = 100;
+
+    if (!partnerId) {
+      return res.status(400).json({ success: false, message: "partner_id is required" });
     }
 
-    const cleanPhone = phone.replace(/\s/g, "");
-
-    const [[user]] = await db.execute(
-      "SELECT id FROM users WHERE phone_number = ?",
-      [cleanPhone]
-    );
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    const userId = user.id;
     let sql = `
       SELECT m.*, u.full_name AS sender_name
       FROM messages m
       JOIN users u ON u.id = m.sender_id
       WHERE ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))
     `;
-    const params = [userId, partner_id, partner_id, userId];
+    const params = [userId, partnerId, partnerId, userId];
 
-    if (listing_id) {
+    if (listingId) {
       sql += " AND m.listing_id = ?";
-      params.push(listing_id);
+      params.push(listingId);
+    }
+    if (beforeId) {
+      sql += " AND m.id < ?";
+      params.push(beforeId);
     }
 
-    sql += " ORDER BY m.created_at ASC";
+    // Newest page first, then flip to chronological order for the client.
+    sql += " ORDER BY m.id DESC LIMIT ?";
+    params.push(limit);
 
-    const [messages] = await db.execute(sql, params);
+    const [rows] = await db.execute(sql, params);
+    rows.reverse();
 
     // Mark messages as read
     await db.execute(
       `UPDATE messages SET is_read = TRUE
        WHERE sender_id = ? AND receiver_id = ? AND is_read = FALSE`,
-      [partner_id, userId]
+      [partnerId, userId]
     );
 
-    res.json({ success: true, data: messages });
+    res.json({ success: true, data: rows, has_more: rows.length === limit });
   } catch (err) {
     console.error("[GET /messages/thread]", err);
     res.status(500).json({ success: false, message: "Failed to fetch messages" });
   }
 });
 
-/**
- * POST /api/messages
- * Send a new message
- */
-router.post("/", async (req, res) => {
+// ──────────────────────────────────────────────────────────────
+// POST /api/messages
+// Send a new message (sender is always the authenticated user)
+// Body: receiver_id, message_text, listing_id (optional)
+// ──────────────────────────────────────────────────────────────
+router.post("/", requireUserOrAgentAuth, messageSendLimiter, async (req, res) => {
   try {
-    const { sender_phone, receiver_id, listing_id, message_text } = req.body;
+    const senderId = req.user.id;
+    const receiverId = toId(req.body.receiver_id);
+    const listingId = toId(req.body.listing_id);
+    const messageText =
+      typeof req.body.message_text === "string" ? req.body.message_text.trim() : "";
 
-    if (!sender_phone || !receiver_id || !message_text) {
+    if (!receiverId || !messageText) {
       return res.status(400).json({
         success: false,
-        message: "sender_phone, receiver_id, and message_text are required",
+        message: "receiver_id and message_text are required",
       });
     }
 
-    const cleanPhone = sender_phone.replace(/\s/g, "");
+    if (messageText.length > 2000) {
+      return res.status(400).json({ success: false, message: "Message too long (max 2000 characters)" });
+    }
 
-    const [[sender]] = await db.execute(
-      "SELECT id FROM users WHERE phone_number = ?",
-      [cleanPhone]
-    );
-    if (!sender) {
-      return res.status(404).json({ success: false, message: "Sender not found" });
+    if (receiverId === senderId) {
+      return res.status(400).json({ success: false, message: "Cannot send a message to yourself" });
+    }
+
+    // Receiver must exist
+    const [[receiver]] = await db.execute("SELECT id FROM users WHERE id = ?", [receiverId]);
+    if (!receiver) {
+      return res.status(404).json({ success: false, message: "Receiver not found" });
     }
 
     const [result] = await db.execute(
       `INSERT INTO messages (sender_id, receiver_id, listing_id, message_text)
        VALUES (?, ?, ?, ?)`,
-      [sender.id, receiver_id, listing_id || null, message_text.trim()]
+      [senderId, receiverId, listingId, messageText]
     );
 
     const [[newMessage]] = await db.execute(
@@ -168,11 +206,32 @@ router.post("/", async (req, res) => {
       [result.insertId]
     );
 
-    // Emit via Socket.io if available
+    // Emit via Socket.io if available. When the receiver has NO live
+    // socket in their personal room, persist a durable notification so
+    // they still learn about the message on next visit.
     const io = req.app.get("io");
     if (io) {
-      io.to(`user_${receiver_id}`).emit("new_message", newMessage);
-      io.to(`user_${sender.id}`).emit("new_message", newMessage);
+      io.to(`user_${receiverId}`).emit("new_message", newMessage);
+      io.to(`user_${senderId}`).emit("new_message", newMessage);
+
+      const receiverRoom = io.sockets.adapter.rooms.get(`user_${receiverId}`);
+      if (!receiverRoom || receiverRoom.size === 0) {
+        try {
+          await db.execute(
+            `INSERT INTO notifications (user_id, type, title, body, payload, listing_id)
+             VALUES (?, 'new_message', ?, ?, ?, ?)`,
+            [
+              receiverId,
+              `New message from ${newMessage.sender_name || "a buyer"}`,
+              newMessage.message_text.slice(0, 500),
+              JSON.stringify({ from_user_id: senderId, message_id: newMessage.id }),
+              listingId,
+            ]
+          );
+        } catch (notifErr) {
+          console.error("[POST /messages] notification insert failed:", notifErr.message);
+        }
+      }
     }
 
     res.status(201).json({ success: true, data: newMessage });
@@ -182,30 +241,15 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * GET /api/messages/unread-count
- * Get total unread message count for a user
- * Query: phone
- */
-router.get("/unread-count", async (req, res) => {
+// ──────────────────────────────────────────────────────────────
+// GET /api/messages/unread-count
+// Total unread message count for the authenticated user
+// ──────────────────────────────────────────────────────────────
+router.get("/unread-count", requireUserOrAgentAuth, async (req, res) => {
   try {
-    const { phone } = req.query;
-    if (!phone) {
-      return res.status(400).json({ success: false, message: "phone is required" });
-    }
-
-    const cleanPhone = phone.replace(/\s/g, "");
-    const [[user]] = await db.execute(
-      "SELECT id FROM users WHERE phone_number = ?",
-      [cleanPhone]
-    );
-    if (!user) {
-      return res.json({ success: true, data: { count: 0 } });
-    }
-
     const [[{ count }]] = await db.execute(
       "SELECT COUNT(*) AS count FROM messages WHERE receiver_id = ? AND is_read = FALSE",
-      [user.id]
+      [req.user.id]
     );
 
     res.json({ success: true, data: { count } });

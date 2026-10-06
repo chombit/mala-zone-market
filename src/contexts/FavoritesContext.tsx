@@ -58,7 +58,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               titleEn: f.title_en || '',
               titleAm: f.title_am || '',
               price: Number(f.price) || 0,
-              priceSuffixKey: f.price_suffix || 'fixed',
+              priceSuffixKey: f.price_suffix === "per_day" ? "price.day" : f.price_suffix === "per_hour" ? "price.hour" : f.price_suffix === "per_month" ? "price.month" : "price.etb",
               priceTagKey: 'price.fixed',
               image: f.images?.[0] || '/placeholder.svg',
               images: f.images || [],

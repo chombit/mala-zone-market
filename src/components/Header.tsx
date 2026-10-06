@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { Globe, Menu, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Heart, Settings, UserCircle, MapPin } from "lucide-react";
+import { Globe, Menu, X, ChevronRight, LogIn, LogOut, User, ChevronDown, Heart, Settings, UserCircle, MapPin, Plus, CalendarCheck, Store } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { getNextLanguage, LANGUAGE_OPTIONS, type Language } from "@/i18n";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,14 +38,13 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const categories = [
     { key: "nav.cat1", id: "property" },
     { key: "nav.cat2", id: "motors" },
     { key: "nav.cat3", id: "stay" },
-    { key: "nav.cat4", id: "ceremony" },
-    { key: "nav.cat5", id: "heavy" },
+    { key: "nav.cat4", id: "furniture" },
+    { key: "nav.cat5", id: "fashion" },
     { key: "nav.cat6", id: "electronics" },
   ];
 
@@ -84,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
 
           {/* CENTER: Horizontal Category Navigation */}
           <nav className={`flex items-center gap-1.5 md:gap-2 flex-1 overflow-x-auto scrollbar-hide mx-4 min-w-0 px-2 py-1 ${
-            language === 'amharic' || language === 'english' 
+            language === 'amharic' || language === 'en' 
               ? 'justify-center' 
               : 'justify-start xl:justify-center'
           }`}>
@@ -103,8 +102,19 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
             ))}
           </nav>
 
-          {/* RIGHT: Language | Sign In | Favorites */}
+          {/* RIGHT: Language | Post Listing | Sign In | Favorites */}
           <div className="flex items-center gap-3 ml-12">
+            {/* Post Listing CTA */}
+            {isAuthenticated && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent("malazone:open-post-modal"))}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#00A86B] hover:bg-emerald-600 text-white text-sm font-bold transition-all shadow-sm hover:shadow-md active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                Post Listing
+              </button>
+            )}
+
             {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
@@ -140,6 +150,20 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                       >
                         <Heart className="w-4 h-4 text-[#00A86B]" />
                         Favorites
+                      </button>
+                      <button
+                        onClick={() => { navigate('/my-account'); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-left text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >
+                        <CalendarCheck className="w-4 h-4 text-[#00A86B]" />
+                        My Bookings
+                      </button>
+                      <button
+                        onClick={() => { navigate('/seller'); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-left text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >
+                        <Store className="w-4 h-4 text-[#00A86B]" />
+                        Seller Dashboard
                       </button>
                       <button
                         onClick={() => { navigate('/my-account'); setShowProfileMenu(false); }}
@@ -253,6 +277,20 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                         onClick={() => { navigate('/my-account'); setShowProfileMenu(false); }}
                         className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-left text-sm font-medium text-slate-700 dark:text-slate-300"
                       >
+                        <CalendarCheck className="w-4 h-4 text-[#00A86B]" />
+                        My Bookings
+                      </button>
+                      <button
+                        onClick={() => { navigate('/seller'); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-left text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >
+                        <Store className="w-4 h-4 text-[#00A86B]" />
+                        Seller Dashboard
+                      </button>
+                      <button
+                        onClick={() => { navigate('/my-account'); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-left text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >
                         <Settings className="w-4 h-4 text-[#00A86B]" />
                         Settings
                       </button>
@@ -277,37 +315,6 @@ const Header: React.FC<HeaderProps> = ({ activeCategory, onCategoryChange }) => 
                 <span className="text-sm font-bold">Login</span>
               </button>
             )}
-          </div>
-        </div>
-
-        {/* MOBILE: Search Bar with Filter Button */}
-        <div className="lg:hidden px-4 sm:px-6 pb-3">
-          <div className="relative flex items-center gap-2">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                placeholder={language === 'amharic' ? 'ቤቶች፣ መሬቶች፣ መኪናዎች ይፈልጉ...' : 'Search houses, land, cars, machinery...'}
-                className="w-full pl-4 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00A86B] focus:border-transparent transition-all"
-                onChange={(e) => onCategoryChange && handleNavClick('all')}
-              />
-            </div>
-            <button
-              onClick={() => setShowMobileFilters(!showMobileFilters)}
-              className="p-3 bg-[#00A86B] hover:bg-emerald-600 text-white rounded-lg transition-colors flex-shrink-0"
-              aria-label="Filters"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="4" y1="21" x2="4" y2="14"></line>
-                <line x1="4" y1="10" x2="4" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12" y2="3"></line>
-                <line x1="20" y1="21" x2="20" y2="16"></line>
-                <line x1="20" y1="12" x2="20" y2="3"></line>
-                <line x1="1" y1="14" x2="7" y2="14"></line>
-                <line x1="9" y1="8" x2="15" y2="8"></line>
-                <line x1="17" y1="16" x2="23" y2="16"></line>
-              </svg>
-            </button>
           </div>
         </div>
 

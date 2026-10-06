@@ -5,17 +5,20 @@
  */
 
 import React, { useState } from 'react';
-import { Menu, X, Globe, LogIn, User, Heart, Settings, LogOut, Search, SlidersHorizontal } from 'lucide-react';
+import { Menu, X, Globe, LogIn, User, Heart, Settings, LogOut, Search, SlidersHorizontal, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useNotifications } from '@/contexts/NotificationContext';
+import ChatBell from './ChatBell';
 
 const SimpleHeader: React.FC = () => {
   const navigate = useNavigate();
   const { language, toggleLanguage } = useLanguage();
   const { user, isAuthenticated, logout } = useAuth();
   const { setSidebarOpen } = useFavorites();
+  const { unreadCount } = useNotifications();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,6 +92,25 @@ const SimpleHeader: React.FC = () => {
             <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{currentLang}</span>
           </button>
 
+          {/* Chat bell — unread messages, opens chat panel */}
+          {isAuthenticated && <ChatBell className="w-10 h-10 rounded-lg" />}
+
+          {/* Notification bell */}
+          {isAuthenticated && (
+            <button
+              onClick={() => navigate('/account')}
+              className="relative p-2 rounded-lg border border-slate-200 dark:border-white/10 hover:border-[#00A86B] dark:hover:border-[#00A86B] transition-colors"
+              aria-label="Notifications"
+            >
+              <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 flex items-center justify-center text-[9px] font-black text-white bg-red-500 rounded-full border border-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+          )}
+
           {/* Login/Profile Button */}
           {isAuthenticated && user ? (
             <div className="relative">
@@ -98,7 +120,7 @@ const SimpleHeader: React.FC = () => {
               >
                 <User className="w-5 h-5 text-[#00A86B]" />
                 <span className="hidden sm:inline text-sm font-bold text-slate-700 dark:text-slate-300">
-                  {user.name?.split(' ')[0] || 'User'}
+                  {user.full_name?.split(' ')[0] || 'User'}
                 </span>
               </button>
 

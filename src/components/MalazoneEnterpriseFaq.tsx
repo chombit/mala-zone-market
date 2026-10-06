@@ -45,7 +45,7 @@ export function MalazoneEnterpriseFaq({ currentGlobalLang = 'am', onBackToMain }
         },
         {
           q: "2. How are listings verified against official government archives?",
-          a: "Our infrastructure features multi-tier synchronization. Real estate, plots, and commercial properties are cross-checked with city municipality land registries (CATA deeds), while showroom vehicles and heavy duty machinery are rigorously audited against regional transportation registry archives (Libre title ledgers)."
+          a: "Our infrastructure features multi-tier synchronization. Real estate, plots, and commercial properties are cross-checked with city municipality land registries (CATA deeds), while fashion inventory and boutique stock are audited against regional trade-license records."
         },
         {
           q: "3. What is the business revenue model if middleman margins are eliminated?",

@@ -209,6 +209,7 @@ const LISTINGS = [
     title_en: "Hawassa Lakeview Hotel — Standard Room",
     title_am: "ሐዋሳ የሐይቅ ገጽታ ሆቴል — መደበኛ ክፍል",
     category: "stay",
+    sub_category: "hotels",
     price: 2500,
     price_suffix: "per_day",
     location_key: "hawassa",
@@ -228,6 +229,7 @@ const LISTINGS = [
     title_en: "Lakefront Airbnb Studio",
     title_am: "የሐይቅ ጫፍ ኤርቢኤንቢ ስቱዲዮ",
     category: "stay",
+    sub_category: "guest-houses",
     price: 3500,
     price_suffix: "per_day",
     location_key: "hawassa",
@@ -242,6 +244,7 @@ const LISTINGS = [
     title_en: "Haile Resort — Deluxe Room",
     title_am: "ሀይሌ ሪዞርት — ዴሉክስ ክፍል",
     category: "stay",
+    sub_category: "resorts",
     price: 4500,
     price_suffix: "per_day",
     location_key: "hawassa",
@@ -260,6 +263,7 @@ const LISTINGS = [
     title_en: "Budget Guest House — Tabor",
     title_am: "ምንጭ ያለው የእንግዳ ቤት — ታቦር",
     category: "stay",
+    sub_category: "guest-houses",
     price: 1200,
     price_suffix: "per_day",
     location_key: "hawassa",
@@ -274,6 +278,7 @@ const LISTINGS = [
     title_en: "Lake Langano Resort — Family Suite",
     title_am: "የሐይቅ ሪዞርት — ስንቅ ክፍል",
     category: "stay",
+    sub_category: "resorts",
     price: 6000,
     price_suffix: "per_day",
     location_key: "yirgalem",
@@ -290,130 +295,138 @@ const LISTINGS = [
   },
 
   // ═══════════════════════════════════════════
-  // CEREMONY (4 listings)
+  // ═══════════════════════════════════════════
+  // FURNITURE (4 listings)
   // ═══════════════════════════════════════════
   {
-    title_en: "Wedding Catering — Full Service",
-    title_am: "የሰርግ ማቅያ — ሙሉ አገልግሎት",
-    category: "ceremony",
+    title_en: "Modular Fabric Sofa Set — 7 Seater",
+    title_am: "ዘመናዊ ሶፋ ስብስብ — 7 መቀመጫ",
+    category: "furniture",
+    sub_category: "living-room",
     price: 2500,
-    price_suffix: "per_day",
+    price_suffix: "per_month",
     location_key: "hawassa",
     location_label_en: "Tabor",
-    description_en: "Professional wedding catering for up to 500 guests. Includes traditional Ethiopian cuisine, setup, and cleanup.",
-    description_am: "ለ500 እንግዶች ሰርግ ማቅያ አገልግሎት። ባህላዊ የኢትዮጵያ ምግብ፣ ማሰሪያ እና ማጽዳት።",
-    capacity: 500,
+    description_en: "Premium modular fabric sofa set available for short-term lease or purchase. Delivery and setup included within Hawassa.",
+    description_am: "ዘመናዊ የጨርቃጨርቅ ሶፋ ስብስብ ለኪራይም ለግዢም ይገኛል። ማጓጓዣ እና ማሰሪያ ይካተታል።",
+    capacity: 7,
     is_verified: true, is_premium: true,
     seller_idx: 3, location_label_am: "ታቦር",
   },
   {
-    title_en: "DJ & Sound System — Events",
-    title_am: "ዲเจ እና ድምጽ ስስተም — ዝግጅቶች",
-    category: "ceremony",
-    price: 8000,
+    title_en: "Solid Wood Dining Table — 6 Seater",
+    title_am: "ከእንጨት የተሠራ የምግብ ጠረጴዛ — 6 ተረንት",
+    category: "furniture",
+    sub_category: "dining-kitchen",
+    price: 18000,
     price_suffix: "fixed",
     location_key: "hawassa",
     location_label_en: "Piassa",
-    description_en: "Professional DJ with full sound system for weddings, birthdays, and events. Modern equipment, experienced team.",
-    description_am: "ለሰርግ፣ ልደት እና ዝግጅቶች ፕሮፌሽናል ዲเจ ከሙሉ ድምጽ ስስተም ጋር።",
-    capacity: 1000,
+    description_en: "Handcrafted eucalyptus dining table with six matching chairs. Scratch-resistant finish, built to last.",
+    description_am: "በእጅ የተሠራ የዝንጉስ የምግብ ጠረጴዛ ከስድስት ወንበሮች ጋር። ጠንካራ እና ረጅም ዕድሜ ያለው።",
+    capacity: 6,
     is_verified: true, is_premium: false,
     seller_idx: 5, location_label_am: "ፒያሳ",
     images: [
-      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&q=80&fm=webp",
-      "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=800&q=80&fm=webp"
+      "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=800&q=80&fm=webp",
+      "https://images.unsplash.com/photo-1449247709967-d4461a6a6103?w=800&q=80&fm=webp"
     ],
   },
   {
-    title_en: "Habesha Ceremony Hall — 300 Capacity",
-    title_am: "ሀበሻ ስርዓት አዳራሽ — 300 ተረን틴",
-    category: "ceremony",
+    title_en: "Ergonomic Office Desk & Shelf Combo",
+    title_am: "የቢሮ ጠረጴዛ እና መደራጃ — አንድ ላይ",
+    category: "furniture",
+    sub_category: "office",
     price: 15000,
     price_suffix: "fixed",
     location_key: "hawassa",
     location_label_en: "Tabor",
-    description_en: "Modern ceremony hall with full amenities. Chairs, tables, stage, lighting included. Central location.",
-    description_am: "ዘመናዊ ስርዓት አዳራሽ ከሙሉ ማመቻቸት ጋር። ወንበሮች፣ ጠረጴዛዎች፣ መድረክ።",
-    capacity: 300,
+    description_en: "Modern ergonomic desk with integrated shelving unit. Ideal for home offices and startups. Cable management included.",
+    description_am: "ዘመናዊ የቢሮ ጠረጴዛ ከተቀናጀ መደራጃ ጋር። ለቤት ቢሮዎች እና ለስታርታፖች ተስማሚ።",
+    capacity: 2,
     is_verified: true, is_premium: true,
     seller_idx: 1, location_label_am: "ታቦር",
   },
   {
-    title_en: "Floral Decoration & Event Styling",
-    title_am: "የአበቦች ማጌזן እና ዝግጅት ዘይቤ",
-    category: "ceremony",
+    title_en: "Traditional Coffee Table Set",
+    title_am: "ባህላዊ የቡና ጠረጴዛ ስብስብ",
+    category: "furniture",
+    sub_category: "living-room",
     price: 12000,
     price_suffix: "fixed",
     location_key: "hawassa",
     location_label_en: "Lakefront",
-    description_en: "Complete event decoration service. Flowers, backdrops, table settings. Portfolio available on request.",
-    description_am: "ሙሉ ዝግጅት ማጌזן አገልግሎት። አበቦች፣ ታሪኮች፣ ጠረጴዛ ማስቀመጥ።",
+    description_en: "Hand-carved traditional Ethiopian coffee table set (rekebot style). Solid wood with authentic Sidama detailing.",
+    description_am: "በእጅ የተሠራ ባህላዊ የቡና ጠረጴዛ ስብስብ (ረከቦት ዘይቤ)። ከእንጨት የተሠራ።",
     capacity: 0,
     is_verified: true, is_premium: false,
     seller_idx: 6, location_label_am: "የሐይቅ ጫፍ",
   },
 
   // ═══════════════════════════════════════════
-  // HEAVY MACHINERY (4 listings)
+  // FASHION (4 listings)
   // ═══════════════════════════════════════════
   {
-    title_en: "Cat 320 Excavator — For Hire",
-    title_am: "ካት 320 አቃቂ — በኪራይ",
-    category: "heavy",
-    price: 35000,
-    price_suffix: "per_day",
+    title_en: "Genuine Leather Jacket — Men's",
+    title_am: "ከቆዳ የተሠራ ጃኬት — የወንድ",
+    category: "fashion",
+    sub_category: "mens-clothing",
+    price: 8500,
+    price_suffix: "fixed",
     location_key: "hawassa",
     location_label_en: "Tabor",
-    description_en: "Cat 320D excavator for construction and earthwork. Operator available. Fuel included in price.",
-    description_am: "ለግንባታ እና የምድር ሥራ ካት 320D አቃቂ። አሠሪ ያካትታል። የነዳ ቅንጣት የተካትተ ነው።",
-    machinery_brand: "Caterpillar", with_operator: true, capacity: 20,
+    description_en: "Premium genuine leather jacket, all sizes available. Locally crafted with imported hardware.",
+    description_am: "ከጥሬ ቆዳ የተሠራ ጃኬት። ሁሉም መጠኖች አሉ።",
+    capacity: 0,
     is_verified: true, is_premium: true,
     seller_idx: 0, location_label_am: "ታቦር",
   },
   {
-    title_en: "Hitachi ZX200 Excavator",
-    title_am: "ሀይታቺ ZX200 አቃቂ",
-    category: "heavy",
-    price: 30000,
-    price_suffix: "per_day",
+    title_en: "Habesha Kemis — Traditional Dress",
+    title_am: "ሀበሻ ቀሚስ — ባህላዊ ልብስ",
+    category: "fashion",
+    sub_category: "traditional-wear",
+    price: 4500,
+    price_suffix: "fixed",
     location_key: "yirgalem",
     location_label_en: "Yirgalem",
-    description_en: "Well-maintained Hitachi ZX200 excavator. 20-ton class, ideal for road construction and foundation work.",
-    description_am: "በጠበቀ ሁኔታ የተጠበቀ ሀይታቺ ZX200 አቃቂ። 20 ቶን።",
-    machinery_brand: "Hitachi", with_operator: false, capacity: 20,
+    description_en: "Handwoven Habesha kemis with tilet embroidery. Perfect for holidays and weddings. Sizes XS–XL.",
+    description_am: "በእጅ የተሰፉ ባህላዊ ቀሚስ ከጢልት ስፍታ ጋር። ለበዓላትና ለሰርግ ተስማሚ።",
+    capacity: 0,
     is_verified: true, is_premium: false,
     seller_idx: 4, location_label_am: "ይርጋለም",
   },
   {
-    title_en: "SDLG L956F Wheel Loader",
-    title_am: "SDLG L956F ዞላ ማጓጓző",
-    category: "heavy",
-    price: 28000,
-    price_suffix: "per_day",
+    title_en: "Running Shoes — Lightweight Trainer",
+    title_am: "የሩጫ ጫማ — ቀላል ክብደት",
+    category: "fashion",
+    sub_category: "shoes",
+    price: 3200,
+    price_suffix: "fixed",
     location_key: "bensa",
     location_label_en: "Bensa",
-    description_en: "SDLG L956F wheel loader. 5-ton bucket, suitable for quarrying, stockpiling, and material handling.",
-    description_am: "SDLG L956F ዞላ ማጓጓző። 5 ቶን በርኬት። ለመሬት ማውደም ተስማሚ።",
-    machinery_brand: "SDLG", with_operator: true, capacity: 5,
+    description_en: "Breathable lightweight running shoes, sizes 39–45. Cushioned sole for daily training.",
+    description_am: "ቀላል ክብደት ያላቸው የሩጫ ጫማዎች። መጠን 39–45።",
+    capacity: 0,
     is_verified: true, is_premium: false,
     seller_idx: 2, location_label_am: "ቤንሳ",
   },
   {
-    title_en: "XCMG Crane — 25 Ton",
-    title_am: "XCMG ክሬን — 25 ቶን",
-    category: "heavy",
-    price: 45000,
-    price_suffix: "per_day",
+    title_en: "Designer Handbag — Leather Tote",
+    title_am: "ዲዛይነር እጅ ቻማ — የቆዳ ቶት",
+    category: "fashion",
+    sub_category: "bags-accessories",
+    price: 12000,
+    price_suffix: "fixed",
     location_key: "chuko",
     location_label_en: "Chuko",
-    description_en: "XCMG 25-ton mobile crane for construction projects. Certified operator, insurance included.",
-    description_am: "ለግንባታ ፕሮጀክቶች XCMG 25 ቶን ሞባይል ክሬን። ሰertified operator፣ ቢমስ ያካትታል።",
-    machinery_brand: "XCMG", with_operator: true, capacity: 25,
+    description_en: "Full-grain leather tote bag with interior pockets. Handmade in Hawassa, lifetime stitching warranty.",
+    description_am: "ከቆዳ የተሠራ እጅ ቻማ ከውስጥ ኪሶች ጋር። በምዋሳ በእጅ የተሠራ።",
+    capacity: 0,
     is_verified: true, is_premium: true,
     seller_idx: 3, location_label_am: "ጩቆ",
   },
 
-  // ═══════════════════════════════════════════
   // ELECTRONICS (5 listings)
   // ═══════════════════════════════════════════
   {
@@ -514,26 +527,40 @@ async function seed() {
 
   let listingCount = 0;
 
+  // Subcategory slug → categories.id. Every filter, facet count and subcategory
+  // pill resolves through listings.subcategory_id, so the seed must populate it
+  // or "Hotels"/"Guest Houses"/"Resorts" all report zero against real rows.
+  const subcatIds = new Map();
+  try {
+    const [catRows] = await db.execute("SELECT id, key_name FROM categories WHERE parent_id IS NOT NULL");
+    for (const r of catRows) subcatIds.set(r.key_name, r.id);
+  } catch (e) {
+    console.warn("⚠️  Could not load subcategory ids — subcategory facets will be empty:", e.message);
+  }
+
   for (const item of LISTINGS) {
     const seller = SELLERS[item.seller_idx];
     const images = JSON.stringify(item.images || []);
+    const subcategoryId = item.sub_category ? subcatIds.get(item.sub_category) ?? null : null;
     try {
       const [result] = await db.execute(
         `INSERT INTO listings (
           user_id, title_en, title_am, description_en, description_am,
-          category, sub_category, location_key, location_label_en, location_label_am,
+          category, sub_category, subcategory_id,
+          location_key, location_label_en, location_label_am,
           price, price_suffix, phone, whatsapp, images,
           is_active, is_verified, is_premium,
           plate_code, plate_region, fuel_type, condition_type,
           machinery_brand, with_operator, capacity,
           bedrooms, bathrooms, area_sqm, title_deed, view_count
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           seller.id,
           item.title_en, item.title_am,
           item.description_en || null, item.description_am || null,
           item.category,
-          null,
+          item.sub_category || null,
+          subcategoryId,
           item.location_key,
           item.location_label_en || null, item.location_label_am || null,
           item.price, item.price_suffix || "fixed",
@@ -588,7 +615,7 @@ async function seed() {
     SELECT category, COUNT(*) AS cnt
     FROM listings
     GROUP BY category
-    ORDER BY FIELD(category, 'property','motors','stay','ceremony','heavy','electronics')
+    ORDER BY FIELD(category, 'property','motors','stay','furniture','fashion','electronics')
   `);
   console.log("\n📊 Listings per category:");
   cats.forEach((c) => console.log(`   ${c.category}: ${c.cnt}`));

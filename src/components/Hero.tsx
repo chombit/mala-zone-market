@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
-  Zap,
+  Shirt,Armchair,Zap,
   Users,
   ListChecks,
   Car,
@@ -18,12 +18,11 @@ import {
   Sparkles,
   TrendingUp,
   Building2,
-  Truck,
-  Music,
   Hotel,
   Navigation,
   Compass,
   Smartphone,
+  X,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/ZoneLanguageContext";
 import { useMouseParallax } from "@/hooks/useWorldClassAnimations";
@@ -35,8 +34,8 @@ const ICON_MAP: Record<string, any> = {
   "property": Building2,
   "motors": Car,
   "stay": Hotel,
-  "ceremony": Music,
-  "heavy": Truck,
+  "furniture": Armchair,
+  "fashion": Shirt,
   "electronics": Smartphone
 };
 
@@ -62,6 +61,7 @@ interface Slide {
 }
 
 interface HeroProps {
+  activeCategory?: string;
   onCategoryChange: (cat: string) => void;
   onFilterChange: (key: string, value: string) => void;
 }
@@ -103,7 +103,7 @@ const useAnimatedCounter = (target: number, duration: number = 2000) => {
 /* ────────────────────────────────────────────
    Component
    ──────────────────────────────────────────── */
-const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
+const Hero: React.FC<HeroProps> = ({ activeCategory, onCategoryChange, onFilterChange }) => {
   const { t, language } = useLanguage();
   const { x, y } = useMouseParallax(25, 0.06);
 
@@ -117,10 +117,11 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
     });
   };
   const [activeSlide, setActiveSlide] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showMorePillMenu, setShowMorePillMenu] = useState(false);
-  const [searchLocation, setSearchLocation] = useState("loc.hawassa");
   const [searchIntent, setSearchIntent] = useState("intent.buy");
+  const [searchQuery, setSearchQuery] = useState<string>(
+    () => new URLSearchParams(window.location.search).get("search") || ""
+  );
   const [stats, setStats] = useState<Stats>({
     clients: 1003,
     listings: 2547,
@@ -175,9 +176,9 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             id: 4,
             image_url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=90&fm=webp",
             pillar_key: "nav.cat4",
-            category_id: "ceremony",
-            label_en: "Ceremony & DJ",
-            label_am: "ሰርግ ዞን",
+            category_id: "furniture",
+            label_en: "Furniture",
+            label_am: "የቤት እቃ ዞን",
             display_order: 3,
             is_active: true
           },
@@ -185,9 +186,9 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
             id: 5,
             image_url: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1600&q=90&fm=webp",
             pillar_key: "nav.cat5",
-            category_id: "heavy",
-            label_en: "Heavy Machinery",
-            label_am: "ማሽነሪ ዞን",
+            category_id: "fashion",
+            label_en: "Fashion",
+            label_am: "ፋሽን ዞን",
             display_order: 4,
             is_active: true
           },
@@ -243,19 +244,12 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
   }, []);
 
   const handleSearch = () => {
-    // 1. Sync category/zone
-    onCategoryChange(selectedCategory);
+    // Search term applies to the shared filter state — same as the mobile
+    // search bar. Category/intent/location are applied live via the pills and
+    // nav, so we never reset the user's filters here.
+    onFilterChange("search", searchQuery);
 
-    // 2. Sync Location (Map dictionary key to filter value)
-    // We pass the key part like "hawassa", "yirgalem" etc.
-    const cityValue = searchLocation.replace("loc.", "");
-    onFilterChange("city", cityValue);
-
-    // 3. Sync Intent
-    const intentValue = searchIntent.replace("intent.", "");
-    onFilterChange("intent", intentValue);
-
-    // 4. Scroll to results
+    // Scroll to results
     const grid = document.getElementById("listings-catalog");
     if (grid) {
       grid.scrollIntoView({ behavior: "smooth" });
@@ -394,8 +388,8 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
               transition: 'transform 0.1s ease-out'
             }}
           >
-            <div
-              onClick={handleSearch}
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleSearch(); }}
               className="
                 flex items-center gap-3
                 rounded-full
@@ -404,17 +398,48 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                 border-slate-200 dark:border-white/[0.08]
                 shadow-xl dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)]
                 hover:border-malazone-green/30 dark:hover:border-malazone-green/20
+                focus-within:border-malazone-green/40 dark:focus-within:border-malazone-green/30
                 cursor-text
               "
             >
               <div className="flex items-center gap-3 flex-1 pl-6 pr-2 py-2 sm:py-4">
                 <Search className="w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
-                <span className="text-sm font-medium text-slate-400 dark:text-slate-500 select-none line-clamp-1">
-                  {t("search.zone") === "Search Zone" ? "Search houses, land, cars, machinery..." : t("search.zone")}
-                </span>
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      onFilterChange("search", e.target.value);
+                    }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSearch();
+                    }
+                  }}
+                  placeholder={t("search.zone") === "Search Zone" ? "Search houses, land, cars, furniture..." : t("search.zone")}
+                  aria-label="Search listings"
+                  className="
+                    flex-1 min-w-0 bg-transparent
+                    text-sm sm:text-base font-medium
+                    text-malazone-navy dark:text-slate-200
+                    placeholder:text-slate-400 dark:placeholder:text-slate-500
+                    focus:outline-none
+                  "
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery(""); onFilterChange("search", ""); }}
+                    aria-label="Clear search"
+                    className="shrink-0 w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                  >
+                    <X className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                  </button>
+                )}
               </div>
               <button
-                onClick={(e) => { e.stopPropagation(); handleSearch(); }}
+                type="submit"
                 className="
                   flex items-center justify-center
                   w-12 h-12 sm:w-auto sm:px-6 sm:py-4 rounded-full
@@ -428,7 +453,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                   {t("search.btn")}
                 </span>
               </button>
-            </div>
+            </form>
           </div>
 
           {/* ── 4. Professional Interactive Category Pills (Matching Screenshot) ── */}
@@ -524,7 +549,7 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                   pill.type === "intent"
                     ? searchIntent === `intent.${pill.value}`
                     : pill.type === "category"
-                      ? selectedCategory === pill.value
+                      ? (activeCategory || "all") === pill.value
                       : false;
 
                 const handleClick = () => {
@@ -532,10 +557,8 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                     setSearchIntent(`intent.${pill.value}`);
                     onFilterChange("intent", pill.value);
                   } else if (pill.type === "category") {
-                    setSelectedCategory(pill.value);
                     onCategoryChange(pill.value);
                   } else {
-                    setSelectedCategory("all");
                     onCategoryChange("all");
                   }
                   // Scroll smoothly to grid catalog
@@ -618,8 +641,8 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                           </div>
                           {[
                             { id: "stay", labelKey: "nav.cat3", fallback: "Stays", icon: Hotel },
-                            { id: "ceremony", labelKey: "nav.cat4", fallback: "Events", icon: Music },
-                            { id: "heavy", labelKey: "nav.cat5", fallback: "Machinery", icon: Truck },
+                            { id: "furniture", labelKey: "nav.cat4", fallback: "Furniture", icon: Armchair },
+                            { id: "fashion", labelKey: "nav.cat5", fallback: "Fashion", icon: Shirt },
                             { id: "all", labelKey: "cat.all", fallback: "All Categories", icon: Compass },
                           ].map((item) => {
                             const ItemIcon = item.icon;
@@ -627,7 +650,6 @@ const Hero: React.FC<HeroProps> = ({ onCategoryChange, onFilterChange }) => {
                               <button
                                 key={item.id}
                                 onClick={() => {
-                                  setSelectedCategory(item.id);
                                   onCategoryChange(item.id);
                                   setShowMorePillMenu(false);
                                   const grid = document.getElementById("listings-catalog");

@@ -1,13 +1,16 @@
-/**
+﻿/**
  * CategoryGrid.tsx
  * Malazone.com — Mobile Quick-Access Category Row
- * Matches reference design: 6 cards (Buy, Rent, Land, Cars, Machinery, More)
+ * Matches reference design: 6 cards (Buy, Rent, Land, Cars, Fashion, More)
  * Uses Malazone emerald (#00A86B) & navy (#0B132B) brand colors
  * © 2026 Malazone Technologies PLC
  */
 
 import React, { useState } from 'react';
-import { Home, KeyRound, MapPin, Car, Tractor, LayoutGrid, Smartphone, Bed, PartyPopper, X } from 'lucide-react';
+import {
+  Shirt,
+  Armchair,
+  Home, KeyRound, MapPin, Car, LayoutGrid, Smartphone, Bed, PartyPopper, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/ZoneLanguageContext';
 
 interface CategoryGridProps {
@@ -54,9 +57,9 @@ const QUICK_CATEGORIES: QuickCat[] = [
     iconColor: '#2563EB',
   },
   {
-    id: 'heavy',
-    labelKey: 'cat.machinery',
-    icon: Tractor,
+    id: 'fashion',
+    labelKey: 'cat.fashion',
+    icon: Shirt,
     iconBg: '#FFF7ED',
     iconColor: '#EA580C',
   },
@@ -94,16 +97,16 @@ const MORE_CATEGORIES: QuickCat[] = [
     iconColor: '#BE185D',
   },
   {
-    id: 'ceremony',
+    id: 'furniture',
     labelKey: 'nav.cat4',
-    icon: PartyPopper,
+    icon: Armchair,
     iconBg: '#FEF3C7',
     iconColor: '#D97706',
   },
   {
-    id: 'heavy',
+    id: 'fashion',
     labelKey: 'nav.cat5',
-    icon: Tractor,
+    icon: Shirt,
     iconBg: '#FFF7ED',
     iconColor: '#EA580C',
   },

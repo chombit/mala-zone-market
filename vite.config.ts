@@ -9,6 +9,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'sw.js',
       includeAssets: ['assets/malazone-m-emblem.webp', 'assets/**/*.webp', '**/*.svg'],
       injectRegister: 'auto',
       minify: true,
@@ -105,49 +108,11 @@ export default defineConfig({
           }
         ]
       },
-      workbox: {
-        globDirectory: 'dist',
+      injectManifest: {
         globPatterns: ['**/*.{html,js,css,woff2,png,jpg,jpeg,svg,webp}'],
         globIgnores: ['**/*.map'],
         swDest: 'dist/sw.js',
-        skipWaiting: true,
-        clientsClaim: true,
-        runtimeCaching: [
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'images',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
-          },
-          {
-            urlPattern: /\.(?:js|css)$/,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'assets',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/api\./,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api',
-              networkTimeoutSeconds: 3,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
-              }
-            }
-          }
-        ]
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       devOptions: {
         enabled: false,
@@ -169,6 +134,11 @@ export default defineConfig({
       },
       '/uploads': {
         target: 'http://localhost:4003',
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:4003',
+        ws: true,
         changeOrigin: true,
       },
     },
